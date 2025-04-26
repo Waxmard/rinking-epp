@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import get_password_hash
+from app.core.security import get_password_hash
 from app.db.models import User
 from app.schemas.user import UserCreate, UserUpdate
 

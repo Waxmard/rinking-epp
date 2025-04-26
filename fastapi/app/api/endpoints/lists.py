@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List as TypeList
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
@@ -14,7 +14,7 @@ from app.schemas.user import User
 router = APIRouter()
 
 
-@router.get("/", response_model=List[ListSimple])
+@router.get("/", response_model=TypeList[ListSimple])
 async def read_lists(
     skip: int = 0,
     limit: int = 100,
