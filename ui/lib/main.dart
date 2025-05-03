@@ -75,112 +75,42 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   
   Widget _buildMobileLayout(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Text(
-          'You have pushed the button this many times:',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 16),
-          ),
-        ),
-        Consumer<CounterProvider>(
-          builder: (context, counterProvider, child) {
-            return Text(
-              '${counterProvider.count}',
-              style: Theme.of(context).textTheme.headlineMedium,
-            );
-          },
-        ),
-        const SizedBox(height: 20),
-        GFButton(
-          onPressed: () => _incrementCounter(context),
-          text: 'GF Button',
-          shape: GFButtonShape.pills,
-          color: GFColors.PRIMARY,
-          size: GFSize.LARGE,
-        ),
-        const SizedBox(height: 20),
-        Padding(
-          padding: ResponsiveHelper.getScreenPadding(context),
-          child: GFCard(
-            boxFit: BoxFit.cover,
-            title: const GFListTile(
-              title: Text('Card Title'),
-              subTitle: Text('Card Sub Title'),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'You have pushed the button this many times:',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 16),
+              ),
             ),
-            content: const Text('GetWidget is an open source library that comes with pre-built UI components.'),
-            buttonBar: GFButtonBar(
-              children: <Widget>[
-                GFButton(
-                  onPressed: () {},
-                  text: 'Read More',
-                ),
-              ],
+            const SizedBox(height: 10),
+            Consumer<CounterProvider>(
+              builder: (context, counterProvider, child) {
+                return Text(
+                  '${counterProvider.count}',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                );
+              },
             ),
-          ),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildDesktopLayout(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          flex: 1,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'You have pushed the button this many times:',
-                style: TextStyle(
-                  fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 18),
-                ),
-              ),
-              Consumer<CounterProvider>(
-                builder: (context, counterProvider, child) {
-                  return Text(
-                    '${counterProvider.count}',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 36),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              GFButton(
-                onPressed: () => _incrementCounter(context),
-                text: 'GF Button',
-                shape: GFButtonShape.pills,
-                color: GFColors.PRIMARY,
-                size: GFSize.LARGE,
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          flex: 2,
-          child: Padding(
-            padding: ResponsiveHelper.getScreenPadding(context),
-            child: GFCard(
+            const SizedBox(height: 20),
+            GFButton(
+              onPressed: () => _incrementCounter(context),
+              text: 'GF Button',
+              shape: GFButtonShape.pills,
+              color: GFColors.PRIMARY,
+              size: GFSize.LARGE,
+            ),
+            const SizedBox(height: 20),
+            GFCard(
               boxFit: BoxFit.cover,
-              title: GFListTile(
-                title: Text(
-                  'Desktop Card Title',
-                  style: TextStyle(
-                    fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 20),
-                  ),
-                ),
-                subTitle: Text(
-                  'Card Sub Title',
-                  style: TextStyle(
-                    fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 14),
-                  ),
-                ),
+              title: const GFListTile(
+                title: Text('Card Title'),
+                subTitle: Text('Card Sub Title'),
               ),
               content: const Text('GetWidget is an open source library that comes with pre-built UI components.'),
               buttonBar: GFButtonBar(
@@ -192,9 +122,84 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
+    );
+  }
+  
+  Widget _buildDesktopLayout(BuildContext context) {
+    return SingleChildScrollView(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 1,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'You have pushed the button this many times:',
+                  style: TextStyle(
+                    fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 18),
+                  ),
+                ),
+                Consumer<CounterProvider>(
+                  builder: (context, counterProvider, child) {
+                    return Text(
+                      '${counterProvider.count}',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 36),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                GFButton(
+                  onPressed: () => _incrementCounter(context),
+                  text: 'GF Button',
+                  shape: GFButtonShape.pills,
+                  color: GFColors.PRIMARY,
+                  size: GFSize.LARGE,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: ResponsiveHelper.getScreenPadding(context),
+              child: GFCard(
+                boxFit: BoxFit.cover,
+                title: GFListTile(
+                  title: Text(
+                    'Desktop Card Title',
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 20),
+                    ),
+                  ),
+                  subTitle: Text(
+                    'Card Sub Title',
+                    style: TextStyle(
+                      fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 14),
+                    ),
+                  ),
+                ),
+                content: const Text('GetWidget is an open source library that comes with pre-built UI components.'),
+                buttonBar: GFButtonBar(
+                  children: <Widget>[
+                    GFButton(
+                      onPressed: () {},
+                      text: 'Read More',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
