@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'providers/counter_provider.dart';
+import 'utils/app_theme.dart';
 import 'utils/responsive_helper.dart';
 
 void main() {
@@ -17,9 +19,9 @@ class MyApp extends StatelessWidget {
       create: (context) => CounterProvider(),
       child: MaterialApp(
         title: 'Flutter Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        ),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system, // Uses device theme settings
         home: const MyHomePage(title: 'Flutter Demo Home Page'),
       ),
     );
@@ -84,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               'You have pushed the button this many times:',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.roboto(
                 fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 16),
               ),
             ),
@@ -93,7 +95,10 @@ class _MyHomePageState extends State<MyHomePage> {
               builder: (context, counterProvider, child) {
                 return Text(
                   '${counterProvider.count}',
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  style: GoogleFonts.montserrat(
+                    fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 36),
+                    fontWeight: FontWeight.w500,
+                  ),
                 );
               },
             ),
@@ -108,11 +113,27 @@ class _MyHomePageState extends State<MyHomePage> {
             const SizedBox(height: 20),
             GFCard(
               boxFit: BoxFit.cover,
-              title: const GFListTile(
-                title: Text('Card Title'),
-                subTitle: Text('Card Sub Title'),
+              title: GFListTile(
+                title: Text(
+                  'Card Title',
+                  style: GoogleFonts.montserrat(
+                    fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 18),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subTitle: Text(
+                  'Card Sub Title',
+                  style: GoogleFonts.roboto(
+                    fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 14),
+                  ),
+                ),
               ),
-              content: const Text('GetWidget is an open source library that comes with pre-built UI components.'),
+              content: Text(
+                'GetWidget is an open source library that comes with pre-built UI components.',
+                style: GoogleFonts.roboto(
+                  fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 14),
+                ),
+              ),
               buttonBar: GFButtonBar(
                 children: <Widget>[
                   GFButton(
@@ -141,7 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 Text(
                   'You have pushed the button this many times:',
-                  style: TextStyle(
+                  style: GoogleFonts.roboto(
                     fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 18),
                   ),
                 ),
@@ -149,8 +170,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   builder: (context, counterProvider, child) {
                     return Text(
                       '${counterProvider.count}',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: GoogleFonts.montserrat(
                         fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 36),
+                        fontWeight: FontWeight.w500,
                       ),
                     );
                   },
@@ -175,18 +197,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: GFListTile(
                   title: Text(
                     'Desktop Card Title',
-                    style: TextStyle(
+                    style: GoogleFonts.montserrat(
                       fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 20),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   subTitle: Text(
                     'Card Sub Title',
-                    style: TextStyle(
+                    style: GoogleFonts.roboto(
                       fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 14),
                     ),
                   ),
                 ),
-                content: const Text('GetWidget is an open source library that comes with pre-built UI components.'),
+                content: Text(
+                  'GetWidget is an open source library that comes with pre-built UI components.',
+                  style: GoogleFonts.roboto(
+                    fontSize: ResponsiveHelper.getAdaptiveFontSize(context, 14),
+                  ),
+                ),
                 buttonBar: GFButtonBar(
                   children: <Widget>[
                     GFButton(
