@@ -3,10 +3,10 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// A class for managing app-wide themes and styling for TierNerd
 class AppTheme {
-  // Core UI Palette - Primary color
-  static const Color primaryColor = Color(0xFF5D4A8C); // TierNerd purple
+  // Core UI Palette - Primary color (updated to match logo background exactly)
+  static const Color primaryColor = Color(0xFF614F92); // TierNerd logo purple
   static const Color primaryColorLight = Color(0xFF7E6BA1); // Lighter purple
-  static const Color primaryColorDark = Color(0xFF42346A); // Darker purple
+  static const Color primaryColorDark = Color(0xFF4B3D72); // Darker purple
 
   // Core UI Palette - Secondary/Accent color (changed from yellow to teal)
   static const Color accentColor = Color(0xFF5EC4B6); // Teal accent
