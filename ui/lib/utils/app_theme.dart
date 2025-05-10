@@ -3,23 +3,23 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// A class for managing app-wide themes and styling
 class AppTheme {
-  // Primary color and its variations
-  static const Color primaryColor = Color(0xFF6200EE);
-  static const Color primaryColorLight = Color(0xFF9E67E1);
-  static const Color primaryColorDark = Color(0xFF3700B3);
+  // Monochrome palette
+  static const Color primaryColor = Color(0xFF212121);
+  static const Color primaryColorLight = Color(0xFF484848);
+  static const Color primaryColorDark = Color(0xFF000000);
+
+  // Accent color for important elements
+  static const Color accentColor = Color(0xFF2196F3); // Blue
+  static const Color accentColorLight = Color(0xFF64B5F6);
+  static const Color accentColorDark = Color(0xFF1976D2);
   
-  // Accent/Secondary color and its variations  
-  static const Color accentColor = Color(0xFF03DAC5);
-  static const Color accentColorLight = Color(0xFF66FFF0);
-  static const Color accentColorDark = Color(0xFF018786);
-  
-  // Neutral colors
-  static const Color textColorPrimary = Color(0xFF212121);
-  static const Color textColorSecondary = Color(0xFF757575);
-  static const Color dividerColor = Color(0xFFBDBDBD);
-  static const Color backgroundColor = Color(0xFFF5F5F5);
-  static const Color surfaceColor = Color(0xFFFFFFFF);
-  static const Color errorColor = Color(0xFFB00020);
+  // Grayscale palette
+  static const Color textColorPrimary = Color(0xFF212121);     // Near black
+  static const Color textColorSecondary = Color(0xFF757575);   // Dark gray
+  static const Color dividerColor = Color(0xFFE0E0E0);         // Light gray
+  static const Color backgroundColor = Color(0xFFF5F5F5);      // Almost white
+  static const Color surfaceColor = Color(0xFFFFFFFF);         // Pure white
+  static const Color errorColor = Color(0xFFE53935);           // Red (only non-grayscale)
 
   /// Default text theme with Google Fonts
   static TextTheme get textTheme {
@@ -100,6 +100,10 @@ class AppTheme {
         error: errorColor,
         surface: surfaceColor,
         background: backgroundColor,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: textColorPrimary,
+        onBackground: textColorPrimary,
       ),
       scaffoldBackgroundColor: backgroundColor,
       textTheme: textTheme,
@@ -126,9 +130,10 @@ class AppTheme {
         ),
       ),
       cardTheme: CardTheme(
-        elevation: 2.0,
+        color: surfaceColor,
+        elevation: 1.0,  // Subtle elevation
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(8.0),  // Less rounded for minimalist look
         ),
         margin: const EdgeInsets.all(8.0),
       ),
@@ -164,16 +169,20 @@ class AppTheme {
         primary: primaryColorLight,
         secondary: accentColorLight,
         error: errorColor,
-        surface: Colors.grey[900]!,
-        background: Colors.grey[850]!,
+        surface: const Color(0xFF1E1E1E),      // Card/surface color
+        background: const Color(0xFF121212),   // Background color
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: Colors.white,
+        onBackground: Colors.white,
       ),
-      scaffoldBackgroundColor: Colors.grey[900],
+      scaffoldBackgroundColor: Color(0xFF121212), // Dark mode background
       textTheme: textTheme.apply(
         bodyColor: Colors.white,
         displayColor: Colors.white,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: Color(0xFF1E1E1E), // Slightly lighter than background
         elevation: 0.0,
         titleTextStyle: textTheme.titleLarge?.copyWith(
           color: Colors.white, 
@@ -195,10 +204,10 @@ class AppTheme {
         ),
       ),
       cardTheme: CardTheme(
-        color: Colors.grey[800],
-        elevation: 2.0,
+        color: const Color(0xFF1E1E1E),
+        elevation: 1.0,  // Subtle elevation
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(8.0),  // Less rounded for minimalist look
         ),
         margin: const EdgeInsets.all(8.0),
       ),
