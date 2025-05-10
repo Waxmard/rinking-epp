@@ -43,19 +43,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final isSmallScreen = ResponsiveHelper.isMobile(context);
-    
+
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).colorScheme.surface,
-              Theme.of(context).colorScheme.background,
-            ],
-          ),
-        ),
+        color: Color(0xFF5B4B89), // Exact logo background color
         child: isSmallScreen
             ? _buildMobileLayout(context)
             : _buildDesktopLayout(context),
@@ -105,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           Expanded(
             flex: 3,
             child: Container(
-              color: Theme.of(context).colorScheme.primary,
+              // Already using logo background color
               child: Center(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -151,21 +142,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildLogo({double size = 80}) {
+  Widget _buildLogo({double size = 120}) {
     return Hero(
       tag: 'app_logo',
-      child: Container(
+      child: Image.asset(
+        'assets/images/tier-nerd-logo-0.png',
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondary,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          Icons.alternate_email,
-          size: size * 0.5,
-          color: Colors.white,
-        ),
+        fit: BoxFit.contain,
       ),
     );
   }
@@ -175,19 +159,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome Back',
+          'Welcome to TierNerd',
           style: GoogleFonts.montserrat(
             fontSize: isLarge ? 40 : 28,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Colors.white,
           ),
         ),
         SizedBox(height: isLarge ? 12 : 8),
         Text(
-          'Sign in to continue',
+          'Sign in to start ranking',
           style: GoogleFonts.roboto(
             fontSize: isLarge ? 18 : 16,
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+            color: Colors.white.withOpacity(0.8),
           ),
         ),
       ],
@@ -198,13 +182,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     return TextField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
+      style: TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: 'Email',
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
         hintText: 'name@example.com',
-        prefixIcon: const Icon(Icons.email_outlined),
-        border: OutlineInputBorder(
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        prefixIcon: const Icon(Icons.email_outlined, color: Colors.white),
+        enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.4)),
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.white, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
       ),
     );
   }
@@ -213,13 +207,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     return TextField(
       controller: _passwordController,
       obscureText: !_passwordVisible,
+      style: TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: 'Password',
+        labelStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
         hintText: '••••••••',
-        prefixIcon: const Icon(Icons.lock_outline),
+        hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+        prefixIcon: const Icon(Icons.lock_outline, color: Colors.white),
         suffixIcon: IconButton(
           icon: Icon(
             _passwordVisible ? Icons.visibility : Icons.visibility_off,
+            color: Colors.white,
           ),
           onPressed: () {
             setState(() {
@@ -227,9 +225,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             });
           },
         ),
-        border: OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.4)),
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Colors.white, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.1),
       ),
     );
   }
@@ -242,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           // Handle forgot password
         },
         style: TextButton.styleFrom(
-          foregroundColor: Theme.of(context).colorScheme.secondary,
+          foregroundColor: Colors.white,
           padding: EdgeInsets.zero,
           minimumSize: const Size(0, 36),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -258,12 +263,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         // Handle login
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.secondary,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Color(0xFF5B4B89),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
+        elevation: 0,
       ),
       child: Text(
         'SIGN IN',
@@ -283,7 +289,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         Text(
           "Don't have an account? ",
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
+            color: Colors.white.withOpacity(0.8),
           ),
         ),
         GestureDetector(
@@ -293,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           child: Text(
             'Sign Up',
             style: TextStyle(
-              color: Theme.of(context).colorScheme.secondary,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),

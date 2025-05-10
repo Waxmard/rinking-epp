@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => CounterProvider(),
       child: MaterialApp(
-        title: 'Rinking App',
+        title: 'TierNerd',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system, // Uses device theme settings
