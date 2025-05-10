@@ -1,6 +1,6 @@
-# Ranking App Backend (FastAPI)
+# TierNerd Backend (FastAPI)
 
-This directory contains the FastAPI backend for the Ranking App.
+This directory contains the FastAPI backend for TierNerd.
 
 ## Project Overview
 
@@ -33,7 +33,7 @@ The backend provides a RESTful API for:
 
 - Install dependencies: `uv pip install -e .`
 
-- Create a PostgreSQL database named `ranking_app`
+- Create a PostgreSQL database named `tiernerd`
 
 ## Running the Application
 
@@ -66,3 +66,18 @@ The ranking algorithm is implemented in `app/utils/algorithm.py` and works by:
 1. Presenting users with binary comparisons between items
 2. Using the results to determine each item's position
 3. Converting positions to ratings (10.0 for top item, 0.1 for bottom)
+4. Mapping numeric ratings to tier rankings (S, A, B, C, D, E, F)
+
+### Tier Classification System
+
+Numeric ratings are mapped to tiers using the following ranges:
+
+| Tier | Rating Range |
+|------|-------------|
+| S    | 9.0 - 10.0   |
+| A    | 7.5 - 8.9    |
+| B    | 6.0 - 7.4    |
+| C    | 4.5 - 5.9    |
+| D    | 3.0 - 4.4    |
+| E    | 1.5 - 2.9    |
+| F    | 0.1 - 1.4    |
