@@ -65,9 +65,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 50),
                 _buildLogo(),
-                const SizedBox(height: 48),
+                const SizedBox(height: 40),
                 _buildTitle(),
                 const SizedBox(height: 32),
                 _buildEmailField(),
@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               child: Center(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: _buildLogo(size: 200),
+                  child: _buildLogo(size: 260),
                 ),
               ),
             ),
@@ -142,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildLogo({double size = 120}) {
+  Widget _buildLogo({double size = 230}) {
     return Hero(
       tag: 'app_logo',
       child: Image.asset(
@@ -159,21 +159,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome to TierNerd',
+          'Let\'s Get Ranking',
           style: GoogleFonts.montserrat(
-            fontSize: isLarge ? 40 : 28,
+            fontSize: isLarge ? 36 : 28,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
-        SizedBox(height: isLarge ? 12 : 8),
-        Text(
-          'Sign in to start ranking',
-          style: GoogleFonts.roboto(
-            fontSize: isLarge ? 18 : 16,
-            color: Colors.white.withOpacity(0.8),
-          ),
-        ),
+        // SizedBox(height: isLarge ? 12 : 8),
       ],
     );
   }
