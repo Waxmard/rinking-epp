@@ -60,6 +60,7 @@ class Item(Base):
     image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     position: Mapped[Optional[int]] = mapped_column(nullable=True)
     rating: Mapped[Optional[float]] = mapped_column(nullable=True)
+    tier: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(
         server_default=func.now(), onupdate=func.now()

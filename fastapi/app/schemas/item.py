@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, Field, HttpUrl
@@ -29,6 +30,19 @@ class ItemUpdate(BaseModel):
     image_url: Optional[HttpUrl] = None
 
 
+# Tier ranking enum
+class TierRank(str, Enum):
+    """Enum for tier rankings."""
+
+    S = "S"
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    F = "F"
+
+
 # Properties to return to client
 class Item(ItemBase):
     """Schema for item response."""
@@ -37,6 +51,7 @@ class Item(ItemBase):
     list_id: int
     position: Optional[int] = None
     rating: Optional[float] = None
+    tier: Optional[TierRank] = None
     created_at: datetime
     updated_at: datetime
 

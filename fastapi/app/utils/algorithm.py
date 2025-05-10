@@ -1,11 +1,11 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.sql import func
 
 from app.db.models import Item
-from app.schemas.item import NextComparison
+from app.schemas.item import NextComparison, TierRank
 
 
 async def find_next_comparison_pair(db: AsyncSession, list_id: int) -> NextComparison:
@@ -146,6 +146,9 @@ async def update_rankings(
             else:
                 item.rating = 10.0
 
+            # Set tier based on rating
+            item.tier = get_tier_from_rating(item.rating)
+
     # Save changes
     await db.commit()
 
@@ -216,3 +219,31 @@ async def get_next_items_to_compare(
                 return current_item, sorted_items[current_idx + 1]
             else:
                 return current_item, sorted_items[current_idx - 1]
+
+
+def get_tier_from_rating(rating: float) -> str:
+    """
+    Convert a numeric rating (0.1-10.0) to a tier ranking (S-F).
+
+    Args:
+        rating: A float between 0.1 and 10.0 representing the item's rating
+
+    Returns:
+        A string representing the tier (S, A, B, C, D, E, or F)
+    """
+    tier_ranges = {
+        'S': (9.0, 10.0),
+        'A': (7.5, 8.9),
+        'B': (6.0, 7.4),
+        'C': (4.5, 5.9),
+        'D': (3.0, 4.4),
+        'E': (1.5, 2.9),
+        'F': (0.1, 1.4)
+    }
+
+    for tier, (min_val, max_val) in tier_ranges.items():
+        if min_val <= rating <= max_val:
+            return tier
+
+    # Default fallback (shouldn't happen with ratings 0.1-10.0)
+    return 'C'

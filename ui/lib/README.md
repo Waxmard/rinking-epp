@@ -1,4 +1,4 @@
-# Flutter Project Setup
+# TierNerd Flutter UI
 
 This Flutter project is set up with the following libraries and frameworks:
 
@@ -21,11 +21,24 @@ This Flutter project is set up with the following libraries and frameworks:
   - `utils/`: Utility classes including ResponsiveHelper
   - `main.dart`: Entry point with responsive configuration
 
-## Usage Examples
-- Counter app example demonstrates:
-  - Provider state management
-  - GetWidget components
-  - Responsive layout with different designs for mobile/tablet/desktop
+## TierNerd Features
+- The TierNerd UI provides:
+  - User authentication and account management
+  - List creation and management
+  - Item addition with images and descriptions
+  - Intuitive comparison interface for ranking items
+  - Beautiful tier-based visualization (S, A, B, C, D, E, F tiers)
+  - Responsive design for mobile, tablet, and desktop
+
+## Tier Visualization
+TierNerd presents rankings in the familiar S-F tier system:
+- **S Tier**: Exceptional items (colored in gold/yellow)
+- **A Tier**: Excellent items (colored in green)
+- **B Tier**: Good items (colored in light blue)
+- **C Tier**: Average items (colored in blue)
+- **D Tier**: Below average items (colored in purple)
+- **E Tier**: Poor items (colored in red)
+- **F Tier**: Lowest ranked items (colored in gray)
 
 ## Getting Started
 1. Install dependencies: `flutter pub get`
