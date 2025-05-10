@@ -16,6 +16,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   late Animation<double> _fadeAnimation;
   bool _passwordVisible = false;
 
+  // List of login phrases
+  final List<String> _loginPhrases = [
+    'Time to Create Tiers',
+    'Rank Your Favorites',
+    'Let\'s Make Some Lists',
+    'Ready to Rank?',
+    'Start Your Tier Lists',
+  ];
+
+  // No need to track last phrase anymore
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +41,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ),
     );
     _animationController.forward();
+  }
+
+  // Method to get a random phrase that's different from the last one
+  String _getRandomPhrase() {
+    // Simply pick a random phrase from the list - no need to avoid repeats
+    final random = DateTime.now().millisecondsSinceEpoch % _loginPhrases.length;
+    return _loginPhrases[random];
   }
 
   @override
@@ -155,11 +173,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildTitle({bool isLarge = false}) {
+    // Get a new random phrase each time the widget rebuilds
+    final phrase = _getRandomPhrase();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Let\'s Get Ranking',
+          phrase,
           style: GoogleFonts.montserrat(
             fontSize: isLarge ? 36 : 28,
             fontWeight: FontWeight.bold,
