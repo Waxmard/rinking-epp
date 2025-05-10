@@ -16,16 +16,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   late Animation<double> _fadeAnimation;
   bool _passwordVisible = false;
 
+  // Current phrase to display - initialized once and only changes on hot reload
+  late String _currentPhrase;
+
   // List of login phrases
   final List<String> _loginPhrases = [
     'Time to Create Tiers',
     'Rank Your Favorites',
     'Let\'s Make Some Lists',
     'Ready to Rank?',
-    'Start Your Tier Lists',
   ];
-
-  // No need to track last phrase anymore
 
   @override
   void initState() {
@@ -41,6 +41,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ),
     );
     _animationController.forward();
+
+    // Initialize the current phrase just once when the screen loads
+    _currentPhrase = _getRandomPhrase();
   }
 
   // Method to get a random phrase that's different from the last one
@@ -173,14 +176,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildTitle({bool isLarge = false}) {
-    // Get a new random phrase each time the widget rebuilds
-    final phrase = _getRandomPhrase();
-
+    // Use the phrase that was set once during initialization
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          phrase,
+          _currentPhrase,
           style: GoogleFonts.montserrat(
             fontSize: isLarge ? 36 : 28,
             fontWeight: FontWeight.bold,
