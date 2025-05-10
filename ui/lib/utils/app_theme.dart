@@ -8,10 +8,10 @@ class AppTheme {
   static const Color primaryColorLight = Color(0xFF484848);
   static const Color primaryColorDark = Color(0xFF000000);
 
-  // Accent color for important elements
-  static const Color accentColor = Color(0xFF2196F3); // Blue
-  static const Color accentColorLight = Color(0xFF64B5F6);
-  static const Color accentColorDark = Color(0xFF1976D2);
+  // Accent color for important elements - muted/faded purple
+  static const Color accentColor = Color(0xFF9575CD); // Muted purple
+  static const Color accentColorLight = Color(0xFFB39DDB); // Light muted purple
+  static const Color accentColorDark = Color(0xFF7E57C2); // Darker muted purple
   
   // Grayscale palette
   static const Color textColorPrimary = Color(0xFF212121);     // Near black
