@@ -151,21 +151,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildLogo({double size = 80}) {
+  Widget _buildLogo({double size = 120}) {
     return Hero(
       tag: 'app_logo',
-      child: Container(
+      child: Image.asset(
+        'assets/images/tier-nerd-logo-0.png',
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.secondary,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          Icons.alternate_email,
-          size: size * 0.5,
-          color: Colors.white,
-        ),
+        fit: BoxFit.contain,
       ),
     );
   }
@@ -175,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome Back',
+          'Welcome to TierNerd',
           style: GoogleFonts.montserrat(
             fontSize: isLarge ? 40 : 28,
             fontWeight: FontWeight.bold,
@@ -184,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         ),
         SizedBox(height: isLarge ? 12 : 8),
         Text(
-          'Sign in to continue',
+          'Sign in to start ranking',
           style: GoogleFonts.roboto(
             fontSize: isLarge ? 18 : 16,
             color: Theme.of(context).colorScheme.onBackground.withOpacity(0.7),
