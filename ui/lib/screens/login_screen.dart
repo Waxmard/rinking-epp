@@ -46,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     return Scaffold(
       body: Container(
-        color: Color(0xFF614F92), // Exact logo background color
+        color: Color(0xFF5B4B89), // Exact logo background color
         child: isSmallScreen
             ? _buildMobileLayout(context)
             : _buildDesktopLayout(context),
@@ -264,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF614F92),
+        foregroundColor: Color(0xFF5B4B89),
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),

@@ -4,9 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 /// A class for managing app-wide themes and styling for TierNerd
 class AppTheme {
   // Core UI Palette - Primary color (updated to match logo background exactly)
-  static const Color primaryColor = Color(0xFF614F92); // TierNerd logo purple
-  static const Color primaryColorLight = Color(0xFF7E6BA1); // Lighter purple
-  static const Color primaryColorDark = Color(0xFF4B3D72); // Darker purple
+  static const Color primaryColor = Color(0xFF5B4B89); // TierNerd logo purple
+  static const Color primaryColorLight = Color(0xFF7969A3); // Lighter purple
+  static const Color primaryColorDark = Color(0xFF463A6A); // Darker purple
 
   // Core UI Palette - Secondary/Accent color (changed from yellow to teal)
   static const Color accentColor = Color(0xFF5EC4B6); // Teal accent
@@ -178,14 +178,14 @@ class AppTheme {
         primary: primaryColor,
         secondary: accentColor,
         error: errorColor,
-        surface: Color(0xFF2D2440),      // Dark purple surface
-        background: Color(0xFF1E1833),   // Darker purple background
+        surface: Color(0xFF473A71),      // Dark purple surface
+        background: Color(0xFF382D5C),   // Darker purple background
         onPrimary: Colors.white,
         onSecondary: Colors.black,       // Black on yellow for contrast
         onSurface: Colors.white,
         onBackground: Colors.white,
       ),
-      scaffoldBackgroundColor: Color(0xFF1E1833), // Dark purple background
+      scaffoldBackgroundColor: Color(0xFF382D5C), // Dark purple background
       textTheme: textTheme.apply(
         bodyColor: Colors.white,
         displayColor: Colors.white,
@@ -213,7 +213,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardTheme(
-        color: Color(0xFF2D2440), // Dark purple card
+        color: Color(0xFF473A71), // Dark purple card
         elevation: 1.0,  // Subtle elevation
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),  // Less rounded for minimalist look
