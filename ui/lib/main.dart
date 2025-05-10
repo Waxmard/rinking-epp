@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'providers/counter_provider.dart';
 import 'screens/login_screen.dart';
 import 'utils/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  // Load environment variables before running the app
+  await dotenv.load(fileName: '.env');
+
   runApp(const MyApp());
 }
 

@@ -38,6 +38,14 @@ dependencies:
   provider: ^6.1.1
   google_fonts: ^6.1.0
 
+  # Authentication
+  google_sign_in: ^6.2.1
+  http: ^1.2.0
+  flutter_secure_storage: ^9.0.0
+
+  # Environment configuration
+  flutter_dotenv: ^5.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
