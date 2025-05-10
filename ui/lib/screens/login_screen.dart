@@ -33,9 +33,18 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   // List of login phrases
   final List<String> _loginPhrases = [
     'Time to Create Tiers',
-    'Rank Your Favorites',
     'Let\'s Make Some Lists',
     'Ready to Rank?',
+    'Face Off Your Favorites',
+    'What\'s Really Number One?',
+    'Your Lists, Perfected',
+    'Organize Your Opinions',
+    'Reveal Your Rankings',
+    'Time For A Tier Check',
+    'Let The Ranking Begin',
+    'Unleash Your Inner Critic',
+    'The Nerdy Way To Rank',
+    'Your Tier Journey Awaits',
   ];
 
   @override
@@ -72,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     _phraseAnimationController.value = 1.0; // Start with first phrase fully visible
 
     // Set up timer to change phrases every 3 seconds
-    _phraseTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+    _phraseTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       _changePhrase();
     });
   }
@@ -250,12 +259,20 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           builder: (context, child) {
             return Opacity(
               opacity: _phraseOpacity.value,
-              child: Text(
-                _currentPhrase,
-                style: GoogleFonts.montserrat(
-                  fontSize: isLarge ? 36 : 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              child: Container(
+                width: isLarge ? 500 : double.infinity, // Control width based on screen size
+                height: isLarge ? 40 : 30, // Fixed height for consistent spacing
+                child: FittedBox(
+                  fit: BoxFit.scaleDown, // Scale down to fit the space
+                  alignment: Alignment.centerLeft, // Align left
+                  child: Text(
+                    _currentPhrase,
+                    style: GoogleFonts.montserrat(
+                      fontSize: isLarge ? 28 : 22, // Starting font size (will scale down if needed)
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             );
