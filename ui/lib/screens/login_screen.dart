@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../utils/responsive_helper.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -105,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     });
   }
 
-  // Method to get a random phrase that's different from the last one
+  // Update title text shown on login screen
   String _getRandomPhrase() {
     // If we only have one phrase, just return it
     if (_loginPhrases.length <= 1) {
@@ -160,21 +162,14 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 50),
-                _buildLogo(),
-                const SizedBox(height: 40),
-                _buildTitle(),
-                const SizedBox(height: 32),
-                _buildEmailField(),
-                const SizedBox(height: 16),
-                _buildPasswordField(),
-                const SizedBox(height: 8),
-                _buildForgotPassword(),
-                const SizedBox(height: 32),
-                _buildLoginButton(),
-                const SizedBox(height: 24),
-                _buildSignUpText(),
+                const SizedBox(height: 80),
+                _buildLogo(size: 200), // Smaller logo for better fit
                 const SizedBox(height: 60),
+                _buildTitle(),
+                const SizedBox(height: 50),
+                _buildLoginButton(),
+                const SizedBox(height: 40),
+                _buildSignUpText(),
               ],
             ),
           ),
@@ -187,26 +182,25 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     return SafeArea(
       child: Row(
         children: [
-          // Left side with image or pattern (30% width)
+          // Left side with logo (40% width)
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Container(
-              // Already using logo background color
               child: Center(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: _buildLogo(size: 260),
+                  child: _buildLogo(size: 240),
                 ),
               ),
             ),
           ),
-          // Right side with login form (70% width)
+          // Right side with login form (60% width)
           Expanded(
-            flex: 7,
+            flex: 6,
             child: SingleChildScrollView(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 80),
-                constraints: const BoxConstraints(maxWidth: 800),
+                constraints: const BoxConstraints(maxWidth: 600),
                 child: FadeTransition(
                   opacity: _fadeAnimation,
                   child: Column(
@@ -215,15 +209,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     children: [
                       const SizedBox(height: 100),
                       _buildTitle(isLarge: true),
-                      const SizedBox(height: 48),
-                      _buildEmailField(),
-                      const SizedBox(height: 24),
-                      _buildPasswordField(),
-                      const SizedBox(height: 12),
-                      _buildForgotPassword(),
-                      const SizedBox(height: 48),
+                      const SizedBox(height: 60),
                       _buildLoginButton(),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 40),
                       _buildSignUpText(),
                       const SizedBox(height: 100),
                     ],
@@ -237,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildLogo({double size = 300}) {
+  Widget _buildLogo({double size = 200}) {
     return Hero(
       tag: 'app_logo',
       child: Image.asset(
@@ -363,27 +351,74 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   }
 
   Widget _buildLoginButton() {
-    return ElevatedButton(
-      onPressed: () {
-        // Handle login
+    return _buildGoogleSignInButton();
+  }
+
+  Widget _buildGoogleSignInButton() {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, child) {
+        return SizedBox(
+          width: double.infinity, // Full width
+          height: 50,
+          child: ElevatedButton.icon(
+            onPressed: auth.isLoading
+                ? null
+                : () async {
+                    print("Google sign-in button pressed");
+                    try {
+                      final success = await auth.signInWithGoogle();
+                      if (success) {
+                        // TODO: Navigate to home screen
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Successfully signed in!')),
+                        );
+                      } else if (auth.error != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: ${auth.error}')),
+                        );
+                      }
+                    } catch (e) {
+                      print("Error during sign in: $e");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    }
+                  },
+            icon: auth.isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                    ),
+                  )
+                : Image.asset(
+                    'assets/images/google_logo.png',
+                    width: 24,
+                    height: 24,
+                  ),
+            label: Text(
+              auth.isLoading ? 'Signing in...' : 'Sign in with Google',
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black87,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: const BorderSide(color: Colors.black12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        );
       },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF5B4B89),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        elevation: 0,
-      ),
-      child: Text(
-        'SIGN IN',
-        style: GoogleFonts.montserrat(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
-        ),
-      ),
     );
   }
 
