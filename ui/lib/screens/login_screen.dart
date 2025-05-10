@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/responsive_helper.dart';
@@ -9,15 +10,25 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   bool _passwordVisible = false;
 
-  // Current phrase to display - initialized once and only changes on hot reload
-  late String _currentPhrase;
+  // Animation controllers for phrase transitions
+  late AnimationController _phraseAnimationController;
+  late Animation<double> _phraseOpacity;
+
+  // Current phrase to display
+  String _currentPhrase = '';
+
+  // Track previous phrase to avoid repeats
+  String? _previousPhrase;
+
+  // Timer for phrase changes
+  Timer? _phraseTimer;
 
   // List of login phrases
   final List<String> _loginPhrases = [
@@ -30,6 +41,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
+
+    // Screen fade-in animation
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -42,15 +55,65 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
     _animationController.forward();
 
-    // Initialize the current phrase just once when the screen loads
-    _currentPhrase = _getRandomPhrase();
+    // Phrase animation setup
+    _phraseAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _phraseOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _phraseAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Initialize the current phrase and make it visible immediately
+    _updatePhrase();
+    _phraseAnimationController.value = 1.0; // Start with first phrase fully visible
+
+    // Set up timer to change phrases every 3 seconds
+    _phraseTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      _changePhrase();
+    });
+  }
+
+  // Method to handle the phrase transition
+  void _changePhrase() {
+    // Start fade out
+    _phraseAnimationController.reverse().then((_) {
+      // When fade out is complete, update the phrase
+      _updatePhrase();
+      // Start fade in
+      _phraseAnimationController.forward();
+    });
+  }
+
+  // Update the current phrase
+  void _updatePhrase() {
+    setState(() {
+      _currentPhrase = _getRandomPhrase();
+      _previousPhrase = _currentPhrase; // Store for next time
+    });
   }
 
   // Method to get a random phrase that's different from the last one
   String _getRandomPhrase() {
-    // Simply pick a random phrase from the list - no need to avoid repeats
-    final random = DateTime.now().millisecondsSinceEpoch % _loginPhrases.length;
-    return _loginPhrases[random];
+    // If we only have one phrase, just return it
+    if (_loginPhrases.length <= 1) {
+      return _loginPhrases[0];
+    }
+
+    // Create a copy of the phrases list
+    final availablePhrases = List<String>.from(_loginPhrases);
+
+    // Remove previous phrase to avoid repetition
+    if (_previousPhrase != null) {
+      availablePhrases.remove(_previousPhrase);
+    }
+
+    // Pick a random phrase from the remaining ones
+    final random = DateTime.now().millisecondsSinceEpoch % availablePhrases.length;
+    return availablePhrases[random];
   }
 
   @override
@@ -58,6 +121,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _emailController.dispose();
     _passwordController.dispose();
     _animationController.dispose();
+    _phraseAnimationController.dispose();
+    _phraseTimer?.cancel();
     super.dispose();
   }
 
@@ -163,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildLogo({double size = 230}) {
+  Widget _buildLogo({double size = 300}) {
     return Hero(
       tag: 'app_logo',
       child: Image.asset(
@@ -176,17 +241,25 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _buildTitle({bool isLarge = false}) {
-    // Use the phrase that was set once during initialization
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          _currentPhrase,
-          style: GoogleFonts.montserrat(
-            fontSize: isLarge ? 36 : 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        // Animate the phrase with fade in/out
+        AnimatedBuilder(
+          animation: _phraseOpacity,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _phraseOpacity.value,
+              child: Text(
+                _currentPhrase,
+                style: GoogleFonts.montserrat(
+                  fontSize: isLarge ? 36 : 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            );
+          },
         ),
         // SizedBox(height: isLarge ? 12 : 8),
       ],
