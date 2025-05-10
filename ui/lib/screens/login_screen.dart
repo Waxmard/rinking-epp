@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/responsive_helper.dart';
+import '../utils/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -142,8 +143,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     final isSmallScreen = ResponsiveHelper.isMobile(context);
 
     return Scaffold(
+      backgroundColor: AppTheme.primaryColor, // Use the theme color
       body: Container(
-        color: Color(0xFF5B4B89), // Exact logo background color
+        color: AppTheme.primaryColor, // Use theme color
         child: isSmallScreen
             ? _buildMobileLayout(context)
             : _buildDesktopLayout(context),
@@ -359,7 +361,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       builder: (context, auth, child) {
         return SizedBox(
           width: double.infinity, // Full width
-          height: 50,
+          height: 60, // Increased from 50 to 60
           child: ElevatedButton.icon(
             onPressed: auth.isLoading
                 ? null
@@ -386,8 +388,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   },
             icon: auth.isLoading
                 ? const SizedBox(
-                    width: 24,
-                    height: 24,
+                    width: 28, // Slightly larger
+                    height: 28, // Slightly larger
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
@@ -395,26 +397,26 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   )
                 : Image.asset(
                     'assets/images/google_logo.png',
-                    width: 24,
-                    height: 24,
+                    width: 28, // Larger from 24 to 28
+                    height: 28, // Larger from 24 to 28
                   ),
             label: Text(
               auth.isLoading ? 'Signing in...' : 'Sign in with Google',
               style: const TextStyle(
                 color: Colors.black87,
-                fontSize: 16,
+                fontSize: 18, // Larger from 16 to 18
                 fontWeight: FontWeight.w500,
               ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.black87,
-              elevation: 0,
+              elevation: 1, // Slight elevation for better visibility
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
                 side: const BorderSide(color: Colors.black12),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Increased padding
             ),
           ),
         );
