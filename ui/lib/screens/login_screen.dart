@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/responsive_helper.dart';
@@ -9,16 +10,48 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   bool _passwordVisible = false;
 
+  // Animation controllers for phrase transitions
+  late AnimationController _phraseAnimationController;
+  late Animation<double> _phraseOpacity;
+
+  // Current phrase to display
+  String _currentPhrase = '';
+
+  // Track previous phrase to avoid repeats
+  String? _previousPhrase;
+
+  // Timer for phrase changes
+  Timer? _phraseTimer;
+
+  // List of login phrases
+  final List<String> _loginPhrases = [
+    'Time to Create Tiers',
+    'Let\'s Make Some Lists',
+    'Ready to Rank?',
+    'Face Off Your Favorites',
+    'What\'s Really Number One?',
+    'Your Lists, Perfected',
+    'Organize Your Opinions',
+    'Reveal Your Rankings',
+    'Time For A Tier Check',
+    'Let The Ranking Begin',
+    'Unleash Your Inner Critic',
+    'The Nerdy Way To Rank',
+    'Your Tier Journey Awaits',
+  ];
+
   @override
   void initState() {
     super.initState();
+
+    // Screen fade-in animation
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -30,6 +63,66 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ),
     );
     _animationController.forward();
+
+    // Phrase animation setup
+    _phraseAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _phraseOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _phraseAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Initialize the current phrase and make it visible immediately
+    _updatePhrase();
+    _phraseAnimationController.value = 1.0; // Start with first phrase fully visible
+
+    // Set up timer to change phrases every 3 seconds
+    _phraseTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _changePhrase();
+    });
+  }
+
+  // Method to handle the phrase transition
+  void _changePhrase() {
+    // Start fade out
+    _phraseAnimationController.reverse().then((_) {
+      // When fade out is complete, update the phrase
+      _updatePhrase();
+      // Start fade in
+      _phraseAnimationController.forward();
+    });
+  }
+
+  // Update the current phrase
+  void _updatePhrase() {
+    setState(() {
+      _currentPhrase = _getRandomPhrase();
+      _previousPhrase = _currentPhrase; // Store for next time
+    });
+  }
+
+  // Method to get a random phrase that's different from the last one
+  String _getRandomPhrase() {
+    // If we only have one phrase, just return it
+    if (_loginPhrases.length <= 1) {
+      return _loginPhrases[0];
+    }
+
+    // Create a copy of the phrases list
+    final availablePhrases = List<String>.from(_loginPhrases);
+
+    // Remove previous phrase to avoid repetition
+    if (_previousPhrase != null) {
+      availablePhrases.remove(_previousPhrase);
+    }
+
+    // Pick a random phrase from the remaining ones
+    final random = DateTime.now().millisecondsSinceEpoch % availablePhrases.length;
+    return availablePhrases[random];
   }
 
   @override
@@ -37,6 +130,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _emailController.dispose();
     _passwordController.dispose();
     _animationController.dispose();
+    _phraseAnimationController.dispose();
+    _phraseTimer?.cancel();
     super.dispose();
   }
 
@@ -65,9 +160,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 50),
                 _buildLogo(),
-                const SizedBox(height: 48),
+                const SizedBox(height: 40),
                 _buildTitle(),
                 const SizedBox(height: 32),
                 _buildEmailField(),
@@ -100,7 +195,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               child: Center(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
-                  child: _buildLogo(size: 200),
+                  child: _buildLogo(size: 260),
                 ),
               ),
             ),
@@ -142,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _buildLogo({double size = 120}) {
+  Widget _buildLogo({double size = 300}) {
     return Hero(
       tag: 'app_logo',
       child: Image.asset(
@@ -158,22 +253,32 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Welcome to TierNerd',
-          style: GoogleFonts.montserrat(
-            fontSize: isLarge ? 40 : 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        // Animate the phrase with fade in/out
+        AnimatedBuilder(
+          animation: _phraseOpacity,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _phraseOpacity.value,
+              child: Container(
+                width: isLarge ? 500 : double.infinity, // Control width based on screen size
+                height: isLarge ? 40 : 30, // Fixed height for consistent spacing
+                child: FittedBox(
+                  fit: BoxFit.scaleDown, // Scale down to fit the space
+                  alignment: Alignment.centerLeft, // Align left
+                  child: Text(
+                    _currentPhrase,
+                    style: GoogleFonts.montserrat(
+                      fontSize: isLarge ? 28 : 22, // Starting font size (will scale down if needed)
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
-        SizedBox(height: isLarge ? 12 : 8),
-        Text(
-          'Sign in to start ranking',
-          style: GoogleFonts.roboto(
-            fontSize: isLarge ? 18 : 16,
-            color: Colors.white.withOpacity(0.8),
-          ),
-        ),
+        // SizedBox(height: isLarge ? 12 : 8),
       ],
     );
   }
