@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:math' show sin;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../utils/responsive_helper.dart';
+import '../utils/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,6 +24,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   // Animation controllers for phrase transitions
   late AnimationController _phraseAnimationController;
   late Animation<double> _phraseOpacity;
+  
+  // Animation for floating elements
+  late AnimationController _floatingElementController;
+  late Animation<double> _floatingAnimation;
 
   // Current phrase to display
   String _currentPhrase = '';
@@ -76,11 +84,24 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       ),
     );
 
+    // Floating elements animation setup
+    _floatingElementController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    _floatingAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _floatingElementController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    _floatingElementController.repeat(reverse: true);
+
     // Initialize the current phrase and make it visible immediately
     _updatePhrase();
     _phraseAnimationController.value = 1.0; // Start with first phrase fully visible
 
-    // Set up timer to change phrases every 3 seconds
+    // Set up timer to change phrases every 5 seconds
     _phraseTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       _changePhrase();
     });
@@ -105,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     });
   }
 
-  // Method to get a random phrase that's different from the last one
+  // Update title text shown on login screen
   String _getRandomPhrase() {
     // If we only have one phrase, just return it
     if (_loginPhrases.length <= 1) {
@@ -131,6 +152,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     _passwordController.dispose();
     _animationController.dispose();
     _phraseAnimationController.dispose();
+    _floatingElementController.dispose();
     _phraseTimer?.cancel();
     super.dispose();
   }
@@ -140,8 +162,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     final isSmallScreen = ResponsiveHelper.isMobile(context);
 
     return Scaffold(
+      backgroundColor: AppTheme.primaryColor, // Use the theme color
       body: Container(
-        color: Color(0xFF5B4B89), // Exact logo background color
+        color: AppTheme.primaryColor, // Use theme color
         child: isSmallScreen
             ? _buildMobileLayout(context)
             : _buildDesktopLayout(context),
@@ -151,33 +174,79 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
   Widget _buildMobileLayout(BuildContext context) {
     return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 50),
-                _buildLogo(),
-                const SizedBox(height: 40),
-                _buildTitle(),
-                const SizedBox(height: 32),
-                _buildEmailField(),
-                const SizedBox(height: 16),
-                _buildPasswordField(),
-                const SizedBox(height: 8),
-                _buildForgotPassword(),
-                const SizedBox(height: 32),
-                _buildLoginButton(),
-                const SizedBox(height: 24),
-                _buildSignUpText(),
-                const SizedBox(height: 60),
-              ],
-            ),
+      child: Container(
+        decoration: BoxDecoration(
+          // Add subtle gradient background
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppTheme.primaryColor,
+              AppTheme.primaryColor.withOpacity(0.8),
+            ],
           ),
+        ),
+        child: Stack(
+          children: [
+            // Add decorative background elements
+            Positioned(
+              top: -50,
+              right: -50,
+              child: Opacity(
+                opacity: 0.1,
+                child: Container(
+                  height: 200,
+                  width: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -80,
+              left: -80,
+              child: Opacity(
+                opacity: 0.08,
+                child: Container(
+                  height: 250,
+                  width: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            // Add animated floating elements
+            _buildAnimatedFloatingElements(),
+            // Main content
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 60),
+                      _buildLogo(size: 180), // Slightly smaller logo
+                      const SizedBox(height: 40),
+                      _buildTitle(),
+                      const SizedBox(height: 50),
+                      _buildLoginButton(),
+                      const SizedBox(height: 30),
+                      _buildSignUpText(),
+                      const SizedBox(height: 40),
+                      _buildAppVersion(), // Add version number
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -185,59 +254,167 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
   Widget _buildDesktopLayout(BuildContext context) {
     return SafeArea(
-      child: Row(
-        children: [
-          // Left side with image or pattern (30% width)
-          Expanded(
-            flex: 3,
-            child: Container(
-              // Already using logo background color
-              child: Center(
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: _buildLogo(size: 260),
-                ),
-              ),
-            ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              AppTheme.primaryColor.withOpacity(0.9),
+              AppTheme.primaryColor,
+            ],
           ),
-          // Right side with login form (70% width)
-          Expanded(
-            flex: 7,
-            child: SingleChildScrollView(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 80),
-                constraints: const BoxConstraints(maxWidth: 800),
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 100),
-                      _buildTitle(isLarge: true),
-                      const SizedBox(height: 48),
-                      _buildEmailField(),
-                      const SizedBox(height: 24),
-                      _buildPasswordField(),
-                      const SizedBox(height: 12),
-                      _buildForgotPassword(),
-                      const SizedBox(height: 48),
-                      _buildLoginButton(),
-                      const SizedBox(height: 32),
-                      _buildSignUpText(),
-                      const SizedBox(height: 100),
-                    ],
+        ),
+        child: Stack(
+          children: [
+            // Decorative elements
+            Positioned(
+              top: -100,
+              left: -100,
+              child: Opacity(
+                opacity: 0.05,
+                child: Container(
+                  height: 300,
+                  width: 300,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+            Positioned(
+              bottom: -150,
+              right: -150,
+              child: Opacity(
+                opacity: 0.08,
+                child: Container(
+                  height: 400,
+                  width: 400,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            // Add animated floating elements
+            _buildAnimatedFloatingElements(isDesktop: true),
+            // Main content
+            Row(
+              children: [
+                // Left side with logo (40% width)
+                Expanded(
+                  flex: 4,
+                  child: Container(
+                    child: Center(
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: _buildLogo(size: 240),
+                      ),
+                    ),
+                  ),
+                ),
+                // Right side with login form (60% width)
+                Expanded(
+                  flex: 6,
+                  child: SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 80),
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const SizedBox(height: 80),
+                            _buildTitle(isLarge: true),
+                            const SizedBox(height: 60),
+                            _buildLoginButton(),
+                            const SizedBox(height: 40),
+                            _buildSignUpText(),
+                            const SizedBox(height: 40),
+                            _buildAppVersion(),
+                            const SizedBox(height: 60),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
+  
+  Widget _buildAppVersion() {
+    return Align(
+      alignment: Alignment.center,
+      child: Text(
+        'v1.0.0 • Tier Nerd',
+        style: TextStyle(
+          color: Colors.white.withOpacity(0.5),
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildAnimatedFloatingElements({bool isDesktop = false}) {
+    // Adjust positions based on layout
+    final positions = isDesktop
+        ? [
+            Positioned(top: 80, right: 100, child: _buildFloatingElement(0.06, 30, Icons.star)),
+            Positioned(top: 200, left: 80, child: _buildFloatingElement(0.08, 20, Icons.filter_list)),
+            Positioned(bottom: 120, right: 180, child: _buildFloatingElement(0.07, 25, Icons.format_list_numbered)),
+            Positioned(bottom: 240, left: 200, child: _buildFloatingElement(0.05, 35, Icons.leaderboard)),
+            Positioned(top: 350, right: 240, child: _buildFloatingElement(0.06, 20, Icons.sort)),
+          ]
+        : [
+            Positioned(top: 40, right: 30, child: _buildFloatingElement(0.06, 25, Icons.star)),
+            Positioned(bottom: 180, left: 20, child: _buildFloatingElement(0.08, 20, Icons.filter_list)),
+            Positioned(bottom: 100, right: 50, child: _buildFloatingElement(0.07, 22, Icons.format_list_numbered)),
+            Positioned(top: 300, left: 40, child: _buildFloatingElement(0.05, 30, Icons.leaderboard)),
+          ];
+    
+    return Stack(children: positions);
+  }
+  
+  Widget _buildFloatingElement(double opacity, double size, IconData icon) {
+    return AnimatedBuilder(
+      animation: _floatingAnimation,
+      builder: (context, child) {
+        // Create subtle floating movement
+        final offset = 5.0 * _floatingAnimation.value;
+        
+        return Transform.translate(
+          offset: Offset(0, sin(_floatingAnimation.value * 2 * 3.14159) * offset),
+          child: Opacity(
+            opacity: opacity,
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: AppTheme.primaryColor,
+                size: size * 0.6,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-  Widget _buildLogo({double size = 300}) {
+  Widget _buildLogo({double size = 200}) {
     return Hero(
       tag: 'app_logo',
       child: Image.asset(
@@ -363,53 +540,230 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   }
 
   Widget _buildLoginButton() {
-    return ElevatedButton(
-      onPressed: () {
-        // Handle login
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Email field
+        _buildEmailField(),
+        const SizedBox(height: 16),
+        // Password field
+        _buildPasswordField(),
+        const SizedBox(height: 8),
+        // Forgot password link
+        _buildForgotPassword(),
+        const SizedBox(height: 20),
+        // Email login button
+        _buildEmailLoginButton(),
+        const SizedBox(height: 20),
+        // OR divider
+        _buildOrDivider(),
+        const SizedBox(height: 20),
+        // Google sign-in button
+        _buildGoogleSignInButton(),
+      ],
+    );
+  }
+  
+  Widget _buildEmailLoginButton() {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, child) {
+        return SizedBox(
+          width: double.infinity,
+          height: 54,
+          child: ElevatedButton(
+            onPressed: auth.isLoading
+                ? null
+                : () async {
+                    // Handle email login using the same mock setup
+                    print("Email login button pressed");
+                    
+                    // Check if the email fields have some text
+                    if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+                      try {
+                        // Use Google auth as mock for now
+                        final success = await auth.signInWithGoogle();
+                        if (success) {
+                          // Navigate to home screen
+                          Navigator.of(context).pushReplacementNamed('/home');
+                        } else if (auth.error != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: ${auth.error}')),
+                          );
+                        }
+                      } catch (e) {
+                        print("Error during sign in: $e");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $e')),
+                        );
+                      }
+                    } else {
+                      // Show error if fields are empty
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please fill in both email and password')),
+                      );
+                    }
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppTheme.primaryColor,
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: auth.isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                    ),
+                  )
+                : const Text(
+                    'Log In',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+          ),
+        );
       },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF5B4B89),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+    );
+  }
+  
+  Widget _buildOrDivider() {
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(
+            color: Colors.white.withOpacity(0.3),
+            thickness: 1,
+          ),
         ),
-        elevation: 0,
-      ),
-      child: Text(
-        'SIGN IN',
-        style: GoogleFonts.montserrat(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.2,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'OR',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
-      ),
+        Expanded(
+          child: Divider(
+            color: Colors.white.withOpacity(0.3),
+            thickness: 1,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGoogleSignInButton() {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, child) {
+        return SizedBox(
+          width: double.infinity, // Full width
+          height: 60, // Increased from 50 to 60
+          child: ElevatedButton.icon(
+            onPressed: auth.isLoading
+                ? null
+                : () async {
+                    print("Google sign-in button pressed");
+                    try {
+                      final success = await auth.signInWithGoogle();
+                      if (success) {
+                        // Navigate to home screen
+                        Navigator.of(context).pushReplacementNamed('/home');
+                      } else if (auth.error != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: ${auth.error}')),
+                        );
+                      }
+                    } catch (e) {
+                      print("Error during sign in: $e");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
+                    }
+                  },
+            icon: auth.isLoading
+                ? const SizedBox(
+                    width: 28, // Slightly larger
+                    height: 28, // Slightly larger
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                    ),
+                  )
+                : Image.asset(
+                    'assets/images/google_logo-removebg-preview.png',
+                    width: 28, // Larger from 24 to 28
+                    height: 28, // Larger from 24 to 28
+                  ),
+            label: Text(
+              auth.isLoading ? 'Signing in...' : 'Sign in with Google',
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 18, // Larger from 16 to 18
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black87,
+              elevation: 1, // Slight elevation for better visibility
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: const BorderSide(color: Colors.black12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Increased padding
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildSignUpText() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          "Don't have an account? ",
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
         ),
-        GestureDetector(
-          onTap: () {
-            // Handle sign up
-          },
-          child: Text(
-            'Sign Up',
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "Don't have an account? ",
             style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+              color: Colors.white.withOpacity(0.8),
+              fontSize: 14,
             ),
           ),
-        ),
-      ],
+          GestureDetector(
+            onTap: () {
+              // Handle sign up
+            },
+            child: Text(
+              'Sign Up',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                decoration: TextDecoration.underline,
+                decorationThickness: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
