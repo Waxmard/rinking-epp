@@ -14,50 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Temporary mock data for UI development
-  // TODO: Replace with actual data from API
-  final _mockRecentList = {
-    'id': '123',
-    'title': 'Best Anime Series',
-    'itemCount': 15,
-    'lastModified': DateTime.now().subtract(const Duration(hours: 2)),
-    'tierCounts': {
-      'S': 2,
-      'A': 3,
-      'B': 4,
-      'C': 3,
-      'D': 2,
-      'E': 1,
-      'F': 0,
-    },
-  };
-
-  final _mockUserLists = [
-    {
-      'id': '124',
-      'title': 'Top Video Games 2023',
-      'itemCount': 20,
-      'lastModified': DateTime.now().subtract(const Duration(days: 2)),
-    },
-    {
-      'id': '125',
-      'title': 'MCU Movies Ranked',
-      'itemCount': 30,
-      'lastModified': DateTime.now().subtract(const Duration(days: 5)),
-    },
-    {
-      'id': '126',
-      'title': 'Best Restaurants in Town',
-      'itemCount': 12,
-      'lastModified': DateTime.now().subtract(const Duration(days: 10)),
-    },
-    {
-      'id': '127',
-      'title': 'Books to Read',
-      'itemCount': 8,
-      'lastModified': DateTime.now().subtract(const Duration(days: 15)),
-    },
-  ];
+  // No need for mock data as we're using the ListProvider
 
   @override
   void initState() {
