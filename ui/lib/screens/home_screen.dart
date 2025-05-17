@@ -106,18 +106,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         child: Row(
                           children: [
+                            // Just use the logo image without text
                             Image.asset(
                               'assets/images/tier-nerd-logo-0.png',
-                              height: 42,
-                              width: 42,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'TierNerd',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                              height: 60,
+                              width: 60,
                             ),
                           ],
                         ),
@@ -128,17 +121,36 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           // Add new list button
                           Container(
-                            margin: const EdgeInsets.only(right: 16),
+                            margin: const EdgeInsets.only(right: 24),
                             decoration: BoxDecoration(
-                              color: AppTheme.accentColor,
-                              shape: BoxShape.circle,
+                              color: const Color(0xFFF5F5F5), // Softer off-white
+                              borderRadius: BorderRadius.circular(20),
                             ),
-                            child: IconButton(
-                              onPressed: () {
-                                // TODO: Navigate to create list screen
-                              },
-                              icon: const Icon(Icons.add, color: Colors.black),
-                              tooltip: 'Create New List',
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () {
+                                  // TODO: Navigate to create list screen
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.add, color: AppTheme.primaryColor, size: 18),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Create',
+                                        style: TextStyle(
+                                          color: AppTheme.primaryColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                           
