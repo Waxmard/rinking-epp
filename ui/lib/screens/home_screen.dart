@@ -37,8 +37,54 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: AppTheme.primaryColor, // Same purple as login screen
       body: SafeArea(
-        child: CustomScrollView(
+        child: Container(
+          decoration: BoxDecoration(
+            // Add subtle gradient background like login screen
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppTheme.primaryColor,
+                AppTheme.primaryColor.withOpacity(0.8),
+              ],
+            ),
+          ),
+          child: Stack(
+            children: [
+              // Add decorative background elements
+              Positioned(
+                top: -50,
+                right: -50,
+                child: Opacity(
+                  opacity: 0.1,
+                  child: Container(
+                    height: 200,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -80,
+                left: -80,
+                child: Opacity(
+                  opacity: 0.08,
+                  child: Container(
+                    height: 250,
+                    width: 250,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              CustomScrollView(
         slivers: [
           // Main content
           SliverToBoxAdapter(
@@ -69,6 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               'TierNerd',
                               style: theme.textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
                           ],
@@ -99,11 +146,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Greeting
                   Text(
                     'Welcome back,',
-                    style: theme.textTheme.bodyLarge,
+                    style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
                   ),
                   Text(
                     userData?['displayName'] ?? 'User',
-                    style: theme.textTheme.headlineSmall,
+                    style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -120,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Text(
                     'Recently Modified',
-                    style: theme.textTheme.titleLarge,
+                    style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   if (listProvider.isLoading && listProvider.recentList == null)
@@ -153,12 +200,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 16),
                             Text(
                               'No lists yet',
-                              style: theme.textTheme.titleMedium,
+                              style: theme.textTheme.titleMedium?.copyWith(color: Colors.white70),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'Create your first tier list to get started',
-                              style: theme.textTheme.bodyMedium,
+                              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -183,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // All Lists Section Title
                   Text(
                     'All Lists',
-                    style: theme.textTheme.titleLarge,
+                    style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                 ],
@@ -237,7 +284,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    ),
+            ],
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // TODO: Navigate to create list screen (same as the button)
