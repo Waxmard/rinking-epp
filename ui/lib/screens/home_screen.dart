@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../providers/list_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/list_card.dart';
+import '../widgets/tier_list_preview.dart';
 import '../models/list_model.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -143,16 +144,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   
                   const SizedBox(height: 24),
-                  // Greeting
-                  Text(
-                    'Welcome back,',
-                    style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
-                  ),
-                  Text(
-                    userData?['displayName'] ?? 'User',
-                    style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white),
-                  ),
-                  const SizedBox(height: 24),
+                  // No greeting or username needed
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
@@ -166,19 +159,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recently Modified',
+                    'Your Latest Tier List',
                     style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   if (listProvider.isLoading && listProvider.recentList == null)
                     const Center(child: CircularProgressIndicator()),
                   if (listProvider.recentList != null)
-                    ListCard(
-                      title: listProvider.recentList!.title,
-                      itemCount: listProvider.recentList!.itemCount,
-                      lastModified: listProvider.recentList!.updatedAt,
-                      isRecentCard: true,
-                      tierCounts: listProvider.recentList!.tierCounts,
+                    TierListPreview(
+                      tierList: listProvider.recentList!,
                       onTap: () {
                         // TODO: Navigate to list detail
                       },
