@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final auth = Provider.of<AuthProvider>(context, listen: false);
       final listProvider = Provider.of<ListProvider>(context, listen: false);
-      
+
       // Set auth token for list service
       listProvider.initialize();
     });
@@ -37,42 +37,65 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: CustomScrollView(
+      body: SafeArea(
+        child: CustomScrollView(
         slivers: [
-          // App Bar with user avatar
-          SliverAppBar(
-            floating: true,
-            title: const Text('TierNerd'),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: GestureDetector(
-                  onTap: () {
-                    // TODO: Navigate to profile/settings
-                    _showProfileMenu(context);
-                  },
-                  child: CircleAvatar(
-                    backgroundImage: userData?['photoUrl'] != null
-                        ? userData!['photoUrl']!.startsWith('http')
-                            ? NetworkImage(userData['photoUrl']!)
-                            : AssetImage(userData['photoUrl']!) as ImageProvider
-                        : null,
-                    child: userData?['photoUrl'] == null
-                        ? const Icon(Icons.person)
-                        : null,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
           // Main content
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 0.0),
+              padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 0.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Header row with logo and profile
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // TierNerd logo
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate home (refresh)
+                          Navigator.of(context).pushReplacementNamed('/');
+                        },
+                        child: Row(
+                          children: [
+                            Image.asset(
+                              'assets/images/tier-nerd-logo-0.png',
+                              height: 42,
+                              width: 42,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'TierNerd',
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // Profile avatar
+                      GestureDetector(
+                        onTap: () {
+                          _showProfileMenu(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 20,
+                          backgroundImage: userData?['photoUrl'] != null
+                            ? userData!['photoUrl']!.startsWith('http')
+                                ? NetworkImage(userData['photoUrl']!)
+                                : AssetImage(userData['photoUrl']!) as ImageProvider
+                            : null,
+                          child: userData?['photoUrl'] == null
+                            ? const Icon(Icons.person)
+                            : null,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 24),
                   // Greeting
                   Text(
                     'Welcome back,',
@@ -183,11 +206,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 (context, index) {
                   final list = listProvider.lists[index];
                   // Skip the most recent list if it's already shown above
-                  if (listProvider.recentList != null && 
+                  if (listProvider.recentList != null &&
                       list.listId == listProvider.recentList!.listId) {
                     return const SizedBox.shrink();
                   }
-                  
+
                   return ListCard(
                     title: list.title,
                     itemCount: list.itemCount,
@@ -214,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // TODO: Navigate to create list screen (same as the button)
@@ -226,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showProfileMenu(BuildContext context) {
     final auth = Provider.of<AuthProvider>(context, listen: false);
-    
+
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -270,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showDeleteConfirmation(BuildContext context, String listId) {
     final listProvider = Provider.of<ListProvider>(context, listen: false);
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -285,14 +309,14 @@ class _HomeScreenState extends State<HomeScreen> {
             TextButton(
               onPressed: () async {
                 Navigator.pop(context);
-                
+
                 // Show loading indicator
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Deleting list...')),
                 );
-                
+
                 final success = await listProvider.deleteList(listId);
-                
+
                 if (context.mounted) {
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(

@@ -63,7 +63,7 @@ class AuthService {
         userData: {
           'email': 'dev@tiernerd.com',
           'displayName': 'Development User',
-          'photoUrl': 'assets/images/tier-nerd-logo-0.png',
+          'photoUrl': 'assets/images/gengar.png',
         },
         token: 'mock-token',
       );
