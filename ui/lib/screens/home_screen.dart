@@ -171,13 +171,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         // TODO: Navigate to list detail
                       },
-                      onEdit: () {
-                        // TODO: Navigate to edit list
-                      },
-                      onDelete: () {
-                        // TODO: Confirm and delete list
-                        _showDeleteConfirmation(context, listProvider.recentList!.listId);
-                      },
                     ),
                   if (listProvider.recentList == null && !listProvider.isLoading)
                     Card(

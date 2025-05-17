@@ -5,15 +5,11 @@ import '../utils/app_theme.dart';
 class TierListPreview extends StatelessWidget {
   final TierList tierList;
   final VoidCallback onTap;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
 
   const TierListPreview({
     Key? key,
     required this.tierList,
     required this.onTap,
-    required this.onEdit,
-    required this.onDelete,
   }) : super(key: key);
 
   @override
@@ -24,97 +20,48 @@ class TierListPreview extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title and actions bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 8.0, 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    tierList.title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20),
-                      onPressed: onEdit,
-                      tooltip: 'Edit',
-                      splashRadius: 20,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, size: 20),
-                      onPressed: onDelete,
-                      tooltip: 'Delete',
-                      splashRadius: 20,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          
-          // List info
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                const Icon(Icons.list, size: 16, color: AppTheme.textColorSecondary),
-                const SizedBox(width: 4),
-                Text(
-                  '${tierList.itemCount} items',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textColorSecondary,
-                      ),
-                ),
-                const SizedBox(width: 16),
-                const Icon(Icons.calendar_today, size: 16, color: AppTheme.textColorSecondary),
-                const SizedBox(width: 4),
-                Text(
-                  _formatDate(tierList.updatedAt),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textColorSecondary,
-                      ),
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 16.0),
-          
-          // Tier rows visualization
-          _buildTierPreview(context),
-          
-          // "View full list" button
-          InkWell(
-            onTap: onTap,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColorLight.withOpacity(0.1),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(12.0),
-                  bottomRight: Radius.circular(12.0),
-                ),
-              ),
-              alignment: Alignment.center,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0),
               child: Text(
-                'View Full List',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryColor,
-                    ),
+                tierList.title,
+                style: Theme.of(context).textTheme.titleLarge,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-        ],
+            
+            // Item count
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  const Icon(Icons.list, size: 16, color: AppTheme.textColorSecondary),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${tierList.itemCount} items',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppTheme.textColorSecondary,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 16.0),
+            
+            // Tier rows visualization
+            _buildTierPreview(context),
+            
+            // Bottom padding
+            const SizedBox(height: 16.0),
+          ],
+        ),
       ),
     );
   }
@@ -208,16 +155,5 @@ class TierListPreview extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    if (date.year == now.year && date.month == now.month && date.day == now.day) {
-      return 'Today';
-    } else if (date.year == now.year && date.month == now.month && date.day == now.day - 1) {
-      return 'Yesterday';
-    } else {
-      return '${date.month}/${date.day}/${date.year}';
-    }
   }
 }
