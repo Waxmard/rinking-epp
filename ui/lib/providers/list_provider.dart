@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import '../models/list_model.dart';
-import '../services/list_service.dart';
+import '../services/service_factory.dart';
 
 class ListProvider extends ChangeNotifier {
-  final ListService _listService = ListService();
+  final dynamic _listService = ServiceFactory().getListService();
   
   bool _isLoading = false;
   String? _error;

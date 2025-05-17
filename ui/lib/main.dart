@@ -7,6 +7,7 @@ import 'providers/list_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
+import 'services/service_factory.dart';
 
 Future<void> main() async {
   // Ensure Flutter is initialized
@@ -14,6 +15,9 @@ Future<void> main() async {
 
   // Load environment variables before running the app
   await dotenv.load(fileName: '.env');
+  
+  // Initialize the service factory
+  ServiceFactory().initialize();
 
   runApp(const MyApp());
 }

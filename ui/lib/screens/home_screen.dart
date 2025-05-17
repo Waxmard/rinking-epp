@@ -96,7 +96,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                   child: CircleAvatar(
                     backgroundImage: userData?['photoUrl'] != null
-                        ? NetworkImage(userData!['photoUrl']!)
+                        ? userData!['photoUrl']!.startsWith('http')
+                            ? NetworkImage(userData['photoUrl']!)
+                            : AssetImage(userData['photoUrl']!) as ImageProvider
                         : null,
                     child: userData?['photoUrl'] == null
                         ? const Icon(Icons.person)
