@@ -134,7 +134,8 @@ This configuration should support:
 
 ## Cost Considerations
 
-Approximate setup costs:
+### Hardware Costs
+Approximate one-time setup costs:
 - 4× Raspberry Pi 4 (8GB): ~$400
 - 4× SSDs (256GB): ~$200
 - Network switch: ~$30
@@ -143,7 +144,44 @@ Approximate setup costs:
 - Case/rack: ~$50
 - UPS: ~$100
 
-Total hardware cost: ~$880 (significantly less than equivalent cloud hosting over 1-2 years)
+Total hardware cost: ~$880
+
+### Operational Costs
+- Electricity: ~$5-10/month (varies by location)
+- ISP/network costs: Negligible if using existing infrastructure
+- Maintenance: Occasional part replacement (~$100/year estimated)
+
+### Cloud Hosting Comparison
+
+#### AWS Equivalent
+An equivalent AWS setup for similar performance would require:
+- RDS for PostgreSQL db.t3.small: ~$30-45/month
+- 2× EC2 t3.medium instances for API: ~$60-75/month
+- Load balancer: ~$20/month
+- Data transfer: ~$10-20/month
+- Storage (50GB): ~$5-10/month
+
+**Total AWS cost: ~$125-170/month ($1,500-2,040/year)**
+
+#### Google Cloud Platform Equivalent
+An equivalent Google Cloud Platform setup would require:
+- Cloud SQL for PostgreSQL (db-g1-small): ~$45-55/month
+- 2× Compute Engine e2-medium instances: ~$50-60/month
+- Load Balancer: ~$18-25/month
+- Storage (50GB): ~$10/month
+- Data transfer: ~$10-15/month
+
+**Total Google Cloud cost: ~$133-165/month ($1,596-1,980/year)**
+
+### Cost Analysis
+- Break-even point vs. AWS: ~5-7 months
+- Break-even point vs. Google Cloud: ~6-7 months
+- 3-year TCO comparison:
+  - Raspberry Pi cluster: ~$1,280 ($880 + $400 operational)
+  - AWS: ~$4,500-6,120
+  - Google Cloud: ~$4,788-5,940
+
+The Raspberry Pi solution provides ~70-80% cost savings over a 3-year period compared to cloud alternatives.
 
 ## Future Scalability
 
