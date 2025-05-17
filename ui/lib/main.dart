@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'providers/counter_provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/list_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => CounterProvider()),
         ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
+        ChangeNotifierProvider(create: (context) => ListProvider()),
       ],
       child: Consumer<AuthProvider>(
         builder: (context, auth, child) {
