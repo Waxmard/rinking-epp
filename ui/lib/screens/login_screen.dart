@@ -565,31 +565,71 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   }
   
   Widget _buildEmailLoginButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: ElevatedButton(
-        onPressed: () {
-          // Handle email login
-          print("Email login button pressed");
-          // Add email login functionality
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: AppTheme.primaryColor,
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+    return Consumer<AuthProvider>(
+      builder: (context, auth, child) {
+        return SizedBox(
+          width: double.infinity,
+          height: 54,
+          child: ElevatedButton(
+            onPressed: auth.isLoading
+                ? null
+                : () async {
+                    // Handle email login using the same mock setup
+                    print("Email login button pressed");
+                    
+                    // Check if the email fields have some text
+                    if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+                      try {
+                        // Use Google auth as mock for now
+                        final success = await auth.signInWithGoogle();
+                        if (success) {
+                          // Navigate to home screen
+                          Navigator.of(context).pushReplacementNamed('/home');
+                        } else if (auth.error != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: ${auth.error}')),
+                          );
+                        }
+                      } catch (e) {
+                        print("Error during sign in: $e");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error: $e')),
+                        );
+                      }
+                    } else {
+                      // Show error if fields are empty
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please fill in both email and password')),
+                      );
+                    }
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppTheme.primaryColor,
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: auth.isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                    ),
+                  )
+                : const Text(
+                    'Log In',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
           ),
-        ),
-        child: const Text(
-          'Log In',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
   
@@ -637,10 +677,8 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     try {
                       final success = await auth.signInWithGoogle();
                       if (success) {
-                        // TODO: Navigate to home screen
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Successfully signed in!')),
-                        );
+                        // Navigate to home screen
+                        Navigator.of(context).pushReplacementNamed('/home');
                       } else if (auth.error != null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Error: ${auth.error}')),

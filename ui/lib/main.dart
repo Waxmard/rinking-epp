@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'providers/counter_provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 import 'utils/app_theme.dart';
 
 Future<void> main() async {
@@ -26,15 +27,21 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CounterProvider()),
         ChangeNotifierProvider(create: (context) => AuthProvider()..initialize()),
       ],
-      child: MaterialApp(
-        title: 'TierNerd',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.system, // Uses device theme settings
-        home: const LoginScreen(),
+      child: Consumer<AuthProvider>(
+        builder: (context, auth, child) {
+          return MaterialApp(
+            title: 'TierNerd',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: ThemeMode.system, // Uses device theme settings
+            initialRoute: auth.isAuthenticated ? '/home' : '/login',
+            routes: {
+              '/login': (context) => const LoginScreen(),
+              '/home': (context) => const HomeScreen(),
+            },
+          );
+        },
       ),
     );
   }
 }
-
-// Demo code removed and replaced with LoginScreen

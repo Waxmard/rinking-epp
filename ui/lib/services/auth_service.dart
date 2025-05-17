@@ -46,6 +46,30 @@ class AuthService {
   
   /// Sign in with Google
   Future<AuthResult> signInWithGoogle() async {
+    // Mock authentication for development
+    if (AuthConstants.environment == 'development') {
+      // Simulate loading delay
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      // Store mock token
+      await _secureStorage.write(
+        key: AuthConstants.authTokenKey,
+        value: 'mock-dev-token-${DateTime.now().millisecondsSinceEpoch}',
+      );
+      
+      // Return successful mock result
+      return AuthResult(
+        status: AuthResultStatus.success,
+        userData: {
+          'email': 'dev@tiernerd.com',
+          'displayName': 'Development User',
+          'photoUrl': 'https://ui-avatars.com/api/?name=Dev+User&background=random',
+        },
+        token: 'mock-token',
+      );
+    }
+    
+    // Real authentication for production/staging
     try {
       // Start the Google Sign-In process
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
