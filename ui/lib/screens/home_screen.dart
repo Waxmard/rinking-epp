@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header row with logo and profile
+                  // Header row with logo, add button, and profile
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -123,22 +123,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       
-                      // Profile avatar
-                      GestureDetector(
-                        onTap: () {
-                          _showProfileMenu(context);
-                        },
-                        child: CircleAvatar(
-                          radius: 20,
-                          backgroundImage: userData?['photoUrl'] != null
-                            ? userData!['photoUrl']!.startsWith('http')
-                                ? NetworkImage(userData['photoUrl']!)
-                                : AssetImage(userData['photoUrl']!) as ImageProvider
-                            : null,
-                          child: userData?['photoUrl'] == null
-                            ? const Icon(Icons.person)
-                            : null,
-                        ),
+                      // Action buttons
+                      Row(
+                        children: [
+                          // Add new list button
+                          Container(
+                            margin: const EdgeInsets.only(right: 16),
+                            decoration: BoxDecoration(
+                              color: AppTheme.accentColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                // TODO: Navigate to create list screen
+                              },
+                              icon: const Icon(Icons.add, color: Colors.black),
+                              tooltip: 'Create New List',
+                            ),
+                          ),
+                          
+                          // Profile avatar
+                          GestureDetector(
+                            onTap: () {
+                              _showProfileMenu(context);
+                            },
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundImage: userData?['photoUrl'] != null
+                                ? userData!['photoUrl']!.startsWith('http')
+                                    ? NetworkImage(userData['photoUrl']!)
+                                    : AssetImage(userData['photoUrl']!) as ImageProvider
+                                : null,
+                              child: userData?['photoUrl'] == null
+                                ? const Icon(Icons.person)
+                                : null,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -158,10 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Your Latest Tier List',
-                    style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
-                  ),
+                  // No header text needed
                   const SizedBox(height: 8),
                   if (listProvider.isLoading && listProvider.recentList == null)
                     const Center(child: CircularProgressIndicator()),
@@ -196,17 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   const SizedBox(height: 24),
 
-                  // Create New List Button
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Navigate to create list screen
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create New List'),
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                    ),
-                  ),
+                  // No Create New List button needed here anymore
                   const SizedBox(height: 24),
 
                   // All Lists Section Title
@@ -270,13 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Navigate to create list screen (same as the button)
-        },
-        child: const Icon(Icons.add),
-        tooltip: 'Create New List',
-      ),
+      // No floating action button needed as we have the + button in header
     );
   }
 
