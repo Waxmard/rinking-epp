@@ -19,8 +19,7 @@ class AppTheme {
   static const Color bTierColor = Color(0xFF9DD16A); // B - Light green
   static const Color cTierColor = Color(0xFF5EC4B6); // C - Teal (same as accent)
   static const Color dTierColor = Color(0xFFA364D9); // D - Purple
-  static const Color eTierColor = Color(0xFFF05F57); // E - Red
-  static const Color fTierColor = Color(0xFF9E9E9E); // F - Gray
+  static const Color fTierColor = Color(0xFFF05F57); // F - Red
 
   // Grayscale palette
   static const Color textColorPrimary = Color(0xFF212121);     // Near black
@@ -138,7 +137,7 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surfaceColor,
         elevation: 1.0,  // Subtle elevation
         shape: RoundedRectangleBorder(
@@ -212,7 +211,7 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Color(0xFF473A71), // Dark purple card
         elevation: 1.0,  // Subtle elevation
         shape: RoundedRectangleBorder(
@@ -257,8 +256,6 @@ class AppTheme {
         return cTierColor;
       case 'D':
         return dTierColor;
-      case 'E':
-        return eTierColor;
       case 'F':
         return fTierColor;
       default:

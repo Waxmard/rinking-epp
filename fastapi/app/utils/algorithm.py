@@ -229,7 +229,7 @@ def get_tier_from_rating(rating: float) -> str:
         rating: A float between 0.1 and 10.0 representing the item's rating
 
     Returns:
-        A string representing the tier (S, A, B, C, D, E, or F)
+        A string representing the tier (S, A, B, C, D, or F)
     """
     tier_ranges = {
         'S': (9.0, 10.0),
@@ -237,8 +237,7 @@ def get_tier_from_rating(rating: float) -> str:
         'B': (6.0, 7.4),
         'C': (4.5, 5.9),
         'D': (3.0, 4.4),
-        'E': (1.5, 2.9),
-        'F': (0.1, 1.4)
+        'F': (0.1, 2.9)
     }
 
     for tier, (min_val, max_val) in tier_ranges.items():

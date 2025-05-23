@@ -63,7 +63,7 @@ class AuthService {
         userData: {
           'email': 'dev@tiernerd.com',
           'displayName': 'Development User',
-          'photoUrl': 'https://ui-avatars.com/api/?name=Dev+User&background=random',
+          'photoUrl': 'assets/images/gengar.png',
         },
         token: 'mock-token',
       );
