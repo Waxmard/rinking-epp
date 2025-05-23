@@ -138,7 +138,7 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surfaceColor,
         elevation: 1.0,  // Subtle elevation
         shape: RoundedRectangleBorder(
@@ -212,7 +212,7 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Color(0xFF473A71), // Dark purple card
         elevation: 1.0,  // Subtle elevation
         shape: RoundedRectangleBorder(
