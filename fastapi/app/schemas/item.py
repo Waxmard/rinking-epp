@@ -39,7 +39,6 @@ class TierRank(str, Enum):
     B = "B"
     C = "C"
     D = "D"
-    E = "E"
     F = "F"
 
 

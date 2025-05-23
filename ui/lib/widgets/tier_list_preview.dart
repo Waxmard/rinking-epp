@@ -68,7 +68,7 @@ class TierListPreview extends StatelessWidget {
 
   Widget _buildTierPreview(BuildContext context) {
     // The tiers in order
-    final tiers = ['S', 'A', 'B', 'C', 'D', 'E', 'F'];
+    final tiers = ['S', 'A', 'B', 'C', 'D', 'F'];
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

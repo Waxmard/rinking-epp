@@ -122,7 +122,6 @@ class ListCard extends StatelessWidget {
               _buildTierIndicator('B', AppTheme.bTierColor),
               _buildTierIndicator('C', AppTheme.cTierColor),
               _buildTierIndicator('D', AppTheme.dTierColor),
-              _buildTierIndicator('E', AppTheme.eTierColor),
               _buildTierIndicator('F', AppTheme.fTierColor),
             ],
           ),
