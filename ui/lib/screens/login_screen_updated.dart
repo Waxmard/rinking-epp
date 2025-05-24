@@ -209,30 +209,42 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
           ),
           // Add animated floating elements
           _buildAnimatedFloatingElements(),
-          // Main content
-          SingleChildScrollView(
-            child: Padding(
-              padding: AppSpacing.screenHorizontal,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SizedBox(height: AppSpacing.xl),
-                    _buildLogo(size: 200), // Logo container size (actual logo is 30% of this)
-                    SizedBox(height: AppSpacing.xs),
-                    _buildTitle(),
-                    SizedBox(height: AppSpacing.xl),
-                    _buildLoginForm(),
-                    SizedBox(height: AppSpacing.lg),
-                    _buildSignUpText(),
-                    SizedBox(height: AppSpacing.xl),
-                    _buildAppVersion(),
-                  ],
+          // Main content - adaptive scrolling
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final content = Padding(
+                padding: AppSpacing.screenHorizontal,
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildLogo(size: 200),
+                      SizedBox(height: AppSpacing.xs),
+                      _buildTitle(),
+                      SizedBox(height: AppSpacing.md),
+                      _buildLoginForm(),
+                      SizedBox(height: AppSpacing.sm),
+                      _buildSignUpText(),
+                      SizedBox(height: AppSpacing.xs),
+                      _buildAppVersion(),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+              
+              // If content is too tall, make it scrollable
+              // Otherwise keep it centered and non-scrollable
+              return constraints.maxHeight < 800
+                  ? SingleChildScrollView(
+                      child: SizedBox(
+                        height: constraints.maxHeight,
+                        child: content,
+                      ),
+                    )
+                  : content;
+            },
           ),
         ],
       ),
@@ -292,32 +304,28 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
               // Right side with login form (60% width)
               Expanded(
                 flex: 6,
-                child: SingleChildScrollView(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.responsive(
-                      context,
-                      mobile: AppSpacing.xl,
-                      tablet: AppSpacing.xxxl,
-                      desktop: 80,
-                    )),
-                    constraints: const BoxConstraints(maxWidth: 600),
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          SizedBox(height: 80),
-                          _buildTitle(isLarge: true),
-                          SizedBox(height: AppSpacing.xxxl),
-                          _buildLoginForm(),
-                          SizedBox(height: AppSpacing.xl),
-                          _buildSignUpText(),
-                          SizedBox(height: AppSpacing.xl),
-                          _buildAppVersion(),
-                          SizedBox(height: AppSpacing.xxxl),
-                        ],
-                      ),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: AppSpacing.responsive(
+                    context,
+                    mobile: AppSpacing.xl,
+                    tablet: AppSpacing.xxxl,
+                    desktop: 80,
+                  )),
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildTitle(isLarge: true),
+                        SizedBox(height: AppSpacing.xxxl),
+                        _buildLoginForm(),
+                        SizedBox(height: AppSpacing.xl),
+                        _buildSignUpText(),
+                        SizedBox(height: AppSpacing.md),
+                        _buildAppVersion(),
+                      ],
                     ),
                   ),
                 ),
