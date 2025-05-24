@@ -107,7 +107,6 @@ Interface for creating a new list or editing an existing one.
   - B Tier: Blue (#2196F3)
   - C Tier: Purple (#9C27B0)
   - D Tier: Orange (#FF9800)
-  - E Tier: Red (#F44336)
   - F Tier: Gray (#9E9E9E)
 - Implement responsive design for various screen sizes
 - Prioritize smooth animations for comparison and ranking operations
