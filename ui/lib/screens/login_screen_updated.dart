@@ -223,7 +223,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
                   children: [
                     SizedBox(height: AppSpacing.xl),
                     _buildLogo(size: 200), // Logo container size (actual logo is 30% of this)
-                    SizedBox(height: AppSpacing.lg),
+                    SizedBox(height: AppSpacing.xs),
                     _buildTitle(),
                     SizedBox(height: AppSpacing.xl),
                     _buildLoginForm(),
@@ -429,7 +429,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
             child: Image.asset(
               'assets/images/logo-transparent.png',
               width: 300,
-              height: 210,
+              height: 180,
               fit: BoxFit.contain,
             ),
           ),
@@ -753,7 +753,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
       ),
     );
   }
-  
+
   Widget _buildRetroArcadeText(String text, double fontSize) {
     return Stack(
       children: [
