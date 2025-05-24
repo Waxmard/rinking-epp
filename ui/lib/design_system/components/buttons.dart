@@ -42,7 +42,11 @@ class AppButton extends StatelessWidget {
                 Icon(icon, size: _iconSize),
                 SizedBox(width: AppSpacing.sm),
               ],
-              Text(label, style: _textStyle),
+              Text(
+                label,
+                style: _textStyle,
+                textAlign: TextAlign.center,
+              ),
             ],
           );
 
@@ -93,7 +97,6 @@ class AppButton extends StatelessWidget {
     if (fullWidth) {
       return SizedBox(
         width: double.infinity,
-        height: _height,
         child: button,
       );
     }
@@ -104,11 +107,11 @@ class AppButton extends StatelessWidget {
   double get _height {
     switch (size) {
       case AppButtonSize.small:
-        return 32.0;
+        return 36.0;
       case AppButtonSize.medium:
-        return 40.0;
-      case AppButtonSize.large:
         return 48.0;
+      case AppButtonSize.large:
+        return 56.0;
     }
   }
 
@@ -126,22 +129,25 @@ class AppButton extends StatelessWidget {
   EdgeInsets get _padding {
     switch (size) {
       case AppButtonSize.small:
-        return EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs);
+        return EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm);
       case AppButtonSize.medium:
-        return EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm);
+        return EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md);
       case AppButtonSize.large:
-        return EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.md);
+        return EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.lg);
     }
   }
 
   TextStyle get _textStyle {
     switch (size) {
       case AppButtonSize.small:
-        return AppTypography.labelSmall;
-      case AppButtonSize.medium:
         return AppTypography.labelMedium;
+      case AppButtonSize.medium:
+        return AppTypography.button;
       case AppButtonSize.large:
-        return AppTypography.labelLarge;
+        return AppTypography.button.copyWith(
+          fontSize: AppTypography.sizeMd,
+          fontWeight: FontWeight.w600,
+        );
     }
   }
 
@@ -166,7 +172,6 @@ class AppButton extends StatelessWidget {
       elevation: AppShadows.elevationXs,
       shadowColor: backgroundColor.withOpacity(0.3),
       padding: _padding,
-      minimumSize: Size(0, _height),
       shape: RoundedRectangleBorder(
         borderRadius: AppBorders.md,
       ),
@@ -179,7 +184,6 @@ class AppButton extends StatelessWidget {
       foregroundColor: AppColors.primary,
       disabledForegroundColor: AppColors.textDisabled,
       padding: _padding,
-      minimumSize: Size(0, _height),
       side: BorderSide(
         color: AppColors.primary,
         width: AppBorders.widthMedium,
@@ -196,7 +200,6 @@ class AppButton extends StatelessWidget {
       foregroundColor: AppColors.primary,
       disabledForegroundColor: AppColors.textDisabled,
       padding: _padding,
-      minimumSize: Size(0, _height),
       shape: RoundedRectangleBorder(
         borderRadius: AppBorders.md,
       ),

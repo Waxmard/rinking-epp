@@ -5,6 +5,7 @@ import 'providers/counter_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/list_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/login_screen_updated.dart';
 import 'screens/home_screen.dart';
 import 'screens/lists_screen.dart';
 import 'screens/design_system_demo.dart';
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget {
             themeMode: ThemeMode.system, // Uses device theme settings
             initialRoute: auth.isAuthenticated ? '/home' : '/login',
             routes: {
-              '/login': (context) => const LoginScreen(),
+              '/login': (context) => const LoginScreenUpdated(), // Using updated version
+              '/login-old': (context) => const LoginScreen(), // Keep old version for comparison
               '/home': (context) => const HomeScreen(),
               '/lists': (context) => const ListsScreen(),
               '/design-system': (context) => const DesignSystemDemo(),

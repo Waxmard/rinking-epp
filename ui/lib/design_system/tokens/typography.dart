@@ -137,8 +137,8 @@ class AppTypography {
   static TextStyle button = GoogleFonts.roboto(
     fontSize: sizeSm,
     fontWeight: weightMedium,
-    letterSpacing: letterSpacingExtraWide,
-    height: lineHeightNormal,
+    letterSpacing: letterSpacingWide,
+    height: 1.0, // Tighter line height for buttons
   );
 
   static TextStyle caption = GoogleFonts.roboto(
