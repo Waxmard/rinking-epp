@@ -6,6 +6,7 @@ import 'providers/auth_provider.dart';
 import 'providers/list_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/lists_screen.dart';
 import 'utils/app_theme.dart';
 import 'services/service_factory.dart';
 
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
             routes: {
               '/login': (context) => const LoginScreen(),
               '/home': (context) => const HomeScreen(),
+              '/lists': (context) => const ListsScreen(),
             },
           );
         },
