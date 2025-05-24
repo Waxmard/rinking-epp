@@ -425,33 +425,12 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
               // Secret long press to access logo options demo
               Navigator.pushNamed(context, '/logo-options');
             },
-            // Logo with subtle glow and animation
-            child: AnimatedBuilder(
-              animation: _floatingAnimation,
-              builder: (context, child) {
-                return Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.2 + (0.1 * _floatingAnimation.value)),
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: Transform.scale(
-                    scale: 0.95 + (0.05 * _floatingAnimation.value),
-                    child: child,
-                  ),
-                );
-              },
-              child: Image.asset(
-                'assets/images/logo-transparent.png',
-                width: 250,
-                height: 175,
-                fit: BoxFit.contain,
-              ),
+            // Static logo, no animation
+            child: Image.asset(
+              'assets/images/logo-transparent.png',
+              width: 300,
+              height: 210,
+              fit: BoxFit.contain,
             ),
           ),
         ),
@@ -477,9 +456,8 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _currentPhrase,
-                    style: (isLarge ? AppTypography.headlineLarge : AppTypography.headlineMedium).copyWith(
-                      color: AppColors.textOnPrimary,
-                      fontWeight: FontWeight.bold,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: Colors.white.withOpacity(0.9),
                     ),
                   ),
                 ),
@@ -524,11 +502,11 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
             },
           ),
         ),
-        SizedBox(height: AppSpacing.sm),
+        SizedBox(height: AppSpacing.xs),
 
         // Forgot password link
         _buildForgotPassword(),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: AppSpacing.sm),
 
         // Email login button with design system
         _buildEmailLoginButton(),
@@ -561,48 +539,78 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
   Widget _buildEmailLoginButton() {
     return Consumer<AuthProvider>(
       builder: (context, auth, child) {
-        return AppButton(
-          label: auth.isLoading ? 'Signing in...' : 'Log In',
-          onPressed: auth.isLoading
-              ? null
-              : () async {
-                  // Handle email login
-                  if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
-                    try {
-                      // Use Google auth as mock for now
-                      final success = await auth.signInWithGoogle();
-                      if (success) {
-                        // Navigate to home screen
-                        Navigator.of(context).pushReplacementNamed('/home');
-                      } else if (auth.error != null) {
+        return SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: auth.isLoading
+                ? null
+                : () async {
+                    // Handle email login
+                    if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
+                      try {
+                        // Use Google auth as mock for now
+                        final success = await auth.signInWithGoogle();
+                        if (success) {
+                          // Navigate to home screen
+                          Navigator.of(context).pushReplacementNamed('/home');
+                        } else if (auth.error != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${auth.error}'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Error: ${auth.error}'),
+                            content: Text('Error: $e'),
                             backgroundColor: AppColors.error,
                           ),
                         );
                       }
-                    } catch (e) {
+                    } else {
+                      // Show error if fields are empty
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Error: $e'),
-                          backgroundColor: AppColors.error,
+                        const SnackBar(
+                          content: Text('Please fill in both email and password'),
+                          backgroundColor: AppColors.warning,
                         ),
                       );
                     }
-                  } else {
-                    // Show error if fields are empty
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please fill in both email and password'),
-                        backgroundColor: AppColors.warning,
-                      ),
-                    );
-                  }
-                },
-          variant: AppButtonVariant.secondary,
-          fullWidth: true,
-          isLoading: auth.isLoading,
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primary,
+              disabledBackgroundColor: Colors.white.withOpacity(0.5),
+              disabledForegroundColor: AppColors.primary.withOpacity(0.5),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: AppBorders.md,
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
+              ),
+            ),
+            child: auth.isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    ),
+                  )
+                : Text(
+                    'Log In',
+                    style: AppTypography.button.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+          ),
         );
       },
     );
@@ -743,6 +751,64 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
           ),
         ],
       ),
+    );
+  }
+  
+  Widget _buildRetroArcadeText(String text, double fontSize) {
+    return Stack(
+      children: [
+        // Shadow layer
+        Text(
+          text,
+          style: AppTypography.bodyLarge.copyWith(
+            fontSize: fontSize,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.5,
+            height: 1.0,
+            color: Colors.black.withOpacity(0.3),
+          ),
+        ),
+        // 3D effect layers
+        for (int i = 3; i > 0; i--)
+          Transform.translate(
+            offset: Offset(-i.toDouble() * 0.7, -i.toDouble() * 0.7),
+            child: Text(
+              text,
+              style: AppTypography.bodyLarge.copyWith(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.5,
+                height: 1.0,
+                color: Color.lerp(
+                  AppColors.primary.shade300,
+                  AppColors.accent,
+                  i / 3,
+                ),
+              ),
+            ),
+          ),
+        // Top layer
+        Transform.translate(
+          offset: const Offset(-0.5, -0.5),
+          child: Text(
+            text,
+            style: AppTypography.bodyLarge.copyWith(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+              height: 1.0,
+              color: Colors.white,
+              shadows: [
+                Shadow(
+                  color: AppColors.accent.withOpacity(0.5),
+                  blurRadius: 10,
+                  offset: const Offset(0, 0),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
