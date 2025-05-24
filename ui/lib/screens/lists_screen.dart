@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 import '../providers/list_provider.dart';
-import '../utils/app_theme.dart';
+import '../design_system/design_system.dart';
 import '../widgets/list_card.dart';
 
 class ListsScreen extends StatefulWidget {
@@ -29,14 +28,18 @@ class _ListsScreenState extends State<ListsScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text('My Lists', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
-        backgroundColor: AppTheme.primaryColor,
+        backgroundColor: AppColors.primary,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: RefreshIndicator(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.primaryGradient,
+        ),
+        child: RefreshIndicator(
         onRefresh: () async {
           await listProvider.fetchLists(refresh: true);
         },
@@ -47,10 +50,10 @@ class _ListsScreenState extends State<ListsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.list_alt,
                           size: 64,
-                          color: AppTheme.textColorSecondary,
+                          color: AppColors.textOnPrimary.withOpacity(0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -61,7 +64,7 @@ class _ListsScreenState extends State<ListsScreen> {
                         Text(
                           'Create your first tier list to get started',
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.textColorSecondary,
+                            color: AppColors.textOnPrimary.withOpacity(0.7),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -100,13 +103,14 @@ class _ListsScreenState extends State<ListsScreen> {
                       );
                     },
                   ),
+        ),
       ),
       floatingActionButton: listProvider.lists.isNotEmpty
           ? FloatingActionButton(
               onPressed: () {
                 // TODO: Navigate to create list screen
               },
-              backgroundColor: AppTheme.accentColor,
+              backgroundColor: AppColors.accent,
               child: const Icon(Icons.add, color: Colors.black),
             )
           : null,
@@ -150,7 +154,10 @@ class _ListsScreenState extends State<ListsScreen> {
                   }
                 }
               },
-              child: const Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+              child: Text(
+                'Delete',
+                style: TextStyle(color: AppColors.error),
+              ),
             ),
           ],
         );

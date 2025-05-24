@@ -4,7 +4,6 @@
 This directory contains provider classes for state management in the application.
 
 ## Files
-- `counter_provider.dart`: Example provider for managing counter state.
 
 ## Usage
 1. Create provider classes extending `ChangeNotifier`

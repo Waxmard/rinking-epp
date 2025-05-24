@@ -3,9 +3,7 @@ import 'dart:math' show sin;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../utils/responsive_helper.dart';
 import '../design_system/design_system.dart';
-import 'login_screen_logo_options.dart';
 import '../widgets/tiernerd_logo_text.dart';
 
 class LoginScreenUpdated extends StatefulWidget {
@@ -160,7 +158,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
 
   @override
   Widget build(BuildContext context) {
-    final isSmallScreen = ResponsiveHelper.isMobile(context);
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
     return Scaffold(
       body: Container(
@@ -420,18 +418,11 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
         // Animated logo - fixed small size
         Hero(
           tag: 'app_logo',
-          child: GestureDetector(
-            onLongPress: () {
-              // Secret long press to access logo options demo
-              Navigator.pushNamed(context, '/logo-options');
-            },
-            // Static logo, no animation
-            child: Image.asset(
-              'assets/images/logo-transparent.png',
-              width: 300,
-              height: 180,
-              fit: BoxFit.contain,
-            ),
+          child: Image.asset(
+            'assets/images/logo-transparent.png',
+            width: 300,
+            height: 180,
+            fit: BoxFit.contain,
           ),
         ),
       ],
@@ -754,63 +745,6 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
     );
   }
 
-  Widget _buildRetroArcadeText(String text, double fontSize) {
-    return Stack(
-      children: [
-        // Shadow layer
-        Text(
-          text,
-          style: AppTypography.bodyLarge.copyWith(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.5,
-            height: 1.0,
-            color: Colors.black.withOpacity(0.3),
-          ),
-        ),
-        // 3D effect layers
-        for (int i = 3; i > 0; i--)
-          Transform.translate(
-            offset: Offset(-i.toDouble() * 0.7, -i.toDouble() * 0.7),
-            child: Text(
-              text,
-              style: AppTypography.bodyLarge.copyWith(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.5,
-                height: 1.0,
-                color: Color.lerp(
-                  AppColors.primary.shade300,
-                  AppColors.accent,
-                  i / 3,
-                ),
-              ),
-            ),
-          ),
-        // Top layer
-        Transform.translate(
-          offset: const Offset(-0.5, -0.5),
-          child: Text(
-            text,
-            style: AppTypography.bodyLarge.copyWith(
-              fontSize: fontSize,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-              height: 1.0,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  color: AppColors.accent.withOpacity(0.5),
-                  blurRadius: 10,
-                  offset: const Offset(0, 0),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 // Custom themed text field for login screen
