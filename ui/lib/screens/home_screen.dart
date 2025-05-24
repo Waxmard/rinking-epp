@@ -131,105 +131,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   SizedBox(height: AppSpacing.lg),
 
-                  // Action buttons row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          margin: EdgeInsets.only(right: AppSpacing.sm),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: AppBorders.md,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: AppBorders.md,
-                                onTap: () {
-                                  Navigator.of(context).pushNamed('/lists');
-                                },
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.md,
-                                    vertical: AppSpacing.md,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'All Lists',
-                                      style: AppTypography.labelLarge.copyWith(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
+                  // Create button (block style)
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: AppBorders.md,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: AppBorders.md,
+                        onTap: () {
+                          // TODO: Navigate to create list screen
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.md,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_circle_outline,
+                                size: 24,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'Create New Tier List',
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: Container(
-                          margin: EdgeInsets.only(left: AppSpacing.sm),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: AppBorders.md,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: AppBorders.md,
-                                onTap: () {
-                                  // TODO: Navigate to create list screen
-                                },
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.md,
-                                    vertical: AppSpacing.md,
-                                  ),
-                                  child: Center(
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.add,
-                                          size: 20,
-                                          color: AppColors.primary,
-                                        ),
-                                        SizedBox(width: AppSpacing.xs),
-                                        Text(
-                                          'Create',
-                                          style: AppTypography.labelLarge.copyWith(
-                                            color: AppColors.primary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
 
                   SizedBox(height: AppSpacing.lg),
@@ -238,29 +186,127 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Most Recent List
+          // Recent List Content
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // No header text needed
                   SizedBox(height: AppSpacing.sm),
                   if (listProvider.isLoading && listProvider.recentList == null)
                     Center(
                       child: CircularProgressIndicator(
                         valueColor: AlwaysStoppedAnimation<Color>(AppColors.textOnPrimary),
                       ),
+                    )
+                  else if (listProvider.recentList != null) ...[
+                    // Recent List Header
+                    Text(
+                      'Recent List',
+                      style: AppTypography.headlineSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  if (listProvider.recentList != null)
-                    TierListPreview(
-                      tierList: listProvider.recentList!,
-                      onTap: () {
-                        // TODO: Navigate to list detail
-                      },
+                    SizedBox(height: AppSpacing.sm),
+                    // Enhanced list preview with more details
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: AppBorders.lg,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: AppBorders.lg,
+                          onTap: () {
+                            // TODO: Navigate to list detail
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.all(AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title and metadata row
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        listProvider.recentList!.title,
+                                        style: AppTypography.headlineSmall.copyWith(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.sm,
+                                        vertical: AppSpacing.xs,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withOpacity(0.1),
+                                        borderRadius: AppBorders.sm,
+                                      ),
+                                      child: Text(
+                                        '${listProvider.recentList!.itemCount} items',
+                                        style: AppTypography.labelSmall.copyWith(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: AppSpacing.sm),
+                                // Last modified info
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.schedule,
+                                      size: 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      'Modified ${_formatDate(listProvider.recentList!.updatedAt)}',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: AppSpacing.md),
+                                // Tier distribution preview
+                                if (listProvider.recentList!.tierCounts.isNotEmpty) ...[
+                                  Text(
+                                    'Tier Distribution',
+                                    style: AppTypography.labelMedium.copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: AppSpacing.sm),
+                                  _buildTierDistributionRow(listProvider.recentList!.tierCounts),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  if (listProvider.recentList == null && !listProvider.isLoading)
+                  ] else if (!listProvider.isLoading) ...[
                     AppCard(
                       variant: AppCardVariant.outlined,
                       child: Column(
@@ -288,10 +334,58 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
+                  ],
+                  
                   SizedBox(height: AppSpacing.lg),
 
-                  // Content spacing
-                  SizedBox(height: AppSpacing.md),
+                  // All Lists button (block style)
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: AppBorders.md,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: AppBorders.md,
+                        onTap: () {
+                          Navigator.of(context).pushNamed('/lists');
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.md,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.list,
+                                size: 24,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'View All Lists',
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -443,5 +537,66 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
     );
+  }
+
+  Widget _buildTierDistributionRow(Map<String, int> tierCounts) {
+    final tiers = ['S', 'A', 'B', 'C', 'D', 'F'];
+    
+    return Row(
+      children: tiers.map((tier) {
+        final count = tierCounts[tier] ?? 0;
+        final hasItems = count > 0;
+        final color = AppColors.getTierColor(tier);
+        
+        return Expanded(
+          child: Container(
+            margin: EdgeInsets.only(right: AppSpacing.xs),
+            padding: EdgeInsets.all(AppSpacing.xs),
+            decoration: BoxDecoration(
+              color: hasItems ? color.withOpacity(0.2) : AppColors.neutral[100],
+              borderRadius: AppBorders.sm,
+              border: Border.all(
+                color: hasItems ? color : AppColors.neutral[300]!,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  tier,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: hasItems ? color : AppColors.textSecondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xxs),
+                Text(
+                  count.toString(),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: hasItems ? AppColors.textPrimary : AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date).inDays;
+    
+    if (difference == 0) {
+      return 'today';
+    } else if (difference == 1) {
+      return 'yesterday';
+    } else if (difference < 7) {
+      return '${difference} days ago';
+    } else {
+      return '${date.month}/${date.day}/${date.year}';
+    }
   }
 }
