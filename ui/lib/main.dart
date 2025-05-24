@@ -9,6 +9,8 @@ import 'screens/login_screen_updated.dart';
 import 'screens/home_screen.dart';
 import 'screens/lists_screen.dart';
 import 'screens/design_system_demo.dart';
+import 'screens/logo_options_demo.dart';
+import 'widgets/dev_menu.dart';
 import 'design_system/design_system.dart';
 import 'services/service_factory.dart';
 
@@ -50,6 +52,8 @@ class MyApp extends StatelessWidget {
               '/home': (context) => const HomeScreen(),
               '/lists': (context) => const ListsScreen(),
               '/design-system': (context) => const DesignSystemDemo(),
+              '/logo-options': (context) => const LogoOptionsDemo(),
+              '/dev-menu': (context) => const DevMenu(),
             },
           );
         },

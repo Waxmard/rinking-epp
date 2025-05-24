@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/list_provider.dart';
 import '../utils/app_theme.dart';
+import '../widgets/list_card.dart';
 import '../widgets/tier_list_preview.dart';
+import '../models/list_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -113,45 +115,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      
+
                       // Action buttons
                       Row(
                         children: [
-                          // Lists button
-                          Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F5), // Softer off-white
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(20),
-                                onTap: () {
-                                  Navigator.pushNamed(context, '/lists');
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.list, color: AppTheme.primaryColor, size: 18),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Lists',
-                                        style: TextStyle(
-                                          color: AppTheme.primaryColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          
                           // Add new list button
                           Container(
                             margin: const EdgeInsets.only(right: 24),
@@ -186,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                           ),
-                          
+
                           // Profile avatar
                           GestureDetector(
                             onTap: () {
@@ -208,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
                   // No greeting or username needed
                   const SizedBox(height: 8),
@@ -257,10 +224,61 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+                  const SizedBox(height: 24),
+
+                  // No Create New List button needed here anymore
+                  const SizedBox(height: 24),
+
+                  // All Lists Section Title
+                  Text(
+                    'All Lists',
+                    style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
+                  ),
+                  const SizedBox(height: 8),
                 ],
               ),
             ),
           ),
+
+          // User Lists
+          if (listProvider.lists.isEmpty && listProvider.isLoading)
+            const SliverToBoxAdapter(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (listProvider.lists.isEmpty)
+            const SliverToBoxAdapter(
+              child: SizedBox(), // No need to show anything here if there are no lists
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final list = listProvider.lists[index];
+                  // Skip the most recent list if it's already shown above
+                  if (listProvider.recentList != null &&
+                      list.listId == listProvider.recentList!.listId) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return ListCard(
+                    title: list.title,
+                    itemCount: list.itemCount,
+                    lastModified: list.updatedAt,
+                    onTap: () {
+                      // TODO: Navigate to list detail
+                    },
+                    onEdit: () {
+                      // TODO: Navigate to edit list
+                    },
+                    onDelete: () {
+                      // TODO: Confirm and delete list
+                      _showDeleteConfirmation(context, list.listId);
+                    },
+                  );
+                },
+                childCount: listProvider.lists.length,
+              ),
+            ),
 
           // Bottom padding
           const SliverToBoxAdapter(
@@ -315,6 +333,51 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, String listId) {
+    final listProvider = Provider.of<ListProvider>(context, listen: false);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete List'),
+          content: const Text('Are you sure you want to delete this list? This action cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+
+                // Show loading indicator
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Deleting list...')),
+                );
+
+                final success = await listProvider.deleteList(listId);
+
+                if (context.mounted) {
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('List deleted successfully')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to delete list: ${listProvider.error ?? "Unknown error"}')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+            ),
+          ],
         );
       },
     );

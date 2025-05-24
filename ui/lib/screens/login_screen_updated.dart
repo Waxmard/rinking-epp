@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../utils/responsive_helper.dart';
 import '../design_system/design_system.dart';
+import 'login_screen_logo_options.dart';
+import '../widgets/tiernerd_logo_text.dart';
 
 class LoginScreenUpdated extends StatefulWidget {
   const LoginScreenUpdated({super.key});
@@ -23,7 +25,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
   // Animation controllers for phrase transitions
   late AnimationController _phraseAnimationController;
   late Animation<double> _phraseOpacity;
-  
+
   // Animation for floating elements
   late AnimationController _floatingElementController;
   late Animation<double> _floatingAnimation;
@@ -219,11 +221,11 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SizedBox(height: AppSpacing.xxxl),
-                    _buildLogo(size: 180), // Slightly smaller logo
                     SizedBox(height: AppSpacing.xl),
+                    _buildLogo(size: 200), // Logo container size (actual logo is 30% of this)
+                    SizedBox(height: AppSpacing.lg),
                     _buildTitle(),
-                    SizedBox(height: AppSpacing.xxl),
+                    SizedBox(height: AppSpacing.xl),
                     _buildLoginForm(),
                     SizedBox(height: AppSpacing.lg),
                     _buildSignUpText(),
@@ -285,7 +287,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
                 child: Center(
                   child: FadeTransition(
                     opacity: _fadeAnimation,
-                    child: _buildLogo(size: 240),
+                    child: _buildLogo(size: 100), // Smaller for desktop too
                   ),
                 ),
               ),
@@ -328,19 +330,36 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
       ),
     );
   }
-  
+
   Widget _buildAppVersion() {
-    return Align(
-      alignment: Alignment.center,
-      child: Text(
-        'v1.0.0 • Tier Nerd',
-        style: AppTypography.caption.copyWith(
-          color: AppColors.textOnPrimary.withOpacity(0.5),
+    return GestureDetector(
+      onTap: () {
+        // Triple tap to access dev menu
+        _devTapCount++;
+        if (_devTapCount >= 3) {
+          _devTapCount = 0;
+          Navigator.pushNamed(context, '/dev-menu');
+        }
+        // Reset tap count after 2 seconds
+        Future.delayed(const Duration(seconds: 2), () {
+          _devTapCount = 0;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.all(AppSpacing.md),
+        color: Colors.transparent,
+        child: Text(
+          'v1.0.0 • Tier Nerd',
+          style: AppTypography.caption.copyWith(
+            color: AppColors.textOnPrimary.withOpacity(0.5),
+          ),
         ),
       ),
     );
   }
-  
+
+  int _devTapCount = 0;
+
   Widget _buildAnimatedFloatingElements({bool isDesktop = false}) {
     // Adjust positions based on layout
     final positions = isDesktop
@@ -357,17 +376,17 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
             Positioned(bottom: 100, right: 50, child: _buildFloatingElement(0.07, 22, Icons.format_list_numbered)),
             Positioned(top: 300, left: 40, child: _buildFloatingElement(0.05, 30, Icons.leaderboard)),
           ];
-    
+
     return Stack(children: positions);
   }
-  
+
   Widget _buildFloatingElement(double opacity, double size, IconData icon) {
     return AnimatedBuilder(
       animation: _floatingAnimation,
       builder: (context, child) {
         // Create subtle floating movement
         final offset = 5.0 * _floatingAnimation.value;
-        
+
         return Transform.translate(
           offset: Offset(0, sin(_floatingAnimation.value * 2 * 3.14159) * offset),
           child: Opacity(
@@ -392,31 +411,51 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
   }
 
   Widget _buildLogo({double size = 200}) {
-    return Hero(
-      tag: 'app_logo',
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            AppShadows.glow(Colors.white, opacity: 0.4, blur: 40),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // TierNerd text with minimal style
+        TierNerdLogoText.minimal(fontSize: 36),
+        SizedBox(height: AppSpacing.sm),
+        // Animated logo - fixed small size
+        Hero(
+          tag: 'app_logo',
+          child: GestureDetector(
+            onLongPress: () {
+              // Secret long press to access logo options demo
+              Navigator.pushNamed(context, '/logo-options');
+            },
+            // Logo with subtle glow and animation
+            child: AnimatedBuilder(
+              animation: _floatingAnimation,
+              builder: (context, child) {
+                return Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.2 + (0.1 * _floatingAnimation.value)),
+                        blurRadius: 20,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Transform.scale(
+                    scale: 0.95 + (0.05 * _floatingAnimation.value),
+                    child: child,
+                  ),
+                );
+              },
+              child: Image.asset(
+                'assets/images/logo-transparent.png',
+                width: 250,
+                height: 175,
+                fit: BoxFit.contain,
+              ),
             ),
-          ],
-        ),
-        padding: EdgeInsets.all(size * 0.1), // 10% padding
-        child: ClipOval(
-          child: Image.asset(
-            'assets/images/tier-nerd-logo-0.png',
-            fit: BoxFit.contain,
           ),
         ),
-      ),
+      ],
     );
   }
 
@@ -465,7 +504,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
           keyboardType: TextInputType.emailAddress,
         ),
         SizedBox(height: AppSpacing.md),
-        
+
         // Password field with custom theming for login
         _ThemedTextField(
           controller: _passwordController,
@@ -486,19 +525,19 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
           ),
         ),
         SizedBox(height: AppSpacing.sm),
-        
+
         // Forgot password link
         _buildForgotPassword(),
         SizedBox(height: AppSpacing.lg),
-        
+
         // Email login button with design system
         _buildEmailLoginButton(),
         SizedBox(height: AppSpacing.lg),
-        
+
         // OR divider
         _buildOrDivider(),
         SizedBox(height: AppSpacing.lg),
-        
+
         // Google sign-in button
         _buildGoogleSignInButton(),
       ],
@@ -518,7 +557,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
       ),
     );
   }
-  
+
   Widget _buildEmailLoginButton() {
     return Consumer<AuthProvider>(
       builder: (context, auth, child) {
@@ -568,7 +607,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
       },
     );
   }
-  
+
   Widget _buildOrDivider() {
     return Row(
       children: [

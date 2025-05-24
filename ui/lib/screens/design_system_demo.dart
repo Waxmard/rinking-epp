@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../design_system/design_system.dart';
+import '../widgets/tiernerd_logo_text.dart';
 
 class DesignSystemDemo extends StatefulWidget {
   const DesignSystemDemo({Key? key}) : super(key: key);
@@ -62,6 +63,101 @@ class _DesignSystemDemoState extends State<DesignSystemDemo> {
                   Text('LABEL MEDIUM', style: AppTypography.labelMedium),
                   Text('LABEL SMALL', style: AppTypography.labelSmall),
                 ],
+              ),
+            ),
+            
+            // TierNerd Logo Text Styles Section
+            _buildSection(
+              'TierNerd Logo Text Styles',
+              Container(
+                padding: EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: AppBorders.lg,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Style 1: Gradient Glow',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    TierNerdLogoText.gradientGlow(fontSize: 36),
+                    SizedBox(height: AppSpacing.xl),
+                    
+                    Text(
+                      'Style 2: Split Style',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    TierNerdLogoText.splitStyle(fontSize: 36),
+                    SizedBox(height: AppSpacing.xl),
+                    
+                    Text(
+                      'Style 3: Outlined',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    TierNerdLogoText.outlined(fontSize: 36),
+                    SizedBox(height: AppSpacing.xl),
+                    
+                    Text(
+                      'Style 4: Tier Blocks',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    TierNerdLogoText.tierBlocks(fontSize: 36),
+                    SizedBox(height: AppSpacing.xl),
+                    
+                    Text(
+                      'Style 5: Neon Glow',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    TierNerdLogoText.neonGlow(fontSize: 36),
+                    SizedBox(height: AppSpacing.xl),
+                    
+                    Text(
+                      'Style 6: Retro Arcade',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    TierNerdLogoText.retroArcade(fontSize: 36),
+                    SizedBox(height: AppSpacing.xl),
+                    
+                    Text(
+                      'Style 7: Minimal',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    TierNerdLogoText.minimal(fontSize: 36),
+                    SizedBox(height: AppSpacing.xl),
+                    
+                    Text(
+                      'Style 8: Badge',
+                      style: AppTypography.titleSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    TierNerdLogoText.badge(fontSize: 36),
+                  ],
+                ),
               ),
             ),
             

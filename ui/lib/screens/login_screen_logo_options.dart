@@ -20,7 +20,7 @@ class LogoDisplayOptions {
       padding: EdgeInsets.all(size * 0.1), // 10% padding
       child: ClipOval(
         child: Image.asset(
-          'assets/images/tier-nerd-logo-0.png',
+          'assets/images/logo-transparent.png',
           fit: BoxFit.contain,
         ),
       ),
@@ -49,7 +49,7 @@ class LogoDisplayOptions {
         ),
         // Logo
         Image.asset(
-          'assets/images/tier-nerd-logo-0.png',
+          'assets/images/logo-transparent.png',
           width: size * 0.8,
           height: size * 0.8,
           fit: BoxFit.contain,
@@ -58,20 +58,25 @@ class LogoDisplayOptions {
     );
   }
 
-  /// Option 3: Glass morphism effect
+  /// Option 3: Glass morphism effect - Enhanced for transparent logo
   static Widget glassMorphism({double size = 200}) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(size * 0.2),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withOpacity(0.3),
           width: 2,
         ),
         boxShadow: [
-          AppShadows.glow(Colors.white, opacity: 0.2, blur: 20),
+          AppShadows.glow(Colors.white, opacity: 0.3, blur: 30),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: ClipRRect(
@@ -82,9 +87,9 @@ class LogoDisplayOptions {
             BlendMode.srcOver,
           ),
           child: Padding(
-            padding: EdgeInsets.all(size * 0.1),
+            padding: EdgeInsets.all(size * 0.08),
             child: Image.asset(
-              'assets/images/tier-nerd-logo-0.png',
+              'assets/images/logo-transparent.png',
               fit: BoxFit.contain,
             ),
           ),
@@ -104,7 +109,7 @@ class LogoDisplayOptions {
       child: Container(
         padding: EdgeInsets.all(size * 0.15),
         child: Image.asset(
-          'assets/images/tier-nerd-logo-0.png',
+          'assets/images/logo-transparent.png',
           fit: BoxFit.contain,
         ),
       ),
@@ -133,7 +138,7 @@ class LogoDisplayOptions {
               width: size,
               height: size,
               child: Image.asset(
-                'assets/images/tier-nerd-logo-0.png',
+                'assets/images/logo-transparent.png',
                 fit: BoxFit.contain,
                 color: Colors.white,
                 colorBlendMode: BlendMode.multiply,
@@ -145,7 +150,7 @@ class LogoDisplayOptions {
     );
   }
 
-  /// Option 6: Animated glow effect
+  /// Option 6: Animated glow effect - Perfect for transparent logos
   static Widget animatedGlow({
     double size = 200,
     required Animation<double> animation,
@@ -153,24 +158,39 @@ class LogoDisplayOptions {
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white.withOpacity(0.3 + (0.2 * animation.value)),
-                blurRadius: 20 + (20 * animation.value),
-                spreadRadius: 5 * animation.value,
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Animated glow background
+            Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.2 + (0.3 * animation.value)),
+                    blurRadius: 30 + (30 * animation.value),
+                    spreadRadius: 10 * animation.value,
+                  ),
+                  BoxShadow(
+                    color: AppColors.accent.withOpacity(0.1 + (0.1 * animation.value)),
+                    blurRadius: 50 + (20 * animation.value),
+                    spreadRadius: 15 * animation.value,
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: child,
+            ),
+            // Logo with subtle scale animation
+            Transform.scale(
+              scale: 1.0 + (0.05 * animation.value),
+              child: child!,
+            ),
+          ],
         );
       },
       child: Image.asset(
-        'assets/images/tier-nerd-logo-0.png',
+        'assets/images/logo-transparent.png',
         fit: BoxFit.contain,
       ),
     );
