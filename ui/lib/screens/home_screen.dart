@@ -5,6 +5,7 @@ import '../providers/list_provider.dart';
 import '../design_system/design_system.dart';
 import '../widgets/list_card.dart';
 import '../widgets/tier_list_preview.dart';
+import '../widgets/tiernerd_logo_text.dart';
 import '../models/list_model.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -82,10 +83,14 @@ class _HomeScreenState extends State<HomeScreen> {
           // Main content
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.xxl, AppSpacing.md, 0),
+              padding: EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // TierNerd text header
+                  TierNerdLogoText.minimal(fontSize: 18),
+                  SizedBox(height: AppSpacing.sm),
+                  
                   // Top row with logo and profile
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
