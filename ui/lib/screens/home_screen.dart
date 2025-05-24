@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header row with logo, add button, and profile
+                  // Top row with logo and profile
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -96,61 +96,138 @@ class _HomeScreenState extends State<HomeScreen> {
                           // Navigate home (refresh)
                           Navigator.of(context).pushReplacementNamed('/');
                         },
-                        child: Row(
-                          children: [
-                            // Just use the logo image without text
-                            Image.asset(
-                              'assets/images/logo-transparent.png',
-                              height: 60,
-                              width: 60,
-                              fit: BoxFit.contain,
-                            ),
-                          ],
+                        child: Image.asset(
+                          'assets/images/logo-transparent.png',
+                          height: 60,
+                          width: 60,
+                          fit: BoxFit.contain,
                         ),
                       ),
 
-                      // Action buttons
-                      Row(
-                        children: [
-                          // Add new list button
-                          Container(
-                            margin: EdgeInsets.only(right: AppSpacing.lg),
-                            child: AppButton(
-                              label: 'Create',
-                              onPressed: () {
-                                // TODO: Navigate to create list screen
-                              },
-                              variant: AppButtonVariant.secondary,
-                              size: AppButtonSize.small,
-                              icon: Icons.add,
-                            ),
-                          ),
-
-                          // Profile avatar
-                          GestureDetector(
-                            onTap: () {
-                              _showProfileMenu(context);
-                            },
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundImage: userData?['photoUrl'] != null
-                                ? userData!['photoUrl']!.startsWith('http')
-                                    ? NetworkImage(userData['photoUrl']!)
-                                    : AssetImage(userData['photoUrl']!) as ImageProvider
-                                : null,
-                              child: userData?['photoUrl'] == null
-                                ? const Icon(Icons.person)
-                                : null,
-                            ),
-                          ),
-                        ],
+                      // Profile avatar
+                      GestureDetector(
+                        onTap: () {
+                          _showProfileMenu(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 28,
+                          backgroundImage: userData?['photoUrl'] != null
+                            ? userData!['photoUrl']!.startsWith('http')
+                                ? NetworkImage(userData['photoUrl']!)
+                                : AssetImage(userData['photoUrl']!) as ImageProvider
+                            : null,
+                          child: userData?['photoUrl'] == null
+                            ? const Icon(Icons.person, size: 32)
+                            : null,
+                        ),
                       ),
                     ],
                   ),
 
                   SizedBox(height: AppSpacing.lg),
-                  // No greeting or username needed
-                  SizedBox(height: AppSpacing.sm),
+
+                  // Action buttons row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(right: AppSpacing.sm),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: AppBorders.md,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: AppBorders.md,
+                                onTap: () {
+                                  Navigator.of(context).pushNamed('/lists');
+                                },
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md,
+                                    vertical: AppSpacing.md,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'All Lists',
+                                      style: AppTypography.labelLarge.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(left: AppSpacing.sm),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: AppBorders.md,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: AppBorders.md,
+                                onTap: () {
+                                  // TODO: Navigate to create list screen
+                                },
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md,
+                                    vertical: AppSpacing.md,
+                                  ),
+                                  child: Center(
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.add,
+                                          size: 20,
+                                          color: AppColors.primary,
+                                        ),
+                                        SizedBox(width: AppSpacing.xs),
+                                        Text(
+                                          'Create',
+                                          style: AppTypography.labelLarge.copyWith(
+                                            color: AppColors.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: AppSpacing.lg),
                 ],
               ),
             ),
@@ -208,65 +285,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   SizedBox(height: AppSpacing.lg),
 
-                  // No Create New List button needed here anymore
-                  SizedBox(height: AppSpacing.lg),
-
-                  // All Lists Section Title
-                  Text(
-                    'All Lists',
-                    style: AppTypography.headlineSmall.copyWith(
-                      color: AppColors.textOnPrimary,
-                    ),
-                  ),
-                  SizedBox(height: AppSpacing.sm),
+                  // Content spacing
+                  SizedBox(height: AppSpacing.md),
                 ],
               ),
             ),
           ),
 
-          // User Lists
-          if (listProvider.lists.isEmpty && listProvider.isLoading)
-            SliverToBoxAdapter(
-              child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.textOnPrimary),
-                ),
-              ),
-            )
-          else if (listProvider.lists.isEmpty)
-            const SliverToBoxAdapter(
-              child: SizedBox(), // No need to show anything here if there are no lists
-            )
-          else
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final list = listProvider.lists[index];
-                  // Skip the most recent list if it's already shown above
-                  if (listProvider.recentList != null &&
-                      list.listId == listProvider.recentList!.listId) {
-                    return const SizedBox.shrink();
-                  }
-
-                  return ListCard(
-                    title: list.title,
-                    itemCount: list.itemCount,
-                    lastModified: list.updatedAt,
-                    onTap: () {
-                      // TODO: Navigate to list detail
-                    },
-                    onEdit: () {
-                      // TODO: Navigate to edit list
-                    },
-                    onDelete: () {
-                      // TODO: Confirm and delete list
-                      _showDeleteConfirmation(context, list.listId);
-                    },
-                  );
-                },
-                childCount: listProvider.lists.length,
-              ),
-            ),
+          // Bottom spacing for recent list
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.md),
+          ),
 
           // Bottom padding
           SliverToBoxAdapter(
