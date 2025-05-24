@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/list_provider.dart';
-import '../utils/app_theme.dart';
+import '../design_system/design_system.dart';
 import '../widgets/list_card.dart';
 import '../widgets/tier_list_preview.dart';
+import '../widgets/tiernerd_logo_text.dart';
 import '../models/list_model.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -38,20 +39,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.primaryColor, // Same purple as login screen
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            // Add subtle gradient background like login screen
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.8),
-              ],
-            ),
-          ),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.primaryGradient,
+        ),
+        child: SafeArea(
           child: Stack(
             children: [
               // Add decorative background elements
@@ -63,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     height: 200,
                     width: 200,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
@@ -78,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     height: 250,
                     width: 250,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
@@ -90,11 +83,15 @@ class _HomeScreenState extends State<HomeScreen> {
           // Main content
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 0.0),
+              padding: EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header row with logo, add button, and profile
+                  // TierNerd text header
+                  TierNerdLogoText.minimal(fontSize: 18),
+                  SizedBox(height: AppSpacing.sm),
+                  
+                  // Top row with logo and profile
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -104,185 +101,304 @@ class _HomeScreenState extends State<HomeScreen> {
                           // Navigate home (refresh)
                           Navigator.of(context).pushReplacementNamed('/');
                         },
-                        child: Row(
-                          children: [
-                            // Just use the logo image without text
-                            Image.asset(
-                              'assets/images/tier-nerd-logo-0.png',
-                              height: 60,
-                              width: 60,
-                            ),
-                          ],
+                        child: Image.asset(
+                          'assets/images/logo-transparent.png',
+                          height: 60,
+                          width: 60,
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      
-                      // Action buttons
-                      Row(
-                        children: [
-                          // Add new list button
-                          Container(
-                            margin: const EdgeInsets.only(right: 24),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F5), // Softer off-white
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(20),
-                                onTap: () {
-                                  // TODO: Navigate to create list screen
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.add, color: AppTheme.primaryColor, size: 18),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Create',
-                                        style: TextStyle(
-                                          color: AppTheme.primaryColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          
-                          // Profile avatar
-                          GestureDetector(
-                            onTap: () {
-                              _showProfileMenu(context);
-                            },
-                            child: CircleAvatar(
-                              radius: 20,
-                              backgroundImage: userData?['photoUrl'] != null
-                                ? userData!['photoUrl']!.startsWith('http')
-                                    ? NetworkImage(userData['photoUrl']!)
-                                    : AssetImage(userData['photoUrl']!) as ImageProvider
-                                : null,
-                              child: userData?['photoUrl'] == null
-                                ? const Icon(Icons.person)
-                                : null,
-                            ),
-                          ),
-                        ],
+
+                      // Profile avatar
+                      GestureDetector(
+                        onTap: () {
+                          _showProfileMenu(context);
+                        },
+                        child: CircleAvatar(
+                          radius: 28,
+                          backgroundImage: userData?['photoUrl'] != null
+                            ? userData!['photoUrl']!.startsWith('http')
+                                ? NetworkImage(userData['photoUrl']!)
+                                : AssetImage(userData['photoUrl']!) as ImageProvider
+                            : null,
+                          child: userData?['photoUrl'] == null
+                            ? const Icon(Icons.person, size: 32)
+                            : null,
+                        ),
                       ),
                     ],
                   ),
-                  
-                  const SizedBox(height: 24),
-                  // No greeting or username needed
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          ),
 
-          // Most Recent List
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // No header text needed
-                  const SizedBox(height: 8),
-                  if (listProvider.isLoading && listProvider.recentList == null)
-                    const Center(child: CircularProgressIndicator()),
-                  if (listProvider.recentList != null)
-                    TierListPreview(
-                      tierList: listProvider.recentList!,
-                      onTap: () {
-                        // TODO: Navigate to list detail
-                      },
+                  SizedBox(height: AppSpacing.lg),
+
+                  // Create button (block style)
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: AppBorders.md,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                  if (listProvider.recentList == null && !listProvider.isLoading)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.list_alt, size: 48, color: AppTheme.textColorSecondary),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No lists yet',
-                              style: theme.textTheme.titleMedium?.copyWith(color: Colors.white70),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Create your first tier list to get started',
-                              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: AppBorders.md,
+                        onTap: () {
+                          // TODO: Navigate to create list screen
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.md,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_circle_outline,
+                                size: 24,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'Create New Tier List',
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  const SizedBox(height: 24),
-
-                  // No Create New List button needed here anymore
-                  const SizedBox(height: 24),
-
-                  // All Lists Section Title
-                  Text(
-                    'All Lists',
-                    style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
                   ),
-                  const SizedBox(height: 8),
+
+                  SizedBox(height: AppSpacing.lg),
                 ],
               ),
             ),
           ),
 
-          // User Lists
-          if (listProvider.lists.isEmpty && listProvider.isLoading)
-            const SliverToBoxAdapter(
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (listProvider.lists.isEmpty)
-            const SliverToBoxAdapter(
-              child: SizedBox(), // No need to show anything here if there are no lists
-            )
-          else
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final list = listProvider.lists[index];
-                  // Skip the most recent list if it's already shown above
-                  if (listProvider.recentList != null &&
-                      list.listId == listProvider.recentList!.listId) {
-                    return const SizedBox.shrink();
-                  }
+          // Recent List Content
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: AppSpacing.sm),
+                  if (listProvider.isLoading && listProvider.recentList == null)
+                    Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.textOnPrimary),
+                      ),
+                    )
+                  else if (listProvider.recentList != null) ...[
+                    // Recent List Header
+                    Text(
+                      'Recent List',
+                      style: AppTypography.headlineSmall.copyWith(
+                        color: AppColors.textOnPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                    // Enhanced list preview with more details
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: AppBorders.lg,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: AppBorders.lg,
+                          onTap: () {
+                            // TODO: Navigate to list detail
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.all(AppSpacing.lg),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title and metadata row
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        listProvider.recentList!.title,
+                                        style: AppTypography.headlineSmall.copyWith(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: AppSpacing.sm,
+                                        vertical: AppSpacing.xs,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withOpacity(0.1),
+                                        borderRadius: AppBorders.sm,
+                                      ),
+                                      child: Text(
+                                        '${listProvider.recentList!.itemCount} items',
+                                        style: AppTypography.labelSmall.copyWith(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: AppSpacing.sm),
+                                // Last modified info
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.schedule,
+                                      size: 16,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      'Modified ${_formatDate(listProvider.recentList!.updatedAt)}',
+                                      style: AppTypography.bodySmall.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: AppSpacing.md),
+                                // Tier distribution preview
+                                if (listProvider.recentList!.tierCounts.isNotEmpty) ...[
+                                  Text(
+                                    'Tier Distribution',
+                                    style: AppTypography.labelMedium.copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: AppSpacing.sm),
+                                  _buildTierDistributionRow(listProvider.recentList!.tierCounts),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ] else if (!listProvider.isLoading) ...[
+                    AppCard(
+                      variant: AppCardVariant.outlined,
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.list_alt,
+                            size: 48,
+                            color: AppColors.textOnPrimary.withOpacity(0.5),
+                          ),
+                          SizedBox(height: AppSpacing.md),
+                          Text(
+                            'No lists yet',
+                            style: AppTypography.titleMedium.copyWith(
+                              color: AppColors.textOnPrimary.withOpacity(0.9),
+                            ),
+                          ),
+                          SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Create your first tier list to get started',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.textOnPrimary.withOpacity(0.7),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  
+                  SizedBox(height: AppSpacing.lg),
 
-                  return ListCard(
-                    title: list.title,
-                    itemCount: list.itemCount,
-                    lastModified: list.updatedAt,
-                    onTap: () {
-                      // TODO: Navigate to list detail
-                    },
-                    onEdit: () {
-                      // TODO: Navigate to edit list
-                    },
-                    onDelete: () {
-                      // TODO: Confirm and delete list
-                      _showDeleteConfirmation(context, list.listId);
-                    },
-                  );
-                },
-                childCount: listProvider.lists.length,
+                  // All Lists button (block style)
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: AppBorders.md,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: AppBorders.md,
+                        onTap: () {
+                          Navigator.of(context).pushNamed('/lists');
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSpacing.md,
+                            vertical: AppSpacing.md,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.list,
+                                size: 24,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: AppSpacing.sm),
+                              Text(
+                                'View All Lists',
+                                style: AppTypography.titleMedium.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
+
+          // Bottom spacing for recent list
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.md),
+          ),
 
           // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 80),
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.xxxl),
           ),
         ],
       ),
@@ -299,30 +415,55 @@ class _HomeScreenState extends State<HomeScreen> {
 
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.surfaceLight,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorders.radiusMd)),
+      ),
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Container(
+                margin: EdgeInsets.only(top: AppSpacing.sm),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.neutral[300],
+                  borderRadius: AppBorders.sm,
+                ),
+              ),
+              SizedBox(height: AppSpacing.md),
               ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('Profile'),
+                leading: Icon(Icons.person, color: AppColors.textPrimary),
+                title: Text(
+                  'Profile',
+                  style: AppTypography.bodyLarge,
+                ),
                 onTap: () {
                   // TODO: Navigate to profile screen
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.settings),
-                title: const Text('Settings'),
+                leading: Icon(Icons.settings, color: AppColors.textPrimary),
+                title: Text(
+                  'Settings',
+                  style: AppTypography.bodyLarge,
+                ),
                 onTap: () {
                   // TODO: Navigate to settings screen
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.logout),
-                title: const Text('Sign Out'),
+                leading: Icon(Icons.logout, color: AppColors.error),
+                title: Text(
+                  'Sign Out',
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
                 onTap: () async {
                   Navigator.pop(context);
                   await auth.signOut();
@@ -331,6 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
               ),
+              SizedBox(height: AppSpacing.md),
             ],
           ),
         );
@@ -345,14 +487,27 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete List'),
-          content: const Text('Are you sure you want to delete this list? This action cannot be undone.'),
+          backgroundColor: AppColors.surfaceLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: AppBorders.lg,
+          ),
+          title: Text(
+            'Delete List',
+            style: AppTypography.headlineSmall,
+          ),
+          content: Text(
+            'Are you sure you want to delete this list? This action cannot be undone.',
+            style: AppTypography.bodyMedium,
+          ),
           actions: [
-            TextButton(
+            AppButton(
+              label: 'Cancel',
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              variant: AppButtonVariant.text,
+              size: AppButtonSize.small,
             ),
-            TextButton(
+            AppButton(
+              label: 'Delete',
               onPressed: () async {
                 Navigator.pop(context);
 
@@ -375,11 +530,73 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 }
               },
-              child: const Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+              variant: AppButtonVariant.text,
+              size: AppButtonSize.small,
             ),
           ],
         );
       },
     );
+  }
+
+  Widget _buildTierDistributionRow(Map<String, int> tierCounts) {
+    final tiers = ['S', 'A', 'B', 'C', 'D', 'F'];
+    
+    return Row(
+      children: tiers.map((tier) {
+        final count = tierCounts[tier] ?? 0;
+        final hasItems = count > 0;
+        final color = AppColors.getTierColor(tier);
+        
+        return Expanded(
+          child: Container(
+            margin: EdgeInsets.only(right: AppSpacing.xs),
+            padding: EdgeInsets.all(AppSpacing.xs),
+            decoration: BoxDecoration(
+              color: hasItems ? color.withOpacity(0.2) : AppColors.neutral[100],
+              borderRadius: AppBorders.sm,
+              border: Border.all(
+                color: hasItems ? color : AppColors.neutral[300]!,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  tier,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: hasItems ? color : AppColors.textSecondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xxs),
+                Text(
+                  count.toString(),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: hasItems ? AppColors.textPrimary : AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date).inDays;
+    
+    if (difference == 0) {
+      return 'today';
+    } else if (difference == 1) {
+      return 'yesterday';
+    } else if (difference < 7) {
+      return '${difference} days ago';
+    } else {
+      return '${date.month}/${date.day}/${date.year}';
+    }
   }
 }
