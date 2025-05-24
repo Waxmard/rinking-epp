@@ -7,7 +7,8 @@ import 'providers/list_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/lists_screen.dart';
-import 'utils/app_theme.dart';
+import 'screens/design_system_demo.dart';
+import 'design_system/design_system.dart';
 import 'services/service_factory.dart';
 
 Future<void> main() async {
@@ -46,6 +47,7 @@ class MyApp extends StatelessWidget {
               '/login': (context) => const LoginScreen(),
               '/home': (context) => const HomeScreen(),
               '/lists': (context) => const ListsScreen(),
+              '/design-system': (context) => const DesignSystemDemo(),
             },
           );
         },
