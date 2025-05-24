@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import get_password_hash
 from app.db.models import User
 from app.schemas.user import UserCreate, UserUpdate
+import uuid
+from datetime import datetime
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
@@ -27,9 +29,12 @@ async def create_user(db: AsyncSession, obj_in: UserCreate) -> User:
     Create a new user.
     """
     db_obj = User(
+        user_id=uuid.uuid4(),
         email=obj_in.email,
         username=obj_in.username,
         password_hash=get_password_hash(obj_in.password),
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     db.add(db_obj)
     await db.commit()

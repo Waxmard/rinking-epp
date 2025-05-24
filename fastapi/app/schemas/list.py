@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -17,7 +18,6 @@ class ListBase(BaseModel):
 # Properties to receive via API on creation
 class ListCreate(ListBase):
     """Schema for list creation."""
-
     pass
 
 
@@ -33,11 +33,12 @@ class ListUpdate(BaseModel):
 class List(ListBase):
     """Schema for list response."""
 
-    list_id: int
-    user_id: int
+    list_id: UUID
+    user_id: UUID
+    title: str
+    description: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    items: List[Item] = []
 
     class Config:
         """Pydantic config."""
@@ -49,8 +50,10 @@ class List(ListBase):
 class ListSimple(ListBase):
     """Schema for simple list response (without items)."""
 
-    list_id: int
-    user_id: int
+    list_id: UUID
+    user_id: UUID
+    title: str
+    description: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     item_count: int = 0

@@ -1,8 +1,9 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, List, Literal
 
 from pydantic import BaseModel, Field, HttpUrl
+import uuid
 
 
 # Shared properties
@@ -17,8 +18,9 @@ class ItemBase(BaseModel):
 # Properties to receive via API on creation
 class ItemCreate(ItemBase):
     """Schema for item creation."""
-
-    pass
+    name: str
+    description: Optional[str] = None
+    image_url: Optional[HttpUrl] = None
 
 
 # Properties to receive via API on update
@@ -46,8 +48,11 @@ class TierRank(str, Enum):
 class Item(ItemBase):
     """Schema for item response."""
 
-    item_id: int
-    list_id: int
+    item_id: uuid.UUID
+    list_id: uuid.UUID
+    name: str
+    description: Optional[str] = None
+    image_url: Optional[HttpUrl] = None
     position: Optional[int] = None
     rating: Optional[float] = None
     tier: Optional[TierRank] = None
@@ -59,14 +64,34 @@ class Item(ItemBase):
 
         from_attributes = True
 
+# Schema for comparison
+class Comparison(BaseModel):
+    """Schema for comparison."""
 
-# Schema for comparison request
-class ComparisonRequest(BaseModel):
-    """Schema for comparison request."""
+    reference_item: Item
+    target_item: Item
+    comparison_index: int
+    min_index: int
+    max_index: int
 
-    item1_id: int
-    item2_id: int
-    winner_id: int
+    class Config:
+        """Pydantic config."""
+
+        from_attributes = True
+
+# Schema for comparison
+ComparisonResult = Literal["better", "worse"]
+
+class ComparisonSession(BaseModel):
+    """Schema for comparison session."""
+
+    session_id: str
+    list_id: uuid.UUID
+    item_id: uuid.UUID
+    current_comparison: Optional[Comparison] = None
+    is_complete: bool = False
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         """Pydantic config."""
@@ -74,12 +99,10 @@ class ComparisonRequest(BaseModel):
         from_attributes = True
 
 
-# Schema for next comparison
-class NextComparison(BaseModel):
-    """Schema for next comparison response."""
+class ComparisonResultRequest(BaseModel):
+    """Schema for comparison result request."""
 
-    item1: Item
-    item2: Item
+    result: ComparisonResult
 
     class Config:
         """Pydantic config."""

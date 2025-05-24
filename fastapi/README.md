@@ -80,3 +80,22 @@ Numeric ratings are mapped to tiers using the following ranges:
 | C    | 4.5 - 5.9    |
 | D    | 3.0 - 4.4    |
 | F    | 0.1 - 2.9    |
+
+
+# Sample Test Requests
+
+Post Lists Request
+```bash
+curl -X POST "http://localhost:8000/api/lists/?name=faggot&description=for%20gays"   -H "Authorization: Bearer <your-token>"
+```
+
+Create User Request
+```bash
+curl -X POST "http://localhost:8000/api/users/" -H "Content-Type: application/json" -H "Authorization: Bearer <your-token>" -d '{"username": "testuser", "email": "testuser@example.com", "password": "testpassword"}'
+```
+
+Create Item Request
+```bash
+curl -X POST "http://localhost:8000/api/items/?list_title=faggot" -H "Content-Type: application/json" -H "Authorization: Bearer <your-token>" -d '{"name": "testitem", "description": "still gay", "image_url": "testimageurl"}'
+```
+
