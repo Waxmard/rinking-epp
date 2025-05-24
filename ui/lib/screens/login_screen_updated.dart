@@ -395,17 +395,26 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
     return Hero(
       tag: 'app_logo',
       child: Container(
+        width: size,
+        height: size,
         decoration: BoxDecoration(
+          color: Colors.white,
           shape: BoxShape.circle,
           boxShadow: [
-            AppShadows.glow(Colors.white, opacity: 0.3, blur: 30),
+            AppShadows.glow(Colors.white, opacity: 0.4, blur: 40),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
           ],
         ),
-        child: Image.asset(
-          'assets/images/tier-nerd-logo-0.png',
-          width: size,
-          height: size,
-          fit: BoxFit.contain,
+        padding: EdgeInsets.all(size * 0.1), // 10% padding
+        child: ClipOval(
+          child: Image.asset(
+            'assets/images/tier-nerd-logo-0.png',
+            fit: BoxFit.contain,
+          ),
         ),
       ),
     );
