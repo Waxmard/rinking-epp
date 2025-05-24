@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/list_provider.dart';
-import '../utils/app_theme.dart';
+import '../design_system/design_system.dart';
 import '../widgets/list_card.dart';
 import '../widgets/tier_list_preview.dart';
 import '../models/list_model.dart';
@@ -38,20 +38,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.primaryColor, // Same purple as login screen
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            // Add subtle gradient background like login screen
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppTheme.primaryColor,
-                AppTheme.primaryColor.withOpacity(0.8),
-              ],
-            ),
-          ),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppColors.primaryGradient,
+        ),
+        child: SafeArea(
           child: Stack(
             children: [
               // Add decorative background elements
@@ -63,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     height: 200,
                     width: 200,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
@@ -78,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Container(
                     height: 250,
                     width: 250,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
                     ),
@@ -90,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
           // Main content
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 0.0),
+              padding: EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.xxl, AppSpacing.md, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -108,9 +100,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             // Just use the logo image without text
                             Image.asset(
-                              'assets/images/tier-nerd-logo-0.png',
+                              'assets/images/logo-transparent.png',
                               height: 60,
                               width: 60,
+                              fit: BoxFit.contain,
                             ),
                           ],
                         ),
@@ -121,36 +114,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           // Add new list button
                           Container(
-                            margin: const EdgeInsets.only(right: 24),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F5), // Softer off-white
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(20),
-                                onTap: () {
-                                  // TODO: Navigate to create list screen
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.add, color: AppTheme.primaryColor, size: 18),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Create',
-                                        style: TextStyle(
-                                          color: AppTheme.primaryColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                            margin: EdgeInsets.only(right: AppSpacing.lg),
+                            child: AppButton(
+                              label: 'Create',
+                              onPressed: () {
+                                // TODO: Navigate to create list screen
+                              },
+                              variant: AppButtonVariant.secondary,
+                              size: AppButtonSize.small,
+                              icon: Icons.add,
                             ),
                           ),
 
@@ -176,9 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.lg),
                   // No greeting or username needed
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppSpacing.sm),
                 ],
               ),
             ),
@@ -187,14 +159,18 @@ class _HomeScreenState extends State<HomeScreen> {
           // Most Recent List
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // No header text needed
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppSpacing.sm),
                   if (listProvider.isLoading && listProvider.recentList == null)
-                    const Center(child: CircularProgressIndicator()),
+                    Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.textOnPrimary),
+                      ),
+                    ),
                   if (listProvider.recentList != null)
                     TierListPreview(
                       tierList: listProvider.recentList!,
@@ -203,38 +179,46 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   if (listProvider.recentList == null && !listProvider.isLoading)
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.list_alt, size: 48, color: AppTheme.textColorSecondary),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No lists yet',
-                              style: theme.textTheme.titleMedium?.copyWith(color: Colors.white70),
+                    AppCard(
+                      variant: AppCardVariant.outlined,
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.list_alt,
+                            size: 48,
+                            color: AppColors.textOnPrimary.withOpacity(0.5),
+                          ),
+                          SizedBox(height: AppSpacing.md),
+                          Text(
+                            'No lists yet',
+                            style: AppTypography.titleMedium.copyWith(
+                              color: AppColors.textOnPrimary.withOpacity(0.9),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Create your first tier list to get started',
-                              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
-                              textAlign: TextAlign.center,
+                          ),
+                          SizedBox(height: AppSpacing.sm),
+                          Text(
+                            'Create your first tier list to get started',
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: AppColors.textOnPrimary.withOpacity(0.7),
                             ),
-                          ],
-                        ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.lg),
 
                   // No Create New List button needed here anymore
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.lg),
 
                   // All Lists Section Title
                   Text(
                     'All Lists',
-                    style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
+                    style: AppTypography.headlineSmall.copyWith(
+                      color: AppColors.textOnPrimary,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppSpacing.sm),
                 ],
               ),
             ),
@@ -242,8 +226,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // User Lists
           if (listProvider.lists.isEmpty && listProvider.isLoading)
-            const SliverToBoxAdapter(
-              child: Center(child: CircularProgressIndicator()),
+            SliverToBoxAdapter(
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.textOnPrimary),
+                ),
+              ),
             )
           else if (listProvider.lists.isEmpty)
             const SliverToBoxAdapter(
@@ -281,8 +269,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
           // Bottom padding
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 80),
+          SliverToBoxAdapter(
+            child: SizedBox(height: AppSpacing.xxxl),
           ),
         ],
       ),
@@ -299,30 +287,55 @@ class _HomeScreenState extends State<HomeScreen> {
 
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.surfaceLight,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorders.radiusMd)),
+      ),
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Container(
+                margin: EdgeInsets.only(top: AppSpacing.sm),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.neutral[300],
+                  borderRadius: AppBorders.sm,
+                ),
+              ),
+              SizedBox(height: AppSpacing.md),
               ListTile(
-                leading: const Icon(Icons.person),
-                title: const Text('Profile'),
+                leading: Icon(Icons.person, color: AppColors.textPrimary),
+                title: Text(
+                  'Profile',
+                  style: AppTypography.bodyLarge,
+                ),
                 onTap: () {
                   // TODO: Navigate to profile screen
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.settings),
-                title: const Text('Settings'),
+                leading: Icon(Icons.settings, color: AppColors.textPrimary),
+                title: Text(
+                  'Settings',
+                  style: AppTypography.bodyLarge,
+                ),
                 onTap: () {
                   // TODO: Navigate to settings screen
                   Navigator.pop(context);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.logout),
-                title: const Text('Sign Out'),
+                leading: Icon(Icons.logout, color: AppColors.error),
+                title: Text(
+                  'Sign Out',
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: AppColors.error,
+                  ),
+                ),
                 onTap: () async {
                   Navigator.pop(context);
                   await auth.signOut();
@@ -331,6 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
               ),
+              SizedBox(height: AppSpacing.md),
             ],
           ),
         );
@@ -345,14 +359,27 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete List'),
-          content: const Text('Are you sure you want to delete this list? This action cannot be undone.'),
+          backgroundColor: AppColors.surfaceLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: AppBorders.lg,
+          ),
+          title: Text(
+            'Delete List',
+            style: AppTypography.headlineSmall,
+          ),
+          content: Text(
+            'Are you sure you want to delete this list? This action cannot be undone.',
+            style: AppTypography.bodyMedium,
+          ),
           actions: [
-            TextButton(
+            AppButton(
+              label: 'Cancel',
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              variant: AppButtonVariant.text,
+              size: AppButtonSize.small,
             ),
-            TextButton(
+            AppButton(
+              label: 'Delete',
               onPressed: () async {
                 Navigator.pop(context);
 
@@ -375,7 +402,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 }
               },
-              child: const Text('Delete', style: TextStyle(color: AppTheme.errorColor)),
+              variant: AppButtonVariant.text,
+              size: AppButtonSize.small,
             ),
           ],
         );

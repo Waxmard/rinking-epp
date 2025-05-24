@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/app_theme.dart';
+import '../design_system/design_system.dart';
 
 class ListCard extends StatelessWidget {
   final String title;
@@ -25,17 +25,14 @@ class ListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: isRecentCard ? 3.0 : 1.0,
-      margin: EdgeInsets.all(isRecentCard ? 16.0 : 8.0),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.0),
+    return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
       ),
-      child: InkWell(
+      child: AppCard(
+        variant: isRecentCard ? AppCardVariant.elevated : AppCardVariant.outlined,
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12.0),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -46,21 +43,29 @@ class ListCard extends StatelessWidget {
                     child: Text(
                       title,
                       style: isRecentCard
-                          ? Theme.of(context).textTheme.titleLarge
-                          : Theme.of(context).textTheme.titleMedium,
+                          ? AppTypography.headlineSmall
+                          : AppTypography.titleMedium,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
+                        icon: Icon(
+                          Icons.edit,
+                          size: 20,
+                          color: AppColors.textSecondary,
+                        ),
                         onPressed: onEdit,
                         tooltip: 'Edit',
                         splashRadius: 20,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete, size: 20),
+                        icon: Icon(
+                          Icons.delete,
+                          size: 20,
+                          color: AppColors.textSecondary,
+                        ),
                         onPressed: onDelete,
                         tooltip: 'Delete',
                         splashRadius: 20,
@@ -69,35 +74,42 @@ class ListCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  const Icon(Icons.list, size: 16, color: AppTheme.textColorSecondary),
-                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.list,
+                    size: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                  SizedBox(width: AppSpacing.xs),
                   Text(
                     '$itemCount items',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textColorSecondary,
-                        ),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                  const SizedBox(width: 16),
-                  const Icon(Icons.calendar_today, size: 16, color: AppTheme.textColorSecondary),
-                  const SizedBox(width: 4),
+                  SizedBox(width: AppSpacing.md),
+                  Icon(
+                    Icons.calendar_today,
+                    size: 16,
+                    color: AppColors.textSecondary,
+                  ),
+                  SizedBox(width: AppSpacing.xs),
                   Text(
                     _formatDate(lastModified),
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textColorSecondary,
-                        ),
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
               if (isRecentCard && tierCounts != null) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: AppSpacing.md),
                 _buildTierDistribution(context),
               ],
             ],
           ),
-        ),
       ),
     );
   }
@@ -110,19 +122,19 @@ class ListCard extends StatelessWidget {
       children: [
         Text(
           'Tier Distribution',
-          style: Theme.of(context).textTheme.titleSmall,
+          style: AppTypography.labelLarge,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: AppSpacing.sm),
         SizedBox(
           height: 24,
           child: Row(
             children: [
-              _buildTierIndicator('S', AppTheme.sTierColor),
-              _buildTierIndicator('A', AppTheme.aTierColor),
-              _buildTierIndicator('B', AppTheme.bTierColor),
-              _buildTierIndicator('C', AppTheme.cTierColor),
-              _buildTierIndicator('D', AppTheme.dTierColor),
-              _buildTierIndicator('F', AppTheme.fTierColor),
+              _buildTierIndicator('S', AppColors.tierS),
+              _buildTierIndicator('A', AppColors.tierA),
+              _buildTierIndicator('B', AppColors.tierB),
+              _buildTierIndicator('C', AppColors.tierC),
+              _buildTierIndicator('D', AppColors.tierD),
+              _buildTierIndicator('F', AppColors.tierF),
             ],
           ),
         ),
@@ -155,12 +167,12 @@ class ListCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 2),
+          SizedBox(width: AppSpacing.xxs),
           Text(
             count.toString(),
             style: TextStyle(
               fontSize: 10,
-              color: hasItems ? AppTheme.textColorPrimary : AppTheme.textColorSecondary,
+              color: hasItems ? AppColors.textPrimary : AppColors.textSecondary,
             ),
           ),
         ],
