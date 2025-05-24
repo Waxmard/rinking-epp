@@ -7,10 +7,10 @@ class TierListPreview extends StatelessWidget {
   final VoidCallback onTap;
 
   const TierListPreview({
-    Key? key,
+    super.key,
     required this.tierList,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class TierListPreview extends StatelessWidget {
               style: AppTypography.headlineSmall,
               overflow: TextOverflow.ellipsis,
             ),
-            
+
             // Item count
             SizedBox(height: AppSpacing.sm),
             Row(
@@ -45,9 +45,9 @@ class TierListPreview extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             SizedBox(height: AppSpacing.md),
-            
+
             // Tier rows visualization
             _buildTierPreview(context),
           ],
@@ -58,11 +58,11 @@ class TierListPreview extends StatelessWidget {
   Widget _buildTierPreview(BuildContext context) {
     // The tiers in order
     final tiers = ['S', 'A', 'B', 'C', 'D', 'F'];
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final tier in tiers) 
+        for (final tier in tiers)
           if (tierList.tierCounts[tier] != null && tierList.tierCounts[tier]! > 0)
             _buildTierRow(context, tier, tierList.tierCounts[tier] ?? 0),
       ],
@@ -71,7 +71,7 @@ class TierListPreview extends StatelessWidget {
 
   Widget _buildTierRow(BuildContext context, String tier, int count) {
     final color = AppColors.getTierColor(tier);
-    
+
     return Padding(
       padding: EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
@@ -95,7 +95,7 @@ class TierListPreview extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Item indicators (placeholder blocks representing items)
           Expanded(
             child: SizedBox(
@@ -114,7 +114,7 @@ class TierListPreview extends StatelessWidget {
                       border: Border.all(color: Colors.black26, width: 1),
                     ),
                     alignment: Alignment.center,
-                    child: index < 9 || count <= 10 
+                    child: index < 9 || count <= 10
                         ? null
                         : Text(
                             "+${count - 9}",
@@ -129,7 +129,7 @@ class TierListPreview extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Count label
           Container(
             margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),

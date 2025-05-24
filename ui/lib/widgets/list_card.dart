@@ -12,7 +12,7 @@ class ListCard extends StatelessWidget {
   final Map<String, int>? tierCounts;
 
   const ListCard({
-    Key? key,
+    super.key,
     required this.title,
     required this.itemCount,
     required this.lastModified,
@@ -21,7 +21,7 @@ class ListCard extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.tierCounts,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +116,7 @@ class ListCard extends StatelessWidget {
 
   Widget _buildTierDistribution(BuildContext context) {
     if (tierCounts == null) return const SizedBox.shrink();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -145,7 +145,7 @@ class ListCard extends StatelessWidget {
   Widget _buildTierIndicator(String tier, Color color) {
     final count = tierCounts?[tier] ?? 0;
     final hasItems = count > 0;
-    
+
     return Expanded(
       child: Row(
         mainAxisSize: MainAxisSize.min,

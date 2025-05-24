@@ -439,7 +439,7 @@ class _LoginScreenUpdatedState extends State<LoginScreenUpdated> with TickerProv
           builder: (context, child) {
             return Opacity(
               opacity: _phraseOpacity.value,
-              child: Container(
+              child: SizedBox(
                 width: isLarge ? 500 : double.infinity,
                 height: isLarge ? 40 : 30,
                 child: FittedBox(

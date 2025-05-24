@@ -3,10 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/list_provider.dart';
 import '../design_system/design_system.dart';
-import '../widgets/list_card.dart';
-import '../widgets/tier_list_preview.dart';
 import '../widgets/tiernerd_logo_text.dart';
-import '../models/list_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -23,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Initialize list data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = Provider.of<AuthProvider>(context, listen: false);
       final listProvider = Provider.of<ListProvider>(context, listen: false);
 
       // Set auth token for list service
@@ -36,7 +32,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final auth = Provider.of<AuthProvider>(context);
     final listProvider = Provider.of<ListProvider>(context);
     final userData = auth.userData;
-    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -90,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   // TierNerd text header
                   TierNerdLogoText.minimal(fontSize: 18),
                   SizedBox(height: AppSpacing.sm),
-                  
+
                   // Top row with logo and profile
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -335,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ],
-                  
+
                   SizedBox(height: AppSpacing.lg),
 
                   // All Lists button (block style)
@@ -480,74 +475,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, String listId) {
-    final listProvider = Provider.of<ListProvider>(context, listen: false);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.surfaceLight,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppBorders.lg,
-          ),
-          title: Text(
-            'Delete List',
-            style: AppTypography.headlineSmall,
-          ),
-          content: Text(
-            'Are you sure you want to delete this list? This action cannot be undone.',
-            style: AppTypography.bodyMedium,
-          ),
-          actions: [
-            AppButton(
-              label: 'Cancel',
-              onPressed: () => Navigator.pop(context),
-              variant: AppButtonVariant.text,
-              size: AppButtonSize.small,
-            ),
-            AppButton(
-              label: 'Delete',
-              onPressed: () async {
-                Navigator.pop(context);
-
-                // Show loading indicator
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Deleting list...')),
-                );
-
-                final success = await listProvider.deleteList(listId);
-
-                if (context.mounted) {
-                  if (success) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('List deleted successfully')),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to delete list: ${listProvider.error ?? "Unknown error"}')),
-                    );
-                  }
-                }
-              },
-              variant: AppButtonVariant.text,
-              size: AppButtonSize.small,
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildTierDistributionRow(Map<String, int> tierCounts) {
     final tiers = ['S', 'A', 'B', 'C', 'D', 'F'];
-    
+
     return Row(
       children: tiers.map((tier) {
         final count = tierCounts[tier] ?? 0;
         final hasItems = count > 0;
         final color = AppColors.getTierColor(tier);
-        
+
         return Expanded(
           child: Container(
             margin: EdgeInsets.only(right: AppSpacing.xs),
@@ -588,13 +524,13 @@ class _HomeScreenState extends State<HomeScreen> {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date).inDays;
-    
+
     if (difference == 0) {
       return 'today';
     } else if (difference == 1) {
       return 'yesterday';
     } else if (difference < 7) {
-      return '${difference} days ago';
+      return '$difference days ago';
     } else {
       return '${date.month}/${date.day}/${date.year}';
     }
