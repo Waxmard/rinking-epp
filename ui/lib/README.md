@@ -27,7 +27,7 @@ This Flutter project is set up with the following libraries and frameworks:
   - List creation and management
   - Item addition with images and descriptions
   - Intuitive comparison interface for ranking items
-  - Beautiful tier-based visualization (S, A, B, C, D, E, F tiers)
+  - Beautiful tier-based visualization (S, A, B, C, D, F tiers)
   - Responsive design for mobile, tablet, and desktop
 
 ## Tier Visualization
@@ -37,7 +37,6 @@ TierNerd presents rankings in the familiar S-F tier system:
 - **B Tier**: Good items (colored in light blue)
 - **C Tier**: Average items (colored in blue)
 - **D Tier**: Below average items (colored in purple)
-- **E Tier**: Poor items (colored in red)
 - **F Tier**: Lowest ranked items (colored in gray)
 
 ## Getting Started

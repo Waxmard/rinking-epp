@@ -58,7 +58,7 @@ class TierListItem {
   final String? imageUrl;
   final int position;
   final double rating;
-  final String? tier; // S, A, B, C, D, E, F, or null for unranked
+  final String? tier; // S, A, B, C, D, F, or null for unranked
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -133,7 +133,7 @@ class TierListWithItems {
 
   factory TierListWithItems.fromJson(Map<String, dynamic> json) {
     final itemsJson = json['items'] as List<dynamic>;
-    
+
     return TierListWithItems(
       listId: json['list_id'],
       userId: json['user_id'],

@@ -158,7 +158,7 @@ All protected endpoints require an `Authorization` header with the format: `Bear
 - `GET /lists/{list_id}/tier/{tier}`: Get all items in a specific tier for a list
   - Parameters:
     - `list_id`: ID of the list
-    - `tier`: Tier to retrieve (S, A, B, C, D, E, F, or unranked)
+    - `tier`: Tier to retrieve (S, A, B, C, D, F, or unranked)
   - Returns: Array of items in the specified tier
 
 ## Response Formats
@@ -179,7 +179,6 @@ All protected endpoints require an `Authorization` header with the format: `Bear
     "B": integer,
     "C": integer,
     "D": integer,
-    "E": integer,
     "F": integer,
     "unranked": integer
   },
@@ -207,7 +206,6 @@ All protected endpoints require an `Authorization` header with the format: `Bear
     "B": integer,
     "C": integer,
     "D": integer,
-    "E": integer,
     "F": integer,
     "unranked": integer
   }
@@ -225,7 +223,7 @@ All protected endpoints require an `Authorization` header with the format: `Bear
   "image_url": "string",
   "position": integer,
   "rating": number,
-  "tier": "string (S, A, B, C, D, E, F, or null)",
+  "tier": "string (S, A, B, C, D, F, or null)",
   "created_at": "datetime",
   "updated_at": "datetime"
 }

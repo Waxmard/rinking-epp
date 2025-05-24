@@ -4,7 +4,7 @@ A cross-platform mobile application that lets users create custom lists and rank
 
 ## Overview
 
-This app solves the problem of arbitrary ratings by implementing a 1v1 comparison algorithm. Rather than asking users to assign subjective numerical scores to items, the app presents pairs of items and asks which is better. Through a series of binary choices, each item finds its proper place in the list and receives a numeric rating which is then converted to an intuitive tier ranking (S, A, B, C, D, E, F).
+This app solves the problem of arbitrary ratings by implementing a 1v1 comparison algorithm. Rather than asking users to assign subjective numerical scores to items, the app presents pairs of items and asks which is better. Through a series of binary choices, each item finds its proper place in the list and receives a numeric rating which is then converted to an intuitive tier ranking (S, A, B, C, D, F).
 
 ## Key Features
 
@@ -28,7 +28,6 @@ TierNerd uses a standardized tier ranking system common in gaming and competitiv
 - **B Tier**: Good items (slightly above average)
 - **C Tier**: Average items (balanced)
 - **D Tier**: Below average items
-- **E Tier**: Poor items
 - **F Tier**: The lowest ranked items
 
 While the underlying algorithm assigns numeric values, users interact with this intuitive tier system for easier comprehension and comparison.

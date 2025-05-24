@@ -66,7 +66,7 @@ The ranking algorithm is implemented in `app/utils/algorithm.py` and works by:
 1. Presenting users with binary comparisons between items
 2. Using the results to determine each item's position
 3. Converting positions to ratings (10.0 for top item, 0.1 for bottom)
-4. Mapping numeric ratings to tier rankings (S, A, B, C, D, E, F)
+4. Mapping numeric ratings to tier rankings (S, A, B, C, D, F)
 
 ### Tier Classification System
 
@@ -79,5 +79,4 @@ Numeric ratings are mapped to tiers using the following ranges:
 | B    | 6.0 - 7.4    |
 | C    | 4.5 - 5.9    |
 | D    | 3.0 - 4.4    |
-| E    | 1.5 - 2.9    |
-| F    | 0.1 - 1.4    |
+| F    | 0.1 - 2.9    |
