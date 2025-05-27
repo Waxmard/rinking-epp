@@ -2,17 +2,19 @@ import datetime
 from typing import List as ListType, Optional
 
 from sqlalchemy import ForeignKey, String, Text, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+import uuid
 
-from app.db.database import Base
-
+class Base(DeclarativeBase):
+    """Base class for all database models."""
+    pass
 
 class User(Base):
     """User model."""
 
     __tablename__ = "users"
 
-    user_id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
@@ -32,8 +34,8 @@ class List(Base):
 
     __tablename__ = "lists"
 
-    list_id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"))
+    list_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id"))
     title: Mapped[str] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
@@ -53,8 +55,8 @@ class Item(Base):
 
     __tablename__ = "items"
 
-    item_id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    list_id: Mapped[int] = mapped_column(ForeignKey("lists.list_id"))
+    item_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, index=True)
+    list_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("lists.list_id"))
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

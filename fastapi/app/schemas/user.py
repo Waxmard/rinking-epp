@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -15,7 +16,8 @@ class UserBase(BaseModel):
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     """Schema for user creation."""
-
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    email: Optional[EmailStr] = None
     password: str = Field(..., min_length=8)
 
 
@@ -32,7 +34,7 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     """Schema for user response."""
 
-    user_id: int
+    user_id: UUID
     created_at: datetime
     updated_at: datetime
 
@@ -46,6 +48,7 @@ class User(UserBase):
 class UserInDB(User):
     """Schema for user in database."""
 
+    user_id: UUID
     password_hash: str
 
 

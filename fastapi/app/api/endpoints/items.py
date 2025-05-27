@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Union
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -9,31 +9,44 @@ from app.db.database import get_db
 from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
 from app.schemas.item import (
-    ComparisonRequest,
+    Comparison,
+    ComparisonResultRequest,
+    ComparisonSession,
     Item,
     ItemCreate,
     ItemUpdate,
-    NextComparison,
 )
 from app.schemas.user import User
-from app.utils.algorithm import find_next_comparison_pair, update_rankings
+from app.core.algorithm import find_next_comparison
+import uuid
+from datetime import datetime
 
 router = APIRouter()
 
+session_id_cache = dict()
 
-@router.post("/{list_id}", response_model=Item)
+@router.post("/", response_model=Item)
 async def create_item(
-    list_id: int,
+    list_title: str,
     item_in: ItemCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Any:
+) -> ComparisonSession:
     """
     Create a new item within a list.
+    
+    Args:
+        list_id: ID of the list to add the item to
+        item_in: Item creation data
+        db: Database session
+        current_user: Current authenticated user
+    
+    Returns:
+        Created item object
     """
     # Check if list exists and belongs to current user
     query = select(ListModel).where(
-        ListModel.list_id == list_id, ListModel.user_id == current_user.user_id
+        ListModel.title == list_title, ListModel.user_id == current_user.user_id
     )
     result = await db.execute(query)
     list_obj = result.scalar_one_or_none()
@@ -46,39 +59,126 @@ async def create_item(
 
     # Create item
     item_obj = ItemModel(
-        list_id=list_id,
+        item_id=uuid.uuid4(),
+        list_id=list_obj.list_id,
         name=item_in.name,
         description=item_in.description,
         image_url=item_in.image_url,
         position=None,  # Initially unranked
         rating=None,  # Initially unrated
+        tier=None,  # Initially unrated
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
-    db.add(item_obj)
-    await db.commit()
-    await db.refresh(item_obj)
+        # Get all items in the list
+    stmt = select(ItemModel).where(ItemModel.list_id == list_obj.list_id).order_by(ItemModel.position)
+    result = await db.execute(stmt)
+    all_items = result.scalars().all()
 
-    return {
-        "item_id": item_obj.item_id,
-        "list_id": item_obj.list_id,
-        "name": item_obj.name,
-        "description": item_obj.description,
-        "image_url": item_obj.image_url,
-        "position": item_obj.position,
-        "rating": item_obj.rating,
-        "created_at": item_obj.created_at,
-        "updated_at": item_obj.updated_at,
-    }
+    if not all_items:
+        db.add(item_obj)
+        await db.commit()
+        await db.refresh(item_obj)
+        return item_obj
+
+    # Initialize comparison
+    middle = len(all_items) // 2
+    comparison = Comparison(
+        item1=item_obj,
+        item2=all_items[middle],
+        low=0,
+        mid=middle,
+        high=len(all_items) - 1,
+        is_winner=None,
+        done=False
+    )
+
+    # Create session ID (using timestamp for simplicity)
+    session_id = f"session_{int(datetime.now().timestamp())}"
+
+    comparison_session = ComparisonSession(
+        session_id=session_id,
+        list_id=list_obj.list_id,
+        item_id=item_obj,
+        current_comparison=comparison,
+        is_complete=False,
+        created_at=datetime.now(),
+        updated_at=datetime.now()
+    )
+
+    session_id_cache[session_id] = comparison_session
+
+    return comparison_session
 
 
-@router.get("/{item_id}", response_model=Item)
+@router.post("/comparison/{session_id}/result", response_model=Union[ComparisonSession, None])
+async def submit_comparison_result(
+    session_id: str,
+    result: ComparisonResultRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Union[ComparisonSession, None]:
+    """
+    Submit a comparison result and get the next comparison.
+    
+    Args:
+        session_id: ID of the comparison session
+        result: Comparison result (better or worse)
+        db: Database session
+        current_user: Current authenticated user
+    
+    Returns:
+        Next comparison if more comparisons are needed
+        Final ranking result if comparisons are complete
+        None if session is invalid/expired
+    """
+    comparison_session = session_id_cache.get(session_id)
+    if not comparison_session:
+        return None
+
+    # Get all items in the list
+    stmt = select(ItemModel).where(ItemModel.list_id == list_id).order_by(ItemModel.position)
+    result = await db.execute(stmt)
+    all_items = result.scalars().all()
+
+    # Find next comparison
+    comparison_session.current_comparison = find_next_comparison(all_items, comparison_session.current_comparison, result.result == "better")
+
+    if comparison_session.current_comparison.done:
+        db.add(comparison_session.current_comparison.reference_item)
+        await db.commit()
+        await db.refresh(comparison_session.current_comparison.reference_item)
+        session_id_cache.pop(session_id)
+        return None
+
+    return ComparisonSession(
+        session_id=session_id,
+        list_id=list_id,
+        item_id=item_id,
+        current_comparison=next_comparison,
+        is_complete=False,
+        created_at=datetime.now(),
+        updated_at=datetime.now()
+    )
+
+
+@router.get("/items/{item_id}", response_model=Item)
 async def read_item(
     item_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Any:
+) -> Item:
     """
     Get a specific item by ID.
+    
+    Args:
+        item_id: ID of the item to retrieve
+        db: Database session
+        current_user: Current authenticated user
+    
+    Returns:
+        Item object with details
     """
     # Get the item and check ownership
     query = (
@@ -97,29 +197,27 @@ async def read_item(
         )
 
     item_obj = row[0]
-
-    return {
-        "item_id": item_obj.item_id,
-        "list_id": item_obj.list_id,
-        "name": item_obj.name,
-        "description": item_obj.description,
-        "image_url": item_obj.image_url,
-        "position": item_obj.position,
-        "rating": item_obj.rating,
-        "created_at": item_obj.created_at,
-        "updated_at": item_obj.updated_at,
-    }
+    return item_obj
 
 
-@router.put("/{item_id}", response_model=Item)
+@router.put("/items/{item_id}", response_model=Item)
 async def update_item(
     item_id: int,
     item_in: ItemUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Any:
+) -> Item:
     """
-    Update an item.
+    Update an item's metadata.
+    
+    Args:
+        item_id: ID of the item to update
+        item_in: Item update data
+        db: Database session
+        current_user: Current authenticated user
+    
+    Returns:
+        Updated item object
     """
     # Get the item and check ownership
     query = (
@@ -148,20 +246,10 @@ async def update_item(
     await db.commit()
     await db.refresh(item_obj)
 
-    return {
-        "item_id": item_obj.item_id,
-        "list_id": item_obj.list_id,
-        "name": item_obj.name,
-        "description": item_obj.description,
-        "image_url": item_obj.image_url,
-        "position": item_obj.position,
-        "rating": item_obj.rating,
-        "created_at": item_obj.created_at,
-        "updated_at": item_obj.updated_at,
-    }
+    return item_obj
 
 
-@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(
     item_id: int,
     db: AsyncSession = Depends(get_db),
@@ -169,6 +257,14 @@ async def delete_item(
 ) -> None:
     """
     Delete an item.
+    
+    Args:
+        item_id: ID of the item to delete
+        db: Database session
+        current_user: Current authenticated user
+    
+    Returns:
+        None
     """
     # Get the item and check ownership
     query = (
@@ -192,113 +288,28 @@ async def delete_item(
     await db.delete(item_obj)
     await db.commit()
 
-    # TODO: Update positions and ratings of remaining items
-
-
-@router.get("/list/{list_id}/next-comparison", response_model=NextComparison)
-async def get_next_comparison(
-    list_id: int,
+@router.get("/comparison/{session_id}/status", response_model=ComparisonSession)
+async def get_comparison_status(
+    session_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Any:
+) -> ComparisonSession:
     """
-    Get the next pair of items to compare for ranking.
+    Get the status of a comparison session.
+    
+    Args:
+        session_id: ID of the comparison session
+        db: Database session
+        current_user: Current authenticated user
+    
+    Returns:
+        Current status of the comparison session
     """
-    # Check if list exists and belongs to current user
-    query = select(ListModel).where(
-        ListModel.list_id == list_id, ListModel.user_id == current_user.user_id
-    )
-    result = await db.execute(query)
-    list_obj = result.scalar_one_or_none()
-
-    if not list_obj:
+    comparison_session = session_id_cache.get(session_id)
+    if not comparison_session:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="List not found or does not belong to current user",
+            detail="Session not found or invalid",
         )
 
-    try:
-        # Use algorithm to find next comparison pair
-        next_comparison = await find_next_comparison_pair(db, list_id)
-        return next_comparison
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-
-@router.post("/compare", response_model=List[Item])
-async def compare_items(
-    comparison: ComparisonRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> Any:
-    """
-    Submit a comparison result and update rankings.
-    """
-    # Verify both items exist and belong to the same list owned by the user
-    query = select(ItemModel.list_id).where(ItemModel.item_id == comparison.item1_id)
-    result = await db.execute(query)
-    list_id1 = result.scalar_one_or_none()
-
-    query = select(ItemModel.list_id).where(ItemModel.item_id == comparison.item2_id)
-    result = await db.execute(query)
-    list_id2 = result.scalar_one_or_none()
-
-    if not list_id1 or not list_id2 or list_id1 != list_id2:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Items must exist and belong to the same list",
-        )
-
-    # Check list ownership
-    query = select(ListModel).where(
-        ListModel.list_id == list_id1, ListModel.user_id == current_user.user_id
-    )
-    result = await db.execute(query)
-    list_obj = result.scalar_one_or_none()
-
-    if not list_obj:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="List not found or does not belong to current user",
-        )
-
-    # Verify winner is one of the compared items
-    if (
-        comparison.winner_id != comparison.item1_id
-        and comparison.winner_id != comparison.item2_id
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Winner must be one of the compared items",
-        )
-
-    # Determine winner and loser
-    winner_id = comparison.winner_id
-    loser_id = (
-        comparison.item1_id if winner_id == comparison.item2_id else comparison.item2_id
-    )
-
-    try:
-        # Update rankings based on comparison
-        updated_items = await update_rankings(db, list_id1, winner_id, loser_id)
-
-        # Format response
-        items_data = [
-            {
-                "item_id": item.item_id,
-                "list_id": item.list_id,
-                "name": item.name,
-                "description": item.description,
-                "image_url": item.image_url,
-                "position": item.position,
-                "rating": item.rating,
-                "created_at": item.created_at,
-                "updated_at": item.updated_at,
-            }
-            for item in updated_items
-        ]
-
-        return items_data
-
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return comparison_session

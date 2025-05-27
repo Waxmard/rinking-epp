@@ -11,6 +11,9 @@ from app.db.models import List as ListModel
 from app.schemas.list import List, ListCreate, ListSimple, ListUpdate
 from app.schemas.user import User
 
+import uuid
+from datetime import datetime
+
 router = APIRouter()
 
 
@@ -56,7 +59,8 @@ async def read_lists(
 
 @router.post("/", response_model=List)
 async def create_list(
-    list_in: ListCreate,
+    name: str,
+    description: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Any:
@@ -64,9 +68,12 @@ async def create_list(
     Create new list.
     """
     list_obj = ListModel(
-        title=list_in.title,
-        description=list_in.description,
+        list_id=uuid.uuid4(),
+        title=name,
         user_id=current_user.user_id,
+        description=description,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
     db.add(list_obj)
     await db.commit()
@@ -80,7 +87,6 @@ async def create_list(
         "description": list_obj.description,
         "created_at": list_obj.created_at,
         "updated_at": list_obj.updated_at,
-        "items": [],
     }
 
 
@@ -139,7 +145,6 @@ async def read_list(
         "description": list_obj.description,
         "created_at": list_obj.created_at,
         "updated_at": list_obj.updated_at,
-        "items": items_data,
     }
 
 

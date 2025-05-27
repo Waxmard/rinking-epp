@@ -12,8 +12,8 @@ from app.crud.crud_user import get_user_by_email
 from app.db.database import get_db
 from app.schemas.user import TokenPayload, User
 from app.core.security import verify_password
+from uuid import UUID
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 
 
@@ -50,6 +50,17 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)
 ) -> User:
     """Get the current authenticated user."""
+    if settings.APP_ENV == "development":
+        # In development mode, return a mock user
+        return User(
+            user_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
+            email="dev@example.com",
+            username="developer",
+            is_active=True,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
