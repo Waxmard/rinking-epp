@@ -22,21 +22,6 @@ import { AppColors, AppSpacing, AppTypography, AppBorders } from '../design-syst
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const loginPhrases = [
-  'Time to Create Tiers',
-  'Let\'s Make Some Lists',
-  'Ready to Rank?',
-  'Face Off Your Favorites',
-  'What\'s Really Number One?',
-  'Your Lists, Perfected',
-  'Organize Your Opinions',
-  'Reveal Your Rankings',
-  'Time For A Tier Check',
-  'Let The Ranking Begin',
-  'Unleash Your Inner Critic',
-  'The Nerdy Way To Rank',
-  'Your Tier Journey Awaits',
-];
 
 interface LoginScreenProps {
   navigation?: any;
@@ -52,28 +37,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const phraseOpacity = useRef(new Animated.Value(1)).current;
-  
-  // Phrase state
-  const [currentPhrase, setCurrentPhrase] = useState(loginPhrases[0]);
-  const [phraseIndex, setPhraseIndex] = useState(0);
 
-  const changePhrase = () => {
-    Animated.timing(phraseOpacity, {
-      toValue: 0,
-      duration: 400,
-      useNativeDriver: true,
-    }).start(() => {
-      setPhraseIndex((prevIndex) => (prevIndex + 1) % loginPhrases.length);
-      setCurrentPhrase(loginPhrases[(phraseIndex + 1) % loginPhrases.length]);
-      
-      Animated.timing(phraseOpacity, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }).start();
-    });
-  };
 
   useEffect(() => {
     // Start fade in animation
@@ -84,12 +48,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }).start();
 
 
-    // Phrase rotation timer
-    const phraseTimer = setInterval(() => {
-      changePhrase();
-    }, 5000);
-
-    return () => clearInterval(phraseTimer);
   }, []);
 
   const handleGoogleSignIn = async () => {
@@ -139,10 +97,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 />
               </View>
 
-              {/* Title with animated phrase */}
-              <Animated.Text style={[styles.phrase, { opacity: phraseOpacity }]}>
-                {currentPhrase}
-              </Animated.Text>
+              {/* Title */}
+              <Text style={styles.title}>
+                TierNerd
+              </Text>
 
               {/* Login form */}
               <View style={styles.formContainer} collapsable={false}>
@@ -264,21 +222,21 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: AppSpacing.xl,
+    paddingVertical: AppSpacing.md,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: AppSpacing.xl,
+    marginBottom: AppSpacing.md,
   },
   logo: {
-    width: 180,
-    height: 180,
+    width: 120,
+    height: 120,
   },
-  phrase: {
-    ...AppTypography.headlineSmall,
-    color: AppColors.textOnPrimary,
+  title: {
+    ...AppTypography.headlineLarge,
+    color: AppColors.secondary.emphasis,
     textAlign: 'center',
-    marginBottom: AppSpacing.xxxl,
+    marginBottom: AppSpacing.lg,
     fontWeight: 'bold',
   },
   formContainer: {
