@@ -60,7 +60,7 @@ export const Input: React.FC<InputProps> = ({
         {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
         <TextInput
           style={[styles.input, inputStyle]}
-          placeholderTextColor={AppColors.neutral[500]}
+          placeholderTextColor={AppColors.secondary.light}
           onFocus={handleFocus}
           onBlur={handleBlur}
           {...textInputProps}
@@ -86,20 +86,20 @@ const styles = StyleSheet.create({
   },
   label: {
     ...AppTypography.labelMedium,
-    color: AppColors.textPrimary,
+    color: AppColors.secondary.primary,
     marginBottom: AppSpacing.xs,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: AppColors.neutral[300],
+    borderColor: AppColors.neutral[200],
     borderRadius: AppBorders.radiusMd,
-    backgroundColor: AppColors.surface,
+    backgroundColor: AppColors.dominant.primary,
     paddingHorizontal: AppSpacing.md,
   },
   inputContainerFocused: {
-    borderColor: AppColors.primary,
+    borderColor: AppColors.accent.primary,
     borderWidth: 2,
   },
   inputContainerError: {
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     ...AppTypography.bodyLarge,
-    color: AppColors.textPrimary,
+    color: AppColors.secondary.primary,
     paddingVertical: AppSpacing.md,
   },
   leftIcon: {

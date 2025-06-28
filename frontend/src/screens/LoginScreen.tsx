@@ -153,26 +153,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient
-      colors={[AppColors.primary, AppColors.primaryDark]}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        {/* Floating elements */}
-        <View style={styles.floatingContainer} pointerEvents="none">
-          <View style={[styles.floatingPosition, { top: 40, right: 30 }]}>
-            {renderFloatingElement('star', 25, 0.06)}
-          </View>
-          <View style={[styles.floatingPosition, { bottom: 180, left: 20 }]}>
-            {renderFloatingElement('list', 20, 0.08)}
-          </View>
-          <View style={[styles.floatingPosition, { bottom: 100, right: 50 }]}>
-            {renderFloatingElement('trophy', 22, 0.07)}
-          </View>
-          <View style={[styles.floatingPosition, { top: 300, left: 40 }]}>
-            {renderFloatingElement('analytics', 30, 0.05)}
-          </View>
-        </View>
         
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -229,7 +211,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   onRightIconPress={() => setPasswordVisible(!passwordVisible)}
                 />
 
-                <TouchableOpacity style={styles.forgotPassword}>
+                <TouchableOpacity 
+                  style={styles.forgotPassword}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
                   <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                 </TouchableOpacity>
 
@@ -254,9 +240,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   style={styles.googleButton}
                   onPress={handleGoogleSignIn}
                   disabled={isLoading}
+                  activeOpacity={0.8}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   {isLoading ? (
-                    <ActivityIndicator color={AppColors.textPrimary} />
+                    <ActivityIndicator color={AppColors.secondary.primary} />
                   ) : (
                     <>
                       <Image
@@ -271,7 +259,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 {/* Sign up link */}
                 <View style={styles.signUpContainer}>
                   <Text style={styles.signUpText}>Don't have an account? </Text>
-                  <TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
                     <Text style={styles.signUpLink}>Sign Up</Text>
                   </TouchableOpacity>
                 </View>
@@ -289,13 +280,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: AppColors.dominant.secondary,
   },
   safeArea: {
     flex: 1,
@@ -307,31 +299,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: AppSpacing.lg,
   },
-  floatingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-  },
-  floatingPosition: {
-    position: 'absolute',
-  },
-  floatingElement: {
-    position: 'absolute',
-  },
-  floatingIcon: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   content: {
     flex: 1,
     justifyContent: 'center',
     paddingVertical: AppSpacing.xl,
-    zIndex: 5,
   },
   logoContainer: {
     alignItems: 'center',
@@ -349,15 +320,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   formContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: AppColors.dominant.primary,
     borderRadius: AppBorders.radiusLg,
     padding: AppSpacing.lg,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 8,
-    elevation: 6,
-    zIndex: 10,
+    elevation: 4,
   },
   loginButton: {
     marginTop: AppSpacing.md,

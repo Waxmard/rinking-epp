@@ -1,40 +1,61 @@
 export const AppColors = {
-  // Primary colors - matching Flutter's primary color
-  primary: '#6C63FF',
-  primaryLight: '#9A93FF',
-  primaryDark: '#3F37C9',
+  // Dominant colors (60% of the design)
+  dominant: {
+    primary: '#FFFFFF',    // Pure white - main backgrounds
+    secondary: '#FAFAFA',  // Off-white - cards, elevated sections
+  },
+  
+  // Secondary colors (30% of the design)
+  secondary: {
+    primary: '#2D2D2D',    // Dark gray - body text
+    emphasis: '#1A1A1A',   // Near black - headers, important text
+    muted: '#6B7280',      // Muted gray - secondary text
+    light: '#9CA3AF',      // Light gray - disabled states
+  },
+  
+  // Accent colors (10% of the design)
+  accent: {
+    primary: '#8B5CF6',    // Refined purple - buttons, links
+    light: '#A78BFA',      // Light purple - hover states
+    dark: '#7C3AED',       // Dark purple - pressed states
+  },
+  
+  // Legacy mappings for compatibility
+  primary: '#8B5CF6',
+  primaryLight: '#A78BFA',
+  primaryDark: '#7C3AED',
   
   // Text colors
-  textPrimary: '#212121',
-  textSecondary: '#757575',
+  textPrimary: '#2D2D2D',
+  textSecondary: '#6B7280',
   textOnPrimary: '#FFFFFF',
   
   // Surface colors
   surface: '#FFFFFF',
-  surfaceLight: '#F5F5F5',
-  surfaceDark: '#E0E0E0',
+  surfaceLight: '#FAFAFA',
+  surfaceDark: '#F3F4F6',
   
   // Semantic colors
-  error: '#F44336',
-  success: '#4CAF50',
-  warning: '#FF9800',
-  info: '#2196F3',
+  error: '#EF4444',
+  success: '#10B981',
+  warning: '#F59E0B',
+  info: '#3B82F6',
   
   // Neutral colors
   neutral: {
     50: '#FAFAFA',
     100: '#F5F5F5',
-    200: '#EEEEEE',
-    300: '#E0E0E0',
-    400: '#BDBDBD',
-    500: '#9E9E9E',
-    600: '#757575',
-    700: '#616161',
-    800: '#424242',
-    900: '#212121',
+    200: '#E5E7EB',
+    300: '#D1D5DB',
+    400: '#9CA3AF',
+    500: '#6B7280',
+    600: '#4B5563',
+    700: '#374151',
+    800: '#1F2937',
+    900: '#111827',
   },
   
-  // Tier colors - matching your Flutter tier system
+  // Tier colors - keeping these vibrant for ranking system
   tierColors: {
     S: '#FFD700', // Gold
     A: '#4CAF50', // Green
@@ -50,7 +71,9 @@ export const AppColors = {
   }
 };
 
-// Gradient definitions
+// Gradient definitions - using subtle gray gradients
 export const AppGradients = {
-  primary: ['#6C63FF', '#5A52E0'],
+  primary: ['#FFFFFF', '#FAFAFA'],
+  accent: ['#8B5CF6', '#7C3AED'],
+  subtle: ['#FAFAFA', '#F3F4F6'],
 };

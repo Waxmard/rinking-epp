@@ -67,7 +67,7 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? AppColors.textOnPrimary : AppColors.primary}
+          color={variant === 'primary' ? AppColors.textOnPrimary : AppColors.accent.primary}
           size="small"
         />
       ) : (
@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
   
   // Variants
   primary: {
-    backgroundColor: AppColors.primary,
+    backgroundColor: AppColors.accent.primary,
   },
   secondary: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: AppColors.primary,
+    borderColor: AppColors.accent.primary,
   },
   textVariant: {
     backgroundColor: 'transparent',
@@ -142,10 +142,10 @@ const styles = StyleSheet.create({
     color: AppColors.textOnPrimary,
   },
   secondaryText: {
-    color: AppColors.primary,
+    color: AppColors.accent.primary,
   },
   textText: {
-    color: AppColors.primary,
+    color: AppColors.accent.primary,
   },
   
   // Text sizes
