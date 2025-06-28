@@ -88,13 +88,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           >
 
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-              {/* Title */}
-              <Text style={styles.title}>
-                TierNerd
-              </Text>
-
               {/* Login form */}
               <View style={styles.formContainer} collapsable={false}>
+                {/* Form Title */}
+                <Text style={styles.formTitle}>
+                  TierNerd
+                </Text>
+                <View style={styles.titleDivider} />
                 <Input
                   label="Email"
                   value={email}
@@ -222,13 +222,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: AppSpacing.md,
   },
-  title: {
-    ...AppTypography.titleLarge,
-    color: AppColors.secondary.primary,
+  formTitle: {
+    ...AppTypography.brandTitle,
+    color: AppColors.accent.primary,
     textAlign: 'center',
-    marginBottom: AppSpacing.xl,
-    fontWeight: '400',
-    letterSpacing: 0.3,
+    marginBottom: AppSpacing.md,
+  },
+  titleDivider: {
+    height: 1,
+    backgroundColor: AppColors.neutral[200],
+    marginBottom: AppSpacing.lg,
   },
   formContainer: {
     backgroundColor: AppColors.dominant.primary,

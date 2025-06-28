@@ -79,4 +79,12 @@ export const AppTypography = {
     fontWeight: '500',
     letterSpacing: 0.5,
   } as TextStyle,
+  
+  // Brand/App title styles
+  brandTitle: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '600',
+    letterSpacing: 0.8,
+  } as TextStyle,
 };
