@@ -112,8 +112,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     console.log('Google sign in initiated'); // Debug log
     const success = await signInWithGoogle();
     if (success) {
-      console.log('Sign in successful'); // Debug log
-      navigation?.replace('Main');
+      console.log('Sign in successful - navigation will happen automatically'); // Debug log
+      // Navigation happens automatically when user state changes
     }
   };
 
@@ -123,8 +123,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       // For now, use the same mock auth as Google
       const success = await signInWithGoogle();
       if (success) {
-        console.log('Email sign in successful'); // Debug log
-        navigation?.replace('Main');
+        console.log('Email sign in successful - navigation will happen automatically'); // Debug log
+        // Navigation happens automatically when user state changes
       }
     }
   };

@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { LoginScreen } from '../screens/LoginScreen';
 import { HomeScreen } from '../screens/HomeScreen';
+import { ListsScreen } from '../screens/ListsScreen';
 import { useAuth } from '../providers/AuthContext';
 
 const Stack = createStackNavigator();
@@ -17,6 +18,9 @@ export const AppNavigator: React.FC = () => {
           <>
             <Stack.Screen name="Main">
               {(props) => <HomeScreen {...props} />}
+            </Stack.Screen>
+            <Stack.Screen name="Lists">
+              {(props) => <ListsScreen {...props} />}
             </Stack.Screen>
             {/* Add other authenticated screens here */}
           </>

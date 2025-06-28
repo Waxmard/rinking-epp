@@ -88,7 +88,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigation?.replace('Login');
+    // Navigation happens automatically when user state changes
   };
 
   const renderTierDistribution = (tierCounts: TierCount) => {
