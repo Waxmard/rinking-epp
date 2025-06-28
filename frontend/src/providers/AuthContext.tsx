@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       scopes: ['openid', 'profile', 'email'],
       responseType: AuthSession.ResponseType.Token,
       redirectUri: AuthSession.makeRedirectUri({
-        scheme: 'your.app.scheme'
+        scheme: 'tiernerd'
       }),
     },
     discovery

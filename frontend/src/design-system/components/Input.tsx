@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
     borderRadius: AppBorders.radiusMd,
     backgroundColor: AppColors.dominant.primary,
     paddingHorizontal: AppSpacing.md,
+    minHeight: 48,
   },
   inputContainerFocused: {
     borderColor: AppColors.accent.primary,
@@ -110,12 +111,16 @@ const styles = StyleSheet.create({
     ...AppTypography.bodyLarge,
     color: AppColors.secondary.primary,
     paddingVertical: AppSpacing.md,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   leftIcon: {
     marginRight: AppSpacing.sm,
+    alignSelf: 'center',
   },
   rightIcon: {
     marginLeft: AppSpacing.sm,
+    alignSelf: 'center',
   },
   error: {
     ...AppTypography.bodySmall,
