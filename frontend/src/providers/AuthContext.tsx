@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         id: '123456789',
         email: 'user@example.com',
         displayName: 'Test User',
-        photoUrl: null,
+        photoUrl: undefined,
       };
 
       // Simulate network delay

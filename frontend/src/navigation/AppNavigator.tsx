@@ -15,11 +15,15 @@ export const AppNavigator: React.FC = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
           <>
-            <Stack.Screen name="Main" component={HomeScreen} />
+            <Stack.Screen name="Main">
+              {(props) => <HomeScreen {...props} />}
+            </Stack.Screen>
             {/* Add other authenticated screens here */}
           </>
         ) : (
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Login">
+            {(props) => <LoginScreen {...props} />}
+          </Stack.Screen>
         )}
       </Stack.Navigator>
     </NavigationContainer>

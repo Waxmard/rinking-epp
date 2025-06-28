@@ -35,11 +35,13 @@ export const Input: React.FC<InputProps> = ({
   const [isFocused, setIsFocused] = useState(false);
 
   const handleFocus = (e: any) => {
+    console.log('Input focused'); // Debug log
     setIsFocused(true);
     onFocus?.(e);
   };
 
   const handleBlur = (e: any) => {
+    console.log('Input blurred'); // Debug log
     setIsFocused(false);
     onBlur?.(e);
   };
@@ -53,6 +55,7 @@ export const Input: React.FC<InputProps> = ({
           isFocused && styles.inputContainerFocused,
           error && styles.inputContainerError,
         ]}
+        collapsable={false}
       >
         {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
         <TextInput

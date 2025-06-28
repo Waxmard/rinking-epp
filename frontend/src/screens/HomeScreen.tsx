@@ -52,8 +52,11 @@ interface RecentList {
   tierCounts: TierCount;
 }
 
-export const HomeScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+interface HomeScreenProps {
+  navigation?: any;
+}
+
+export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { user, userData, signOut } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   
@@ -85,7 +88,7 @@ export const HomeScreen: React.FC = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigation.replace('Login');
+    navigation?.replace('Login');
   };
 
   const renderTierDistribution = (tierCounts: TierCount) => {
@@ -141,7 +144,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <LinearGradient
-      colors={AppGradients.primary}
+      colors={[AppColors.primary, AppColors.primaryDark]}
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>

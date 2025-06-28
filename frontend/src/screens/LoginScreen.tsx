@@ -38,8 +38,11 @@ const loginPhrases = [
   'Your Tier Journey Awaits',
 ];
 
-export const LoginScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+interface LoginScreenProps {
+  navigation?: any;
+}
+
+export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const { signInWithGoogle, isLoading, error } = useAuth();
   
   // Form state
@@ -55,6 +58,23 @@ export const LoginScreen: React.FC = () => {
   // Phrase state
   const [currentPhrase, setCurrentPhrase] = useState(loginPhrases[0]);
   const [phraseIndex, setPhraseIndex] = useState(0);
+
+  const changePhrase = () => {
+    Animated.timing(phraseOpacity, {
+      toValue: 0,
+      duration: 400,
+      useNativeDriver: true,
+    }).start(() => {
+      setPhraseIndex((prevIndex) => (prevIndex + 1) % loginPhrases.length);
+      setCurrentPhrase(loginPhrases[(phraseIndex + 1) % loginPhrases.length]);
+      
+      Animated.timing(phraseOpacity, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
 
   useEffect(() => {
     // Start fade in animation
@@ -88,36 +108,23 @@ export const LoginScreen: React.FC = () => {
     return () => clearInterval(phraseTimer);
   }, []);
 
-  const changePhrase = () => {
-    Animated.timing(phraseOpacity, {
-      toValue: 0,
-      duration: 400,
-      useNativeDriver: true,
-    }).start(() => {
-      setPhraseIndex((prevIndex) => (prevIndex + 1) % loginPhrases.length);
-      setCurrentPhrase(loginPhrases[(phraseIndex + 1) % loginPhrases.length]);
-      
-      Animated.timing(phraseOpacity, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }).start();
-    });
-  };
-
   const handleGoogleSignIn = async () => {
+    console.log('Google sign in initiated'); // Debug log
     const success = await signInWithGoogle();
     if (success) {
-      navigation.replace('Main');
+      console.log('Sign in successful'); // Debug log
+      navigation?.replace('Main');
     }
   };
 
   const handleEmailSignIn = async () => {
+    console.log('Email sign in initiated'); // Debug log
     if (email && password) {
       // For now, use the same mock auth as Google
       const success = await signInWithGoogle();
       if (success) {
-        navigation.replace('Main');
+        console.log('Email sign in successful'); // Debug log
+        navigation?.replace('Main');
       }
     }
   };
@@ -151,6 +158,22 @@ export const LoginScreen: React.FC = () => {
       style={styles.container}
     >
       <SafeAreaView style={styles.safeArea}>
+        {/* Floating elements */}
+        <View style={styles.floatingContainer} pointerEvents="none">
+          <View style={[styles.floatingPosition, { top: 40, right: 30 }]}>
+            {renderFloatingElement('star', 25, 0.06)}
+          </View>
+          <View style={[styles.floatingPosition, { bottom: 180, left: 20 }]}>
+            {renderFloatingElement('list', 20, 0.08)}
+          </View>
+          <View style={[styles.floatingPosition, { bottom: 100, right: 50 }]}>
+            {renderFloatingElement('trophy', 22, 0.07)}
+          </View>
+          <View style={[styles.floatingPosition, { top: 300, left: 40 }]}>
+            {renderFloatingElement('analytics', 30, 0.05)}
+          </View>
+        </View>
+        
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
@@ -159,22 +182,8 @@ export const LoginScreen: React.FC = () => {
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            removeClippedSubviews={false}
           >
-            {/* Floating elements */}
-            <View style={styles.floatingContainer} pointerEvents="none">
-              <View style={[styles.floatingPosition, { top: 40, right: 30 }]}>
-                {renderFloatingElement('star', 25, 0.06)}
-              </View>
-              <View style={[styles.floatingPosition, { bottom: 180, left: 20 }]}>
-                {renderFloatingElement('list', 20, 0.08)}
-              </View>
-              <View style={[styles.floatingPosition, { bottom: 100, right: 50 }]}>
-                {renderFloatingElement('trophy', 22, 0.07)}
-              </View>
-              <View style={[styles.floatingPosition, { top: 300, left: 40 }]}>
-                {renderFloatingElement('analytics', 30, 0.05)}
-              </View>
-            </View>
 
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
               {/* Logo */}
@@ -192,7 +201,7 @@ export const LoginScreen: React.FC = () => {
               </Animated.Text>
 
               {/* Login form */}
-              <View style={styles.formContainer}>
+              <View style={styles.formContainer} collapsable={false}>
                 <Input
                   label="Email"
                   value={email}
@@ -299,7 +308,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: AppSpacing.lg,
   },
   floatingContainer: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
   },
   floatingPosition: {
     position: 'absolute',

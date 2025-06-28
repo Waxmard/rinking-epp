@@ -37,7 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const buttonStyles = [
     styles.base,
-    styles[variant],
+    variant === 'text' ? styles.textVariant : styles[variant],
     styles[size],
     fullWidth && styles.fullWidth,
     disabled && styles.disabled,
@@ -55,10 +55,15 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <TouchableOpacity
       style={buttonStyles}
-      onPress={onPress}
+      onPress={() => {
+        console.log('Button pressed:', title); // Debug log
+        onPress();
+      }}
       disabled={disabled || loading}
       activeOpacity={0.8}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      delayPressIn={0}
+      delayPressOut={0}
     >
       {loading ? (
         <ActivityIndicator
@@ -99,7 +104,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppColors.primary,
   },
-  text: {
+  textVariant: {
     backgroundColor: 'transparent',
   },
   

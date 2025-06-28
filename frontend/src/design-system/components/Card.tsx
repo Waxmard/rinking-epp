@@ -18,7 +18,7 @@ export const Card: React.FC<CardProps> = ({
   const cardStyles = [
     styles.base,
     styles[variant],
-    { padding: AppSpacing[padding] },
+    { padding: AppSpacing[padding] as number },
     style,
   ];
 
