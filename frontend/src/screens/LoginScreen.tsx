@@ -88,6 +88,15 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           >
 
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+              {/* Logo */}
+              <View style={styles.logoContainer}>
+                <Image
+                  source={require('../../assets/logo-transparent.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+
               {/* Login form */}
               <View style={styles.formContainer} collapsable={false}>
                 {/* Form Title */}
@@ -220,11 +229,20 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: AppSpacing.md,
+    paddingVertical: AppSpacing.xs,
+    paddingTop: AppSpacing.sm,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: AppSpacing.sm,
+  },
+  logo: {
+    width: 80,
+    height: 80,
   },
   formTitle: {
     ...AppTypography.brandTitle,
-    color: AppColors.accent.primary,
+    color: AppColors.secondary.emphasis,
     textAlign: 'center',
     marginBottom: AppSpacing.md,
   },
