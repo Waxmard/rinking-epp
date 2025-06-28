@@ -18,11 +18,9 @@ class AppTheme {
         secondary: AppColors.accent,
         error: AppColors.error,
         surface: AppColors.surfaceLight,
-        background: AppColors.backgroundLight,
         onPrimary: AppColors.textOnPrimary,
         onSecondary: AppColors.textOnAccent,
         onSurface: AppColors.textPrimary,
-        onBackground: AppColors.textPrimary,
         onError: AppColors.textOnPrimary,
       ),
       
@@ -209,11 +207,9 @@ class AppTheme {
         secondary: AppColors.accent,
         error: AppColors.error,
         surface: AppColors.surfaceDark,
-        background: AppColors.backgroundDark,
         onPrimary: AppColors.textOnPrimary,
         onSecondary: AppColors.textOnAccent,
         onSurface: AppColors.textPrimaryDark,
-        onBackground: AppColors.textPrimaryDark,
         onError: AppColors.textOnPrimary,
       ),
       

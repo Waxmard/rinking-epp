@@ -13,7 +13,7 @@ class AppCard extends StatelessWidget {
   final double? height;
 
   const AppCard({
-    Key? key,
+    super.key,
     required this.child,
     this.variant = AppCardVariant.elevated,
     this.padding,
@@ -22,7 +22,7 @@ class AppCard extends StatelessWidget {
     this.color,
     this.width,
     this.height,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class AppListCard extends StatelessWidget {
   final bool dense;
 
   const AppListCard({
-    Key? key,
+    super.key,
     this.leading,
     required this.title,
     this.subtitle,
@@ -119,7 +119,7 @@ class AppListCard extends StatelessWidget {
     this.onTap,
     this.padding,
     this.dense = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -186,13 +186,13 @@ class AppTierCard extends StatelessWidget {
   final EdgeInsets? padding;
 
   const AppTierCard({
-    Key? key,
+    super.key,
     required this.tier,
     this.label,
     required this.children,
     this.height,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

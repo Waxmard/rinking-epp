@@ -12,7 +12,7 @@ class AppButton extends StatelessWidget {
   final bool fullWidth;
 
   const AppButton({
-    Key? key,
+    super.key,
     required this.label,
     this.onPressed,
     this.variant = AppButtonVariant.primary,
@@ -20,7 +20,7 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.isLoading = false,
     this.fullWidth = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -102,17 +102,6 @@ class AppButton extends StatelessWidget {
     }
 
     return button;
-  }
-
-  double get _height {
-    switch (size) {
-      case AppButtonSize.small:
-        return 36.0;
-      case AppButtonSize.medium:
-        return 48.0;
-      case AppButtonSize.large:
-        return 56.0;
-    }
   }
 
   double get _iconSize {
@@ -232,14 +221,14 @@ class AppIconButton extends StatelessWidget {
   final String? tooltip;
 
   const AppIconButton({
-    Key? key,
+    super.key,
     required this.icon,
     this.onPressed,
     this.size = AppIconButtonSize.medium,
     this.color,
     this.backgroundColor,
     this.tooltip,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

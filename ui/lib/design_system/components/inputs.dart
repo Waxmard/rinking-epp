@@ -19,7 +19,7 @@ class AppTextField extends StatelessWidget {
   final FocusNode? focusNode;
 
   const AppTextField({
-    Key? key,
+    super.key,
     this.label,
     this.hint,
     this.errorText,
@@ -34,7 +34,7 @@ class AppTextField extends StatelessWidget {
     this.suffix,
     this.enabled = true,
     this.focusNode,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +122,7 @@ class AppDropdown<T> extends StatelessWidget {
   final bool enabled;
 
   const AppDropdown({
-    Key? key,
+    super.key,
     this.label,
     this.value,
     required this.items,
@@ -130,7 +130,7 @@ class AppDropdown<T> extends StatelessWidget {
     this.hint,
     this.prefix,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -204,12 +204,12 @@ class AppSwitch extends StatelessWidget {
   final bool enabled;
 
   const AppSwitch({
-    Key? key,
+    super.key,
     required this.value,
     this.onChanged,
     this.label,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -249,12 +249,12 @@ class AppCheckbox extends StatelessWidget {
   final bool enabled;
 
   const AppCheckbox({
-    Key? key,
+    super.key,
     required this.value,
     this.onChanged,
     this.label,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
