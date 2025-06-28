@@ -53,7 +53,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const phraseOpacity = useRef(new Animated.Value(1)).current;
-  const floatingAnim = useRef(new Animated.Value(0)).current;
   
   // Phrase state
   const [currentPhrase, setCurrentPhrase] = useState(loginPhrases[0]);
@@ -84,21 +83,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       useNativeDriver: true,
     }).start();
 
-    // Start floating animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatingAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatingAnim, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
 
     // Phrase rotation timer
     const phraseTimer = setInterval(() => {
@@ -129,28 +113,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
   };
 
-  const renderFloatingElement = (icon: string, size: number, opacity: number) => {
-    const translateY = floatingAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, -10],
-    });
-
-    return (
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          {
-            opacity: opacity,
-            transform: [{ translateY }],
-          },
-        ]}
-      >
-        <View style={[styles.floatingIcon, { width: size, height: size }]}>
-          <Ionicons name={icon as any} size={size * 0.6} color={AppColors.primary} />
-        </View>
-      </Animated.View>
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -171,7 +133,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               {/* Logo */}
               <View style={styles.logoContainer}>
                 <Image
-                  source={require('../../assets/tiernerd-logo.png')}
+                  source={require('../../assets/logo-transparent.png')}
                   style={styles.logo}
                   resizeMode="contain"
                 />
