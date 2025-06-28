@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { AppColors, AppSpacing, AppBorders, AppShadows } from '../tokens';
+import { AppColors, AppSpacing, AppBorders } from '../tokens';
 
 interface CardProps {
   children: React.ReactNode;
@@ -31,7 +31,11 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.surface,
   },
   elevated: {
-    ...AppShadows.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   outlined: {
     borderWidth: 1,

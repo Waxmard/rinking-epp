@@ -336,7 +336,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: AppBorders.radiusLg,
     padding: AppSpacing.lg,
-    ...AppShadows.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6,
   },
   loginButton: {
     marginTop: AppSpacing.md,

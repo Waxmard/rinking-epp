@@ -15,7 +15,25 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthContext';
 import { Card, Button } from '../design-system/components';
-import { AppColors, AppSpacing, AppTypography, AppBorders, AppShadows, AppGradients } from '../design-system/tokens';
+import { AppColors, AppSpacing, AppTypography, AppBorders, AppGradients } from '../design-system/tokens';
+
+// Temporary inline shadows to fix import issue
+const AppShadows = {
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  lg: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+};
 
 interface TierCount {
   S: number;
