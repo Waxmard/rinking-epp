@@ -88,15 +88,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           >
 
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-              {/* Logo */}
-              <View style={styles.logoContainer}>
-                <Image
-                  source={require('../../assets/logo-transparent.png')}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-
               {/* Title */}
               <Text style={styles.title}>
                 TierNerd
@@ -188,7 +179,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 </View>
 
                 {/* Version */}
-                <Text style={styles.version}>v1.0.0 • Tier Nerd</Text>
+                <View style={styles.versionContainer}>
+                  <Image
+                    source={require('../../assets/logo-transparent.png')}
+                    style={styles.versionLogo}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.version}>v1.0.0 • Tier Nerd</Text>
+                </View>
               </View>
 
               {error && (
@@ -224,20 +222,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: AppSpacing.md,
   },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: AppSpacing.md,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-  },
   title: {
-    ...AppTypography.headlineLarge,
-    color: AppColors.secondary.emphasis,
+    ...AppTypography.titleLarge,
+    color: AppColors.secondary.primary,
     textAlign: 'center',
-    marginBottom: AppSpacing.lg,
-    fontWeight: 'bold',
+    marginBottom: AppSpacing.xl,
+    fontWeight: '400',
+    letterSpacing: 0.3,
   },
   formContainer: {
     backgroundColor: AppColors.dominant.primary,
@@ -315,11 +306,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textDecorationLine: 'underline',
   },
+  versionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: AppSpacing.md,
+  },
+  versionLogo: {
+    width: 16,
+    height: 16,
+    marginRight: AppSpacing.xs,
+    opacity: 0.3,
+  },
   version: {
     ...AppTypography.labelSmall,
     color: AppColors.textSecondary,
-    textAlign: 'center',
-    marginTop: AppSpacing.md,
     opacity: 0.5,
   },
   errorContainer: {
