@@ -158,9 +158,10 @@ export const LoginScreen: React.FC = () => {
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             {/* Floating elements */}
-            <View style={styles.floatingContainer}>
+            <View style={styles.floatingContainer} pointerEvents="none">
               <View style={[styles.floatingPosition, { top: 40, right: 30 }]}>
                 {renderFloatingElement('star', 25, 0.06)}
               </View>
@@ -179,7 +180,7 @@ export const LoginScreen: React.FC = () => {
               {/* Logo */}
               <View style={styles.logoContainer}>
                 <Image
-                  source={require('../../assets/icon.png')}
+                  source={require('../../assets/tiernerd-logo.png')}
                   style={styles.logo}
                   resizeMode="contain"
                 />
@@ -250,7 +251,7 @@ export const LoginScreen: React.FC = () => {
                   ) : (
                     <>
                       <Image
-                        source={require('../../assets/icon.png')}
+                        source={require('../../assets/google-logo.png')}
                         style={styles.googleIcon}
                       />
                       <Text style={styles.googleButtonText}>Sign in with Google</Text>
@@ -316,6 +317,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingVertical: AppSpacing.xl,
+    zIndex: 5,
   },
   logoContainer: {
     alignItems: 'center',
@@ -341,6 +343,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 6,
+    zIndex: 10,
   },
   loginButton: {
     marginTop: AppSpacing.md,

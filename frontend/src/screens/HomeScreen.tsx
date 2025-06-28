@@ -155,7 +155,7 @@ export const HomeScreen: React.FC = () => {
             <View style={styles.headerRow}>
               <TouchableOpacity onPress={() => navigation.replace('Home')}>
                 <Image
-                  source={require('../../assets/icon.png')}
+                  source={require('../../assets/logo-transparent.png')}
                   style={styles.logo}
                 />
               </TouchableOpacity>
