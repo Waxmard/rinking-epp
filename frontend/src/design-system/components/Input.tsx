@@ -91,13 +91,13 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     borderWidth: 1,
     borderColor: AppColors.neutral[200],
     borderRadius: AppBorders.radiusMd,
     backgroundColor: AppColors.dominant.primary,
     paddingHorizontal: AppSpacing.md,
-    minHeight: 48,
+    paddingVertical: AppSpacing.md,
   },
   inputContainerFocused: {
     borderColor: AppColors.accent.primary,
@@ -110,17 +110,21 @@ const styles = StyleSheet.create({
     flex: 1,
     ...AppTypography.bodyLarge,
     color: AppColors.secondary.primary,
-    paddingVertical: AppSpacing.md,
+    padding: 0,
+    margin: 0,
+    marginTop: -2, // Shift text up to align with icon visual center
     includeFontPadding: false,
-    textAlignVertical: 'center',
+    textAlignVertical: 'top',
   },
   leftIcon: {
     marginRight: AppSpacing.sm,
-    alignSelf: 'center',
+    height: 24, // Match line height of bodyLarge
+    justifyContent: 'center',
   },
   rightIcon: {
     marginLeft: AppSpacing.sm,
-    alignSelf: 'center',
+    height: 24, // Match line height of bodyLarge
+    justifyContent: 'center',
   },
   error: {
     ...AppTypography.bodySmall,
