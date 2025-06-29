@@ -151,14 +151,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.tierNerdText}>TierNerd</Text>
             <View style={styles.headerRow}>
-              <TouchableOpacity onPress={() => navigation.replace('Home')}>
+              <View style={styles.brandSection}>
                 <Image
                   source={require('../../assets/logo-transparent.png')}
                   style={styles.logo}
                 />
-              </TouchableOpacity>
+                <Text style={styles.tierNerdText}>TierNerd</Text>
+              </View>
               
               <TouchableOpacity
                 onPress={() => setShowProfileMenu(true)}
@@ -171,7 +171,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   />
                 ) : (
                   <View style={styles.profilePlaceholder}>
-                    <Ionicons name="person" size={32} color={AppColors.neutral[600]} />
+                    <Ionicons name="person" size={24} color={AppColors.secondary.muted} />
                   </View>
                 )}
               </TouchableOpacity>
@@ -181,7 +181,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           {/* Create Button */}
           <TouchableOpacity style={styles.createButton} activeOpacity={0.8}>
             <View style={styles.createButtonContent}>
-              <Ionicons name="add-circle-outline" size={24} color={AppColors.primary} />
+              <Ionicons name="add-circle" size={24} color={AppColors.dominant.primary} />
               <Text style={styles.createButtonText}>Create New Tier List</Text>
             </View>
           </TouchableOpacity>
@@ -210,7 +210,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   
                   <View style={styles.tierSection}>
                     <Text style={styles.tierSectionTitle}>Tier Distribution</Text>
-                    {renderTierDistribution(recentList.tierCounts)}
+                    <View style={styles.tierDistributionContainer}>
+                      {renderTierDistribution(recentList.tierCounts)}
+                    </View>
                   </View>
                 </Card>
               </TouchableOpacity>
@@ -284,6 +286,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: AppColors.dominant.secondary,
   },
   safeArea: {
     flex: 1,
@@ -293,27 +296,38 @@ const styles = StyleSheet.create({
     paddingBottom: AppSpacing.xxxl,
   },
   header: {
-    marginBottom: AppSpacing.lg,
-  },
-  tierNerdText: {
-    ...AppTypography.titleMedium,
-    color: AppColors.secondary.emphasis,
-    marginBottom: AppSpacing.sm,
+    marginBottom: AppSpacing.xl,
+    paddingTop: AppSpacing.sm,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  brandSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   logo: {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
+    marginRight: AppSpacing.sm,
+  },
+  tierNerdText: {
+    ...AppTypography.brandTitle,
+    color: AppColors.secondary.emphasis,
   },
   profileButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     overflow: 'hidden',
+    backgroundColor: AppColors.dominant.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   profileImage: {
     width: '100%',
@@ -322,26 +336,30 @@ const styles = StyleSheet.create({
   profilePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: AppColors.surface,
+    backgroundColor: AppColors.dominant.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   createButton: {
-    backgroundColor: AppColors.surface,
-    borderRadius: AppBorders.radiusMd,
-    marginBottom: AppSpacing.lg,
-    ...AppShadows.md,
+    backgroundColor: AppColors.accent.primary,
+    borderRadius: AppBorders.radiusLg,
+    marginBottom: AppSpacing.xl,
+    shadowColor: AppColors.accent.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
   createButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: AppSpacing.md,
-    paddingHorizontal: AppSpacing.md,
+    paddingVertical: AppSpacing.lg,
+    paddingHorizontal: AppSpacing.lg,
   },
   createButtonText: {
     ...AppTypography.titleMedium,
-    color: AppColors.primary,
+    color: AppColors.dominant.primary,
     fontWeight: '600',
     marginLeft: AppSpacing.sm,
   },
@@ -350,14 +368,19 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...AppTypography.headlineSmall,
-    color: AppColors.textOnPrimary,
+    color: AppColors.secondary.emphasis,
     fontWeight: '600',
     marginBottom: AppSpacing.sm,
   },
   listCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: AppColors.dominant.primary,
     borderRadius: AppBorders.radiusLg,
     padding: AppSpacing.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 4,
   },
   listHeader: {
     flexDirection: 'row',
@@ -367,19 +390,19 @@ const styles = StyleSheet.create({
   },
   listTitle: {
     ...AppTypography.headlineSmall,
-    color: AppColors.textPrimary,
+    color: AppColors.secondary.emphasis,
     fontWeight: '600',
     flex: 1,
   },
   itemCountBadge: {
-    backgroundColor: `${AppColors.primary}20`,
+    backgroundColor: `${AppColors.accent.primary}15`,
     paddingHorizontal: AppSpacing.sm,
     paddingVertical: AppSpacing.xs,
     borderRadius: AppBorders.radiusSm,
   },
   itemCountText: {
     ...AppTypography.labelSmall,
-    color: AppColors.primary,
+    color: AppColors.accent.primary,
     fontWeight: '600',
   },
   listMeta: {
@@ -389,7 +412,7 @@ const styles = StyleSheet.create({
   },
   listMetaText: {
     ...AppTypography.bodySmall,
-    color: AppColors.textSecondary,
+    color: AppColors.secondary.muted,
     marginLeft: AppSpacing.xs,
   },
   tierSection: {
@@ -424,17 +447,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: AppSpacing.xxs,
   },
-  allListsButton: {
+  tierDistributionContainer: {
     backgroundColor: AppColors.dominant.secondary,
     borderRadius: AppBorders.radiusMd,
-    ...AppShadows.md,
+    padding: AppSpacing.sm,
+  },
+  allListsButton: {
+    backgroundColor: AppColors.dominant.primary,
+    borderRadius: AppBorders.radiusLg,
+    borderWidth: 2,
+    borderColor: AppColors.accent.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 3,
   },
   allListsButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: AppSpacing.md,
-    paddingHorizontal: AppSpacing.md,
+    paddingHorizontal: AppSpacing.lg,
   },
   allListsButtonText: {
     ...AppTypography.titleMedium,
@@ -452,25 +486,34 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: AppBorders.radiusLg,
     borderTopRightRadius: AppBorders.radiusLg,
     paddingBottom: AppSpacing.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 8,
   },
   profileMenuHandle: {
     width: 40,
     height: 4,
-    backgroundColor: AppColors.neutral[200],
+    backgroundColor: AppColors.secondary.light,
     borderRadius: 2,
     alignSelf: 'center',
     marginTop: AppSpacing.sm,
-    marginBottom: AppSpacing.md,
+    marginBottom: AppSpacing.lg,
   },
   profileMenuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: AppSpacing.md,
     paddingHorizontal: AppSpacing.lg,
+    borderRadius: AppBorders.radiusMd,
+    marginHorizontal: AppSpacing.sm,
+    marginVertical: AppSpacing.xs,
   },
   profileMenuItemText: {
     ...AppTypography.bodyLarge,
     color: AppColors.secondary.primary,
     marginLeft: AppSpacing.md,
+    fontWeight: '500',
   },
 });
