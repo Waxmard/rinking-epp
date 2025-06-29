@@ -123,7 +123,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 <Text
                   style={[
                     styles.tierCount,
-                    { color: hasItems ? AppColors.textPrimary : AppColors.textSecondary },
+                    { color: hasItems ? AppColors.secondary.primary : AppColors.secondary.muted },
                   ]}
                 >
                   {count}
@@ -143,10 +143,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   ];
 
   return (
-    <LinearGradient
-      colors={[AppColors.primary, AppColors.primaryDark]}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -205,7 +202,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   </View>
                   
                   <View style={styles.listMeta}>
-                    <Ionicons name="time-outline" size={16} color={AppColors.textSecondary} />
+                    <Ionicons name="time-outline" size={16} color={AppColors.secondary.muted} />
                     <Text style={styles.listMetaText}>
                       Modified {formatDate(recentList.updatedAt)}
                     </Text>
@@ -227,7 +224,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             onPress={() => navigation.navigate('Lists')}
           >
             <View style={styles.allListsButtonContent}>
-              <Ionicons name="list" size={24} color={AppColors.primary} />
+              <Ionicons name="list" size={24} color={AppColors.accent.primary} />
               <Text style={styles.allListsButtonText}>View All Lists</Text>
             </View>
           </TouchableOpacity>
@@ -264,7 +261,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   <Ionicons
                     name={item.icon as any}
                     size={24}
-                    color={item.danger ? AppColors.error : AppColors.textPrimary}
+                    color={item.danger ? AppColors.error : AppColors.secondary.primary}
                   />
                   <Text
                     style={[
@@ -280,7 +277,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </View>
         </TouchableOpacity>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 };
 
@@ -300,7 +297,7 @@ const styles = StyleSheet.create({
   },
   tierNerdText: {
     ...AppTypography.titleMedium,
-    color: AppColors.textOnPrimary,
+    color: AppColors.secondary.emphasis,
     marginBottom: AppSpacing.sm,
   },
   headerRow: {
@@ -400,7 +397,7 @@ const styles = StyleSheet.create({
   },
   tierSectionTitle: {
     ...AppTypography.labelMedium,
-    color: AppColors.textPrimary,
+    color: AppColors.secondary.primary,
     fontWeight: '600',
     marginBottom: AppSpacing.sm,
   },
@@ -428,7 +425,7 @@ const styles = StyleSheet.create({
     marginTop: AppSpacing.xxs,
   },
   allListsButton: {
-    backgroundColor: AppColors.surface,
+    backgroundColor: AppColors.dominant.secondary,
     borderRadius: AppBorders.radiusMd,
     ...AppShadows.md,
   },
@@ -441,7 +438,7 @@ const styles = StyleSheet.create({
   },
   allListsButtonText: {
     ...AppTypography.titleMedium,
-    color: AppColors.primary,
+    color: AppColors.accent.primary,
     fontWeight: '600',
     marginLeft: AppSpacing.sm,
   },
@@ -451,7 +448,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   profileMenu: {
-    backgroundColor: AppColors.surface,
+    backgroundColor: AppColors.dominant.primary,
     borderTopLeftRadius: AppBorders.radiusLg,
     borderTopRightRadius: AppBorders.radiusLg,
     paddingBottom: AppSpacing.xl,
@@ -459,7 +456,7 @@ const styles = StyleSheet.create({
   profileMenuHandle: {
     width: 40,
     height: 4,
-    backgroundColor: AppColors.neutral[300],
+    backgroundColor: AppColors.neutral[200],
     borderRadius: 2,
     alignSelf: 'center',
     marginTop: AppSpacing.sm,
@@ -473,7 +470,7 @@ const styles = StyleSheet.create({
   },
   profileMenuItemText: {
     ...AppTypography.bodyLarge,
-    color: AppColors.textPrimary,
+    color: AppColors.secondary.primary,
     marginLeft: AppSpacing.md,
   },
 });

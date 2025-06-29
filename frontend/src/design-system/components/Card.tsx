@@ -28,20 +28,22 @@ export const Card: React.FC<CardProps> = ({
 const styles = StyleSheet.create({
   base: {
     borderRadius: AppBorders.radiusMd,
-    backgroundColor: AppColors.surface,
+    backgroundColor: AppColors.dominant.secondary,
   },
   elevated: {
+    backgroundColor: AppColors.dominant.secondary,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
   outlined: {
+    backgroundColor: AppColors.dominant.primary,
     borderWidth: 1,
-    borderColor: AppColors.neutral[300],
+    borderColor: AppColors.neutral[200],
   },
   filled: {
-    backgroundColor: AppColors.surfaceLight,
+    backgroundColor: AppColors.dominant.secondary,
   },
 });

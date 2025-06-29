@@ -22,21 +22,6 @@ import { AppColors, AppSpacing, AppTypography, AppBorders } from '../design-syst
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const loginPhrases = [
-  'Time to Create Tiers',
-  'Let\'s Make Some Lists',
-  'Ready to Rank?',
-  'Face Off Your Favorites',
-  'What\'s Really Number One?',
-  'Your Lists, Perfected',
-  'Organize Your Opinions',
-  'Reveal Your Rankings',
-  'Time For A Tier Check',
-  'Let The Ranking Begin',
-  'Unleash Your Inner Critic',
-  'The Nerdy Way To Rank',
-  'Your Tier Journey Awaits',
-];
 
 interface LoginScreenProps {
   navigation?: any;
@@ -52,29 +37,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const phraseOpacity = useRef(new Animated.Value(1)).current;
-  const floatingAnim = useRef(new Animated.Value(0)).current;
-  
-  // Phrase state
-  const [currentPhrase, setCurrentPhrase] = useState(loginPhrases[0]);
-  const [phraseIndex, setPhraseIndex] = useState(0);
 
-  const changePhrase = () => {
-    Animated.timing(phraseOpacity, {
-      toValue: 0,
-      duration: 400,
-      useNativeDriver: true,
-    }).start(() => {
-      setPhraseIndex((prevIndex) => (prevIndex + 1) % loginPhrases.length);
-      setCurrentPhrase(loginPhrases[(phraseIndex + 1) % loginPhrases.length]);
-      
-      Animated.timing(phraseOpacity, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }).start();
-    });
-  };
 
   useEffect(() => {
     // Start fade in animation
@@ -84,28 +47,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       useNativeDriver: true,
     }).start();
 
-    // Start floating animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatingAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatingAnim, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
 
-    // Phrase rotation timer
-    const phraseTimer = setInterval(() => {
-      changePhrase();
-    }, 5000);
-
-    return () => clearInterval(phraseTimer);
   }, []);
 
   const handleGoogleSignIn = async () => {
@@ -129,50 +71,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
   };
 
-  const renderFloatingElement = (icon: string, size: number, opacity: number) => {
-    const translateY = floatingAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, -10],
-    });
-
-    return (
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          {
-            opacity: opacity,
-            transform: [{ translateY }],
-          },
-        ]}
-      >
-        <View style={[styles.floatingIcon, { width: size, height: size }]}>
-          <Ionicons name={icon as any} size={size * 0.6} color={AppColors.primary} />
-        </View>
-      </Animated.View>
-    );
-  };
 
   return (
-    <LinearGradient
-      colors={[AppColors.primary, AppColors.primaryDark]}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        {/* Floating elements */}
-        <View style={styles.floatingContainer} pointerEvents="none">
-          <View style={[styles.floatingPosition, { top: 40, right: 30 }]}>
-            {renderFloatingElement('star', 25, 0.06)}
-          </View>
-          <View style={[styles.floatingPosition, { bottom: 180, left: 20 }]}>
-            {renderFloatingElement('list', 20, 0.08)}
-          </View>
-          <View style={[styles.floatingPosition, { bottom: 100, right: 50 }]}>
-            {renderFloatingElement('trophy', 22, 0.07)}
-          </View>
-          <View style={[styles.floatingPosition, { top: 300, left: 40 }]}>
-            {renderFloatingElement('analytics', 30, 0.05)}
-          </View>
-        </View>
         
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -189,19 +91,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               {/* Logo */}
               <View style={styles.logoContainer}>
                 <Image
-                  source={require('../../assets/tiernerd-logo.png')}
+                  source={require('../../assets/logo-transparent.png')}
                   style={styles.logo}
                   resizeMode="contain"
                 />
               </View>
 
-              {/* Title with animated phrase */}
-              <Animated.Text style={[styles.phrase, { opacity: phraseOpacity }]}>
-                {currentPhrase}
-              </Animated.Text>
-
               {/* Login form */}
               <View style={styles.formContainer} collapsable={false}>
+                {/* Form Title */}
+                <Text style={styles.formTitle}>
+                  TierNerd
+                </Text>
+                <View style={styles.titleDivider} />
                 <Input
                   label="Email"
                   value={email}
@@ -229,7 +131,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   onRightIconPress={() => setPasswordVisible(!passwordVisible)}
                 />
 
-                <TouchableOpacity style={styles.forgotPassword}>
+                <TouchableOpacity 
+                  style={styles.forgotPassword}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
                   <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
                 </TouchableOpacity>
 
@@ -254,9 +160,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   style={styles.googleButton}
                   onPress={handleGoogleSignIn}
                   disabled={isLoading}
+                  activeOpacity={0.8}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   {isLoading ? (
-                    <ActivityIndicator color={AppColors.textPrimary} />
+                    <ActivityIndicator color={AppColors.secondary.primary} />
                   ) : (
                     <>
                       <Image
@@ -271,13 +179,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 {/* Sign up link */}
                 <View style={styles.signUpContainer}>
                   <Text style={styles.signUpText}>Don't have an account? </Text>
-                  <TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
                     <Text style={styles.signUpLink}>Sign Up</Text>
                   </TouchableOpacity>
                 </View>
 
                 {/* Version */}
-                <Text style={styles.version}>v1.0.0 • Tier Nerd</Text>
+                <View style={styles.versionContainer}>
+                  <Image
+                    source={require('../../assets/logo-transparent.png')}
+                    style={styles.versionLogo}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.version}>v1.0.0 • Tier Nerd</Text>
+                </View>
               </View>
 
               {error && (
@@ -289,13 +207,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: AppColors.dominant.secondary,
   },
   safeArea: {
     flex: 1,
@@ -307,57 +226,40 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: AppSpacing.lg,
   },
-  floatingContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1,
-  },
-  floatingPosition: {
-    position: 'absolute',
-  },
-  floatingElement: {
-    position: 'absolute',
-  },
-  floatingIcon: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingVertical: AppSpacing.xl,
-    zIndex: 5,
+    paddingVertical: AppSpacing.xs,
+    paddingTop: AppSpacing.sm,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: AppSpacing.xl,
+    marginBottom: AppSpacing.sm,
   },
   logo: {
-    width: 180,
-    height: 180,
+    width: 80,
+    height: 80,
   },
-  phrase: {
-    ...AppTypography.headlineSmall,
-    color: AppColors.textOnPrimary,
+  formTitle: {
+    ...AppTypography.brandTitle,
+    color: AppColors.secondary.emphasis,
     textAlign: 'center',
-    marginBottom: AppSpacing.xxxl,
-    fontWeight: 'bold',
+    marginBottom: AppSpacing.md,
+  },
+  titleDivider: {
+    height: 1,
+    backgroundColor: AppColors.neutral[200],
+    marginBottom: AppSpacing.lg,
   },
   formContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: AppColors.dominant.primary,
     borderRadius: AppBorders.radiusLg,
     padding: AppSpacing.lg,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.05,
     shadowRadius: 8,
-    elevation: 6,
-    zIndex: 10,
+    elevation: 4,
   },
   loginButton: {
     marginTop: AppSpacing.md,
@@ -425,11 +327,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textDecorationLine: 'underline',
   },
+  versionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: AppSpacing.md,
+  },
+  versionLogo: {
+    width: 16,
+    height: 16,
+    marginRight: AppSpacing.xs,
+    opacity: 0.3,
+  },
   version: {
     ...AppTypography.labelSmall,
     color: AppColors.textSecondary,
-    textAlign: 'center',
-    marginTop: AppSpacing.md,
     opacity: 0.5,
   },
   errorContainer: {
