@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthContext';
-import { Card, Button } from '../design-system/components';
+import { Card } from '../design-system/components';
 import { AppColors, AppSpacing, AppTypography, AppBorders } from '../design-system/tokens';
 
 // Temporary inline shadows to fix import issue
@@ -137,12 +137,14 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
             {/* Sign Out Button */}
             <View style={styles.signOutSection}>
-              <Button
-                title="Sign Out"
-                onPress={handleSignOut}
-                fullWidth
+              <TouchableOpacity
                 style={styles.signOutButton}
-              />
+                onPress={handleSignOut}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+                <Text style={styles.signOutButtonText}>Sign Out</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Version Info */}
@@ -269,7 +271,21 @@ const styles = StyleSheet.create({
     marginBottom: AppSpacing.xl,
   },
   signOutButton: {
-    backgroundColor: AppColors.error,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: AppColors.surface,
+    borderWidth: 1,
+    borderColor: '#DC2626',
+    borderRadius: AppBorders.radiusMd,
+    paddingVertical: AppSpacing.md,
+    paddingHorizontal: AppSpacing.lg,
+  },
+  signOutButtonText: {
+    ...AppTypography.labelLarge,
+    color: '#DC2626',
+    fontWeight: '600',
+    marginLeft: AppSpacing.sm,
   },
   versionContainer: {
     flexDirection: 'row',
