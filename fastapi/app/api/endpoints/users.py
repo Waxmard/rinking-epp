@@ -15,6 +15,7 @@ from app.schemas.user import Token, User, UserCreate
 
 router = APIRouter()
 
+create_user = None
 
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -> Any:
@@ -53,6 +54,8 @@ async def login_for_access_token(
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    current_user = user
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
         "access_token": create_access_token(

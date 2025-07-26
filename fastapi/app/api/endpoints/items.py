@@ -20,18 +20,19 @@ from app.schemas.user import User
 from app.core.algorithm import find_next_comparison
 import uuid
 from datetime import datetime
+from app.utils.helper import sort_items_linked_list_style, convert_pydantic_to_sqlalchemy
 
 router = APIRouter()
 
 session_id_cache = dict()
 
-@router.post("/", response_model=Item)
+@router.post("/", response_model=Union[Item, ComparisonSession])
 async def create_item(
     list_title: str,
     item_in: ItemCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> ComparisonSession:
+) -> Union[Item, ComparisonSession]:
     """
     Create a new item within a list.
     
@@ -63,18 +64,19 @@ async def create_item(
         list_id=list_obj.list_id,
         name=item_in.name,
         description=item_in.description,
-        image_url=item_in.image_url,
-        position=None,  # Initially unranked
+        image_url=str(item_in.image_url),
+        prev_item_id=None,
+        next_item_id=None,  # Initially unranked
         rating=None,  # Initially unrated
         tier=None,  # Initially unrated
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
 
-        # Get all items in the list
-    stmt = select(ItemModel).where(ItemModel.list_id == list_obj.list_id).order_by(ItemModel.position)
+    # Get all items in the list
+    stmt = select(ItemModel).where(ItemModel.list_id == list_obj.list_id)
     result = await db.execute(stmt)
-    all_items = result.scalars().all()
+    all_items = sort_items_linked_list_style(result.scalars().all())
 
     if not all_items:
         db.add(item_obj)
@@ -85,11 +87,11 @@ async def create_item(
     # Initialize comparison
     middle = len(all_items) // 2
     comparison = Comparison(
-        item1=item_obj,
-        item2=all_items[middle],
-        low=0,
-        mid=middle,
-        high=len(all_items) - 1,
+        reference_item=item_obj,
+        target_item=all_items[middle],
+        min_index=0,
+        comparison_index=middle,
+        max_index=len(all_items) - 1,
         is_winner=None,
         done=False
     )
@@ -100,7 +102,7 @@ async def create_item(
     comparison_session = ComparisonSession(
         session_id=session_id,
         list_id=list_obj.list_id,
-        item_id=item_obj,
+        item_id=item_obj.item_id,
         current_comparison=comparison,
         is_complete=False,
         created_at=datetime.now(),
@@ -112,10 +114,10 @@ async def create_item(
     return comparison_session
 
 
-@router.post("/comparison/{session_id}/result", response_model=Union[ComparisonSession, None])
+@router.post("/comparison/result", response_model=Union[ComparisonSession, None])
 async def submit_comparison_result(
     session_id: str,
-    result: ComparisonResultRequest,
+    result_request: ComparisonResultRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Union[ComparisonSession, None]:
@@ -135,32 +137,40 @@ async def submit_comparison_result(
     """
     comparison_session = session_id_cache.get(session_id)
     if not comparison_session:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comparison session not found or invalid",
+        )
 
     # Get all items in the list
-    stmt = select(ItemModel).where(ItemModel.list_id == list_id).order_by(ItemModel.position)
+    stmt = select(ItemModel).where(ItemModel.list_id == comparison_session.list_id)
     result = await db.execute(stmt)
-    all_items = result.scalars().all()
+    all_items = sort_items_linked_list_style(result.scalars().all())
 
     # Find next comparison
-    comparison_session.current_comparison = find_next_comparison(all_items, comparison_session.current_comparison, result.result == "better")
+    comparison_session.current_comparison = find_next_comparison(all_items, comparison_session.current_comparison, result_request.result == "better")
 
+    # TODO: Update reference item and target item from Pydantic to SQLAlchemy models
     if comparison_session.current_comparison.done:
-        db.add(comparison_session.current_comparison.reference_item)
+        db.add(convert_pydantic_to_sqlalchemy(comparison_session.current_comparison.reference_item))
         await db.commit()
-        await db.refresh(comparison_session.current_comparison.reference_item)
+        stmt = select(ItemModel).where(ItemModel.item_id == comparison_session.current_comparison.target_item.item_id)
+        result = await db.execute(stmt)
+        item = result.scalar_one_or_none()
+
+        if item is None:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        # Apply in-place updates
+        item.prev_item_id = comparison_session.current_comparison.target_item.item_id
+        item.next_item_id = comparison_session.current_comparison.target_item.item_id
+        item.updated_at = datetime.utcnow()  # optional
+
+        await db.flush()
         session_id_cache.pop(session_id)
         return None
-
-    return ComparisonSession(
-        session_id=session_id,
-        list_id=list_id,
-        item_id=item_id,
-        current_comparison=next_comparison,
-        is_complete=False,
-        created_at=datetime.now(),
-        updated_at=datetime.now()
-    )
+        
+    return comparison_session
 
 
 @router.get("/items/{item_id}", response_model=Item)
