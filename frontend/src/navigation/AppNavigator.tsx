@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { LoginScreen } from '../screens/LoginScreen';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ListsScreen } from '../screens/ListsScreen';
+import { ProfileScreen } from '../screens/ProfileScreen';
 import { useAuth } from '../providers/AuthContext';
 
 const Stack = createStackNavigator();
@@ -21,6 +22,9 @@ export const AppNavigator: React.FC = () => {
             </Stack.Screen>
             <Stack.Screen name="Lists">
               {(props) => <ListsScreen {...props} />}
+            </Stack.Screen>
+            <Stack.Screen name="Profile">
+              {(props) => <ProfileScreen {...props} />}
             </Stack.Screen>
             {/* Add other authenticated screens here */}
           </>

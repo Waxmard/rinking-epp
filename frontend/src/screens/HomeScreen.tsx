@@ -9,12 +9,10 @@ import {
   Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthContext';
 import { Card, Button } from '../design-system/components';
-import { AppColors, AppSpacing, AppTypography, AppBorders, AppGradients } from '../design-system/tokens';
+import { AppColors, AppSpacing, AppTypography, AppBorders } from '../design-system/tokens';
 
 // Temporary inline shadows to fix import issue
 const AppShadows = {
@@ -52,7 +50,7 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { user, userData, signOut } = useAuth();
+  const { userData } = useAuth();
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -103,8 +101,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const handleProfilePress = () => {
-    // Navigate to profile/settings screen
-    console.log('Navigate to profile');
+    navigation.navigate('Profile');
   };
 
   const handleCreatePress = () => {
