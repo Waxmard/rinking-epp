@@ -53,7 +53,8 @@ class Item(ItemBase):
     name: str
     description: Optional[str] = None
     image_url: Optional[HttpUrl] = None
-    position: Optional[int] = None
+    prev_item_id: Optional[uuid.UUID] = None
+    next_item_id: Optional[uuid.UUID] = None
     rating: Optional[float] = None
     tier: Optional[TierRank] = None
     created_at: datetime
@@ -73,6 +74,8 @@ class Comparison(BaseModel):
     comparison_index: int
     min_index: int
     max_index: int
+    is_winner: Optional[bool] = None
+    done: bool = False
 
     class Config:
         """Pydantic config."""

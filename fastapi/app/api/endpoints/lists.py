@@ -67,6 +67,19 @@ async def create_list(
     """
     Create new list.
     """
+    # Check if list exists and belongs to current user
+    query = select(ListModel).where(
+        ListModel.title == name, ListModel.user_id == current_user.user_id
+    )
+    result = await db.execute(query)
+    list_obj = result.scalar_one_or_none()
+
+    if list_obj:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="List already exists for current user",
+        )
+
     list_obj = ListModel(
         list_id=uuid.uuid4(),
         title=name,

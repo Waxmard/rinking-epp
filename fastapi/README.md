@@ -82,6 +82,9 @@ Numeric ratings are mapped to tiers using the following ranges:
 | F    | 0.1 - 2.9    |
 
 
+# Start Postgres db locally
+psql -U postgres -h localhost -d ranking_app
+
 # Sample Test Requests
 
 Post Lists Request
@@ -96,6 +99,5 @@ curl -X POST "http://localhost:8000/api/users/" -H "Content-Type: application/js
 
 Create Item Request
 ```bash
-curl -X POST "http://localhost:8000/api/items/?list_title=faggot" -H "Content-Type: application/json" -H "Authorization: Bearer <your-token>" -d '{"name": "testitem", "description": "still gay", "image_url": "testimageurl"}'
+curl -X POST "http://localhost:8000/api/items/?list_title=faggot" -H "Content-Type: application/json" -H "Authorization: Bearer <your-token>" -d '{"name": "testitem", "description": "still gay", "image_url": "https://example.com/"}'
 ```
-
