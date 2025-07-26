@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Modal,
-  FlatList,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -35,21 +34,17 @@ const AppShadows = {
   },
 };
 
-interface TierCount {
-  S: number;
-  A: number;
-  B: number;
-  C: number;
-  D: number;
-  F: number;
-}
-
 interface RecentList {
   id: string;
   title: string;
   itemCount: number;
   updatedAt: Date;
-  tierCounts: TierCount;
+}
+
+interface UserStats {
+  totalLists: number;
+  totalItems: number;
+  mostUsedTier: string;
 }
 
 interface HomeScreenProps {
@@ -58,23 +53,44 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { user, userData, signOut } = useAuth();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   
-  // Mock data for recent list
-  const [recentList] = useState<RecentList | null>({
-    id: '1',
-    title: 'Best Programming Languages',
-    itemCount: 15,
-    updatedAt: new Date(),
-    tierCounts: {
-      S: 2,
-      A: 4,
-      B: 5,
-      C: 3,
-      D: 1,
-      F: 0,
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  
+  // Mock data for recent lists (showing up to 3)
+  const [recentLists] = useState<RecentList[]>([
+    {
+      id: '1',
+      title: 'Best Programming Languages',
+      itemCount: 15,
+      updatedAt: new Date(),
     },
+  ]);
+
+  // Mock user stats
+  const [userStats] = useState<UserStats>({
+    totalLists: 1,
+    totalItems: 15,
+    mostUsedTier: 'A',
   });
+
+  useEffect(() => {
+    // Start animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const formatDate = (date: Date): string => {
     const now = new Date();
@@ -86,61 +102,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    // Navigation happens automatically when user state changes
+  const handleProfilePress = () => {
+    // Navigate to profile/settings screen
+    console.log('Navigate to profile');
   };
 
-  const renderTierDistribution = (tierCounts: TierCount) => {
-    const tiers = ['S', 'A', 'B', 'C', 'D', 'F'] as const;
-    
-    return (
-      <View style={styles.tierDistribution}>
-        {tiers.map((tier) => {
-          const count = tierCounts[tier];
-          const hasItems = count > 0;
-          const color = AppColors.tierColors[tier];
-          
-          return (
-            <View key={tier} style={styles.tierItem}>
-              <View
-                style={[
-                  styles.tierBox,
-                  { 
-                    backgroundColor: hasItems ? `${color}20` : AppColors.neutral[100],
-                    borderColor: hasItems ? color : AppColors.neutral[300],
-                  },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tierLabel,
-                    { color: hasItems ? color : AppColors.textSecondary },
-                  ]}
-                >
-                  {tier}
-                </Text>
-                <Text
-                  style={[
-                    styles.tierCount,
-                    { color: hasItems ? AppColors.secondary.primary : AppColors.secondary.muted },
-                  ]}
-                >
-                  {count}
-                </Text>
-              </View>
-            </View>
-          );
-        })}
-      </View>
-    );
+  const handleCreatePress = () => {
+    console.log('Create new tier list');
+    // navigation.navigate('CreateList');
   };
 
-  const profileMenuItems = [
-    { id: 'profile', label: 'Profile', icon: 'person-outline' },
-    { id: 'settings', label: 'Settings', icon: 'settings-outline' },
-    { id: 'signout', label: 'Sign Out', icon: 'log-out-outline', danger: true },
-  ];
+  const handleListPress = (listId: string) => {
+    console.log('Navigate to list', listId);
+    // navigation.navigate('ListDetail', { listId });
+  };
 
   return (
     <View style={styles.container}>
@@ -149,136 +124,137 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.headerRow}>
-              <View style={styles.brandSection}>
-                <Image
-                  source={require('../../assets/logo-transparent.png')}
-                  style={styles.logo}
-                />
-                <Text style={styles.tierNerdText}>TierNerd</Text>
-              </View>
-              
-              <TouchableOpacity
-                onPress={() => setShowProfileMenu(true)}
-                style={styles.profileButton}
-              >
-                {userData?.photoUrl ? (
+          <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}>
+            {/* Header */}
+            <View style={styles.header}>
+              <View style={styles.headerRow}>
+                <View style={styles.brandSection}>
                   <Image
-                    source={{ uri: userData.photoUrl }}
-                    style={styles.profileImage}
+                    source={require('../../assets/logo-transparent.png')}
+                    style={styles.logo}
                   />
-                ) : (
-                  <View style={styles.profilePlaceholder}>
-                    <Ionicons name="person" size={24} color={AppColors.secondary.muted} />
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Create Button */}
-          <TouchableOpacity style={styles.createButton} activeOpacity={0.8}>
-            <View style={styles.createButtonContent}>
-              <Ionicons name="add-circle" size={24} color={AppColors.dominant.primary} />
-              <Text style={styles.createButtonText}>Create New Tier List</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Recent List */}
-          {recentList && (
-            <View style={styles.recentSection}>
-              <Text style={styles.sectionTitle}>Recent List</Text>
-              <TouchableOpacity activeOpacity={0.9}>
-                <Card style={styles.listCard}>
-                  <View style={styles.listHeader}>
-                    <Text style={styles.listTitle} numberOfLines={1}>
-                      {recentList.title}
-                    </Text>
-                    <View style={styles.itemCountBadge}>
-                      <Text style={styles.itemCountText}>{recentList.itemCount} items</Text>
+                  <Text style={styles.brandText}>TierNerd</Text>
+                </View>
+                
+                <TouchableOpacity
+                  onPress={handleProfilePress}
+                  style={styles.profileButton}
+                  activeOpacity={0.7}
+                >
+                  {userData?.photoUrl ? (
+                    <Image
+                      source={{ uri: userData.photoUrl }}
+                      style={styles.profileImage}
+                    />
+                  ) : (
+                    <View style={styles.profilePlaceholder}>
+                      <Ionicons name="person" size={20} color={AppColors.neutral[600]} />
                     </View>
-                  </View>
-                  
-                  <View style={styles.listMeta}>
-                    <Ionicons name="time-outline" size={16} color={AppColors.secondary.muted} />
-                    <Text style={styles.listMetaText}>
-                      Modified {formatDate(recentList.updatedAt)}
-                    </Text>
-                  </View>
-                  
-                  <View style={styles.tierSection}>
-                    <Text style={styles.tierSectionTitle}>Tier Distribution</Text>
-                    <View style={styles.tierDistributionContainer}>
-                      {renderTierDistribution(recentList.tierCounts)}
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Hero Section */}
+            <View style={styles.heroSection}>
+              <Button
+                title="Create New Tier List"
+                onPress={handleCreatePress}
+                fullWidth
+                style={styles.createButton}
+                icon={<Ionicons name="add-circle-outline" size={24} color={AppColors.textOnPrimary} />}
+              />
+            </View>
+
+            {recentLists.length > 0 ? (
+              <>
+                {/* Quick Stats */}
+                <Card style={styles.statsCard}>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                      <Text style={styles.statValue}>{userStats.totalLists}</Text>
+                      <Text style={styles.statLabel}>Lists</Text>
+                    </View>
+                    <View style={styles.statDivider} />
+                    <View style={styles.statItem}>
+                      <Text style={styles.statValue}>{userStats.totalItems}</Text>
+                      <Text style={styles.statLabel}>Items</Text>
+                    </View>
+                    <View style={styles.statDivider} />
+                    <View style={styles.statItem}>
+                      <View style={[styles.tierBadge, { backgroundColor: AppColors.tierColors[userStats.mostUsedTier as keyof typeof AppColors.tierColors] }]}>
+                        <Text style={styles.tierBadgeText}>{userStats.mostUsedTier}</Text>
+                      </View>
+                      <Text style={styles.statLabel}>Top Tier</Text>
                     </View>
                   </View>
                 </Card>
-              </TouchableOpacity>
-            </View>
-          )}
 
-          {/* All Lists Button */}
-          <TouchableOpacity
-            style={styles.allListsButton}
-            activeOpacity={0.8}
-            onPress={() => navigation.navigate('Lists')}
-          >
-            <View style={styles.allListsButtonContent}>
-              <Ionicons name="list" size={24} color={AppColors.accent.primary} />
-              <Text style={styles.allListsButtonText}>View All Lists</Text>
-            </View>
-          </TouchableOpacity>
+                {/* Recent Lists */}
+                <View style={styles.recentSection}>
+                  <Text style={styles.sectionTitle}>Recent Lists</Text>
+                  {recentLists.map((list) => (
+                    <TouchableOpacity
+                      key={list.id}
+                      activeOpacity={0.8}
+                      onPress={() => handleListPress(list.id)}
+                    >
+                      <Card style={styles.listCard}>
+                        <View style={styles.listHeader}>
+                          <View style={styles.listInfo}>
+                            <Text style={styles.listTitle} numberOfLines={1}>
+                              {list.title}
+                            </Text>
+                            <View style={styles.listMeta}>
+                              <Text style={styles.listMetaText}>
+                                {list.itemCount} items • Modified {formatDate(list.updatedAt)}
+                              </Text>
+                            </View>
+                          </View>
+                          <Ionicons 
+                            name="chevron-forward" 
+                            size={20} 
+                            color={AppColors.neutral[400]} 
+                          />
+                        </View>
+                      </Card>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {/* Secondary Actions */}
+                <View style={styles.secondaryActions}>
+                  <TouchableOpacity
+                    style={styles.secondaryButton}
+                    activeOpacity={0.8}
+                    onPress={() => navigation.navigate('Lists')}
+                  >
+                    <Ionicons name="list-outline" size={20} color={AppColors.primary} />
+                    <Text style={styles.secondaryButtonText}>View All Lists</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              /* Empty State */
+              <View style={styles.emptyState}>
+                <Image
+                  source={require('../../assets/logo-transparent.png')}
+                  style={styles.emptyStateImage}
+                />
+                <Text style={styles.emptyStateTitle}>Welcome to TierNerd!</Text>
+                <Text style={styles.emptyStateText}>
+                  Create your first tier list and start ranking your favorite things
+                </Text>
+                <Button
+                  title="Create Your First List"
+                  onPress={handleCreatePress}
+                  style={styles.emptyStateButton}
+                />
+              </View>
+            )}
+          </Animated.View>
         </ScrollView>
       </SafeAreaView>
-
-      {/* Profile Menu Modal */}
-      <Modal
-        visible={showProfileMenu}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowProfileMenu(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowProfileMenu(false)}
-        >
-          <View style={styles.profileMenu}>
-            <View style={styles.profileMenuHandle} />
-            <FlatList
-              data={profileMenuItems}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.profileMenuItem}
-                  onPress={() => {
-                    setShowProfileMenu(false);
-                    if (item.id === 'signout') {
-                      handleSignOut();
-                    }
-                  }}
-                >
-                  <Ionicons
-                    name={item.icon as any}
-                    size={24}
-                    color={item.danger ? AppColors.error : AppColors.secondary.primary}
-                  />
-                  <Text
-                    style={[
-                      styles.profileMenuItemText,
-                      item.danger && { color: AppColors.error },
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            />
-          </View>
-        </TouchableOpacity>
-      </Modal>
     </View>
   );
 };
@@ -292,12 +268,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: AppSpacing.md,
+    paddingHorizontal: AppSpacing.lg,
     paddingBottom: AppSpacing.xxxl,
   },
   header: {
     marginBottom: AppSpacing.xl,
-    paddingTop: AppSpacing.sm,
+    paddingTop: AppSpacing.md,
   },
   headerRow: {
     flexDirection: 'row',
@@ -309,25 +285,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     marginRight: AppSpacing.sm,
   },
-  tierNerdText: {
-    ...AppTypography.brandTitle,
+  brandText: {
+    ...AppTypography.headlineMedium,
     color: AppColors.secondary.emphasis,
+    fontWeight: '700',
   },
   profileButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: AppColors.dominant.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: AppColors.surface,
+    borderWidth: 1,
+    borderColor: AppColors.neutral[300],
+    ...AppShadows.md,
   },
   profileImage: {
     width: '100%',
@@ -336,184 +311,144 @@ const styles = StyleSheet.create({
   profilePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: AppColors.dominant.primary,
+    backgroundColor: AppColors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  heroSection: {
+    marginBottom: AppSpacing.xl,
   },
   createButton: {
-    backgroundColor: AppColors.accent.primary,
-    borderRadius: AppBorders.radiusLg,
-    marginBottom: AppSpacing.xl,
-    shadowColor: AppColors.accent.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  createButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: AppColors.primary,
     paddingVertical: AppSpacing.lg,
-    paddingHorizontal: AppSpacing.lg,
+    ...AppShadows.lg,
   },
-  createButtonText: {
-    ...AppTypography.titleMedium,
-    color: AppColors.dominant.primary,
-    fontWeight: '600',
-    marginLeft: AppSpacing.sm,
-  },
-  recentSection: {
-    marginBottom: AppSpacing.lg,
-  },
-  sectionTitle: {
-    ...AppTypography.headlineSmall,
-    color: AppColors.secondary.emphasis,
-    fontWeight: '600',
-    marginBottom: AppSpacing.sm,
-  },
-  listCard: {
+  statsCard: {
     backgroundColor: AppColors.dominant.primary,
     borderRadius: AppBorders.radiusLg,
     padding: AppSpacing.lg,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 4,
+    marginBottom: AppSpacing.xl,
+    ...AppShadows.md,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    ...AppTypography.headlineMedium,
+    color: AppColors.secondary.emphasis,
+    fontWeight: '700',
+  },
+  statLabel: {
+    ...AppTypography.labelSmall,
+    color: AppColors.textSecondary,
+    marginTop: AppSpacing.xs,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: AppColors.neutral[200],
+  },
+  tierBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: AppSpacing.xxs,
+  },
+  tierBadgeText: {
+    ...AppTypography.labelMedium,
+    color: AppColors.textOnPrimary,
+    fontWeight: 'bold',
+  },
+  recentSection: {
+    marginBottom: AppSpacing.xl,
+  },
+  sectionTitle: {
+    ...AppTypography.titleMedium,
+    color: AppColors.secondary.emphasis,
+    fontWeight: '600',
+    marginBottom: AppSpacing.md,
+  },
+  listCard: {
+    backgroundColor: AppColors.dominant.primary,
+    borderRadius: AppBorders.radiusMd,
+    padding: AppSpacing.md,
+    marginBottom: AppSpacing.sm,
+    ...AppShadows.md,
   },
   listHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: AppSpacing.sm,
   },
-  listTitle: {
-    ...AppTypography.headlineSmall,
-    color: AppColors.secondary.emphasis,
-    fontWeight: '600',
+  listInfo: {
     flex: 1,
   },
-  itemCountBadge: {
-    backgroundColor: `${AppColors.accent.primary}15`,
-    paddingHorizontal: AppSpacing.sm,
-    paddingVertical: AppSpacing.xs,
-    borderRadius: AppBorders.radiusSm,
-  },
-  itemCountText: {
-    ...AppTypography.labelSmall,
-    color: AppColors.accent.primary,
+  listTitle: {
+    ...AppTypography.bodyLarge,
+    color: AppColors.secondary.emphasis,
     fontWeight: '600',
+    marginBottom: AppSpacing.xxs,
   },
   listMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: AppSpacing.md,
   },
   listMetaText: {
     ...AppTypography.bodySmall,
-    color: AppColors.secondary.muted,
-    marginLeft: AppSpacing.xs,
+    color: AppColors.textSecondary,
   },
-  tierSection: {
-    marginTop: AppSpacing.sm,
+  secondaryActions: {
+    marginTop: AppSpacing.lg,
   },
-  tierSectionTitle: {
-    ...AppTypography.labelMedium,
-    color: AppColors.secondary.primary,
-    fontWeight: '600',
-    marginBottom: AppSpacing.sm,
-  },
-  tierDistribution: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  tierItem: {
-    flex: 1,
-    marginRight: AppSpacing.xs,
-  },
-  tierBox: {
-    padding: AppSpacing.xs,
-    borderRadius: AppBorders.radiusSm,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  tierLabel: {
-    ...AppTypography.labelSmall,
-    fontWeight: 'bold',
-  },
-  tierCount: {
-    ...AppTypography.bodySmall,
-    fontWeight: '600',
-    marginTop: AppSpacing.xxs,
-  },
-  tierDistributionContainer: {
-    backgroundColor: AppColors.dominant.secondary,
-    borderRadius: AppBorders.radiusMd,
-    padding: AppSpacing.sm,
-  },
-  allListsButton: {
-    backgroundColor: AppColors.dominant.primary,
-    borderRadius: AppBorders.radiusLg,
-    borderWidth: 2,
-    borderColor: AppColors.accent.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  allListsButtonContent: {
+  secondaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: AppColors.surface,
+    borderWidth: 1,
+    borderColor: AppColors.primary,
+    borderRadius: AppBorders.radiusMd,
     paddingVertical: AppSpacing.md,
     paddingHorizontal: AppSpacing.lg,
   },
-  allListsButtonText: {
-    ...AppTypography.titleMedium,
-    color: AppColors.accent.primary,
-    fontWeight: '600',
+  secondaryButtonText: {
+    ...AppTypography.labelLarge,
+    color: AppColors.primary,
+    fontWeight: '500',
     marginLeft: AppSpacing.sm,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  profileMenu: {
-    backgroundColor: AppColors.dominant.primary,
-    borderTopLeftRadius: AppBorders.radiusLg,
-    borderTopRightRadius: AppBorders.radiusLg,
-    paddingBottom: AppSpacing.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  profileMenuHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: AppColors.secondary.light,
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginTop: AppSpacing.sm,
-    marginBottom: AppSpacing.lg,
-  },
-  profileMenuItem: {
-    flexDirection: 'row',
+  emptyState: {
     alignItems: 'center',
-    paddingVertical: AppSpacing.md,
+    paddingTop: AppSpacing.xxxl,
     paddingHorizontal: AppSpacing.lg,
-    borderRadius: AppBorders.radiusMd,
-    marginHorizontal: AppSpacing.sm,
-    marginVertical: AppSpacing.xs,
   },
-  profileMenuItemText: {
-    ...AppTypography.bodyLarge,
-    color: AppColors.secondary.primary,
-    marginLeft: AppSpacing.md,
-    fontWeight: '500',
+  emptyStateImage: {
+    width: 120,
+    height: 120,
+    opacity: 0.3,
+    marginBottom: AppSpacing.xl,
+  },
+  emptyStateTitle: {
+    ...AppTypography.headlineMedium,
+    color: AppColors.secondary.emphasis,
+    fontWeight: '600',
+    marginBottom: AppSpacing.sm,
+  },
+  emptyStateText: {
+    ...AppTypography.bodyMedium,
+    color: AppColors.textSecondary,
+    textAlign: 'center',
+    marginBottom: AppSpacing.xl,
+  },
+  emptyStateButton: {
+    backgroundColor: AppColors.primary,
   },
 });
