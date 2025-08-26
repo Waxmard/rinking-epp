@@ -11,16 +11,17 @@ RUN apt-get update && apt-get install -y \
 # Install uv
 RUN pip install uv
 
+# Set UV to use container Python
+ENV UV_PYTHON=/usr/local/bin/python3
+
 # Set working directory
 WORKDIR /app
 
 # Copy dependency files
 COPY pyproject.toml ./
 
-# Create virtual environment and install dependencies
-RUN uv venv && \
-    . .venv/bin/activate && \
-    uv pip install -e .
+# Use uv sync to create venv and install dependencies
+RUN uv sync
 
 # Production stage
 FROM python:3.11-slim
@@ -59,4 +60,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
 # Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/.venv/bin/uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -57,29 +57,30 @@ async def create_tables() -> None:
             # Only drop/recreate tables in development
             await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
-            
-            # Create default development user
-            default_user = User(
-                user_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
-                username="developer",
-                email="dev@example.com",
-                password_hash=bcrypt.hashpw(b"devpassword", bcrypt.gensalt()).decode('utf-8'),
-                created_at=datetime.now(),
-                updated_at=datetime.now()
-            )
-            
-            try:
-                async with SessionLocal() as session:
-                    session.add(default_user)
-                    await session.commit()
-            except Exception as e:
-                print(f"Error creating default user: {e}")
-                # Don't raise in production if user already exists
-                if settings.APP_ENV == "development":
-                    raise
         else:
             # In production, just ensure tables exist (use Alembic for migrations)
             await conn.run_sync(Base.metadata.create_all)
+    
+    # Create default development user after tables are committed
+    if settings.APP_ENV == "development":
+        default_user = User(
+            user_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
+            username="developer",
+            email="dev@example.com",
+            password_hash=bcrypt.hashpw(b"devpassword", bcrypt.gensalt()).decode('utf-8'),
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        try:
+            async with SessionLocal() as session:
+                session.add(default_user)
+                await session.commit()
+        except Exception as e:
+            print(f"Error creating default user: {e}")
+            # Don't raise in production if user already exists
+            if settings.APP_ENV == "development":
+                raise
 
 
 async def create_user(db: AsyncSession, username: str, email: str, password_hash: str) -> User:

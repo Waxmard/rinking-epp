@@ -1,5 +1,6 @@
 services:
   backend:
+    image: tiernerd-backend:local
     build:
       context: .
       dockerfile: Dockerfile
