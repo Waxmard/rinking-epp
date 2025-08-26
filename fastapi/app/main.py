@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from app.api.api import api_router
 from app.settings import settings
@@ -34,6 +35,32 @@ async def startup():
 async def root():
     """Root endpoint."""
     return {"message": "Welcome to the Ranking App API"}
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for container monitoring."""
+    from app.db.database import engine
+    
+    try:
+        # Check database connectivity
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        
+        return {
+            "status": "healthy",
+            "service": "tiernerd-backend",
+            "version": "0.1.0",
+            "database": "connected"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "service": "tiernerd-backend",
+            "version": "0.1.0",
+            "database": "disconnected",
+            "error": str(e)
+        }
 
 
 if __name__ == "__main__":

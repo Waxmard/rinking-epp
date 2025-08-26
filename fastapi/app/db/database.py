@@ -9,8 +9,24 @@ from app.db.models import Item, List, User, Base
 from app.settings import settings
 import bcrypt
 
-# Create async engine
-engine = create_async_engine(str(settings.DATABASE_URL))
+# Create async engine with connection pool settings for production
+connect_args = {}
+if settings.APP_ENV == "production":
+    # Production connection pool settings
+    connect_args = {
+        "server_settings": {"jit": "off"},
+        "command_timeout": 60,
+        "pool_size": 20,
+        "max_overflow": 40,
+    }
+
+engine = create_async_engine(
+    str(settings.DATABASE_URL),
+    echo=False,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+    connect_args=connect_args
+)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
@@ -37,30 +53,33 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def create_tables() -> None:
     """Create all database tables."""
     async with engine.begin() as conn:
-        # Only use in development, for production use Alembic migrations
         if settings.APP_ENV == "development":
+            # Only drop/recreate tables in development
             await conn.run_sync(Base.metadata.drop_all)
-
-        await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(Base.metadata.create_all)
             
-    if settings.APP_ENV == "development":
-        # Create default development user
-        default_user = User(
-            user_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
-            username="developer",
-            email="dev@example.com",
-            password_hash=bcrypt.hashpw(b"devpassword", bcrypt.gensalt()).decode('utf-8'),
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        try:
-            async with SessionLocal() as session:
-                session.add(default_user)
-                await session.commit()
-        except Exception as e:
-            print(f"Error creating default user: {e}")
-            raise
+            # Create default development user
+            default_user = User(
+                user_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
+                username="developer",
+                email="dev@example.com",
+                password_hash=bcrypt.hashpw(b"devpassword", bcrypt.gensalt()).decode('utf-8'),
+                created_at=datetime.now(),
+                updated_at=datetime.now()
+            )
+            
+            try:
+                async with SessionLocal() as session:
+                    session.add(default_user)
+                    await session.commit()
+            except Exception as e:
+                print(f"Error creating default user: {e}")
+                # Don't raise in production if user already exists
+                if settings.APP_ENV == "development":
+                    raise
+        else:
+            # In production, just ensure tables exist (use Alembic for migrations)
+            await conn.run_sync(Base.metadata.create_all)
 
 
 async def create_user(db: AsyncSession, username: str, email: str, password_hash: str) -> User:
