@@ -1,6 +1,7 @@
 """Tests for item endpoints."""
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import User, List as ListModel, Item as ItemModel
@@ -11,7 +12,7 @@ class TestCreateItem:
     """Tests for creating items endpoint."""
 
     async def test_create_first_item_success(
-        self, client: AsyncClient, test_list: ListModel, auth_headers: dict
+        self, client: AsyncClient, test_list: ListModel, auth_headers: dict, test_db: AsyncSession
     ):
         """Test creating first item in an empty list."""
         response = await client.post(
@@ -30,10 +31,29 @@ class TestCreateItem:
         assert data["description"] == "The first item"
         assert "item_id" in data
 
+        # Verify item was created in database
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.list_id == test_list.list_id)
+        )
+        db_items = result.scalars().all()
+        assert len(db_items) == 1
+        assert db_items[0].name == "First Item"
+        assert db_items[0].description == "The first item"
+        assert db_items[0].list_id == test_list.list_id
+        assert str(db_items[0].item_id) == data["item_id"]
+
     async def test_create_second_item_starts_comparison(
-        self, client: AsyncClient, test_list: ListModel, test_item: ItemModel, auth_headers: dict
+        self, client: AsyncClient, test_list: ListModel, test_item: ItemModel,
+        auth_headers: dict, test_db: AsyncSession
     ):
         """Test creating second item starts a comparison session."""
+        # Verify we start with 1 item in database
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.list_id == test_list.list_id)
+        )
+        items_before = result.scalars().all()
+        assert len(items_before) == 1
+
         response = await client.post(
             "/api/items/",
             params={"list_title": test_list.title},
@@ -55,6 +75,14 @@ class TestCreateItem:
         assert "reference_item" in comparison
         assert "target_item" in comparison
         assert comparison["reference_item"]["name"] == "Second Item"
+
+        # Note: Second item is NOT yet committed to database during comparison
+        # It will only be saved when comparison is complete
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.list_id == test_list.list_id)
+        )
+        items_after = result.scalars().all()
+        assert len(items_after) == 1  # Still only 1 item until comparison completes
 
     async def test_create_item_unauthenticated(
         self, client: AsyncClient, test_list: ListModel
@@ -220,7 +248,7 @@ class TestReadItem:
     """Tests for reading a specific item endpoint."""
 
     async def test_read_item_success(
-        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict
+        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict, test_db: AsyncSession
     ):
         """Test reading a specific item."""
         response = await client.get(
@@ -231,6 +259,15 @@ class TestReadItem:
         assert str(data["item_id"]) == str(test_item.item_id)
         assert data["name"] == test_item.name
         assert data["description"] == test_item.description
+
+        # Verify item exists in database
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.item_id == test_item.item_id)
+        )
+        db_item = result.scalar_one_or_none()
+        assert db_item is not None
+        assert db_item.name == test_item.name
+        assert db_item.list_id == test_item.list_id
 
     async def test_read_item_unauthenticated(
         self, client: AsyncClient, test_item: ItemModel
@@ -261,9 +298,12 @@ class TestUpdateItem:
     """Tests for updating items endpoint."""
 
     async def test_update_item_success(
-        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict
+        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict, test_db: AsyncSession
     ):
         """Test successful item update."""
+        original_name = test_item.name
+        original_description = test_item.description
+
         response = await client.put(
             f"/api/items/items/{test_item.item_id}",
             json={
@@ -278,6 +318,14 @@ class TestUpdateItem:
         assert data["name"] == "Updated Name"
         assert data["description"] == "Updated description"
         assert data["image_url"] == "https://example.com/updated.jpg"
+
+        # Verify item was updated in database
+        await test_db.refresh(test_item)
+        assert test_item.name == "Updated Name"
+        assert test_item.description == "Updated description"
+        assert test_item.image_url == "https://example.com/updated.jpg"
+        assert test_item.name != original_name
+        assert test_item.description != original_description
 
     async def test_update_item_partial(
         self, client: AsyncClient, test_item: ItemModel, auth_headers: dict
@@ -338,17 +386,45 @@ class TestDeleteItem:
     """Tests for deleting items endpoint."""
 
     async def test_delete_item_success(
-        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict
+        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict, test_db: AsyncSession
     ):
         """Test successful item deletion."""
+        item_id = test_item.item_id
+        list_id = test_item.list_id
+
+        # Verify item exists in database before deletion
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.item_id == item_id)
+        )
+        assert result.scalar_one_or_none() is not None
+
+        # Count items in list before deletion
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.list_id == list_id)
+        )
+        items_before = len(result.scalars().all())
+
         response = await client.delete(
-            f"/api/items/items/{test_item.item_id}", headers=auth_headers
+            f"/api/items/items/{item_id}", headers=auth_headers
         )
         assert response.status_code == 204
 
-        # Verify item is deleted
+        # Verify item is deleted from database
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.item_id == item_id)
+        )
+        assert result.scalar_one_or_none() is None
+
+        # Verify item count decreased
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.list_id == list_id)
+        )
+        items_after = len(result.scalars().all())
+        assert items_after == items_before - 1
+
+        # Verify item is deleted via API
         response = await client.get(
-            f"/api/items/items/{test_item.item_id}", headers=auth_headers
+            f"/api/items/items/{item_id}", headers=auth_headers
         )
         assert response.status_code == 404
 
