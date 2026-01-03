@@ -17,7 +17,28 @@ This app solves the problem of arbitrary ratings by implementing a 1v1 compariso
 
 ## Technology
 
-Built with Flutter for the frontend and Python (FastAPI) for the backend. Uses PostgreSQL for database storage.
+- **Frontend:** React Native with Expo (SDK 54)
+- **Backend:** Python with FastAPI
+- **Database:** PostgreSQL
+
+## Getting Started
+
+### Frontend
+```bash
+cd frontend
+npm install --legacy-peer-deps
+npx expo start                    # Scan QR with Expo Go app
+# or
+npm run ios                       # iOS Simulator
+```
+
+### Backend
+```bash
+cd fastapi
+make dev-up                       # Start with Docker
+```
+
+See [frontend/README.md](frontend/README.md) and [fastapi/README.md](fastapi/README.md) for detailed setup instructions.
 
 ## Tier Ranking System
 
