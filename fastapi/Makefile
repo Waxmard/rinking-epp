@@ -93,7 +93,7 @@ health:
 	curl -f http://localhost:8000/health || echo "Service not healthy"
 
 # Dev commands
-.PHONY: dev-up dev-down dev-logs
+.PHONY: dev-up dev-down dev-logs restart fresh quick-restart
 dev-up:
 	make build-local && make run
 
@@ -102,3 +102,14 @@ dev-down:
 
 dev-logs:
 	make logs
+
+# Convenience commands
+restart: build-local stop run
+	@echo "Container rebuilt and restarted"
+
+fresh: build-local stop run
+	@echo "Container rebuilt and restarted, showing logs..."
+	make logs
+
+quick-restart: stop run
+	@echo "Container restarted (no rebuild)"

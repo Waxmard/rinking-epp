@@ -8,20 +8,26 @@ from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.settings import settings
-from app.crud.crud_user import get_user_by_email
+from app.crud.crud_user import get_user_by_email, get_user_by_username
 from app.db.database import get_db
 from app.schemas.user import TokenPayload, User
 from app.core.security import verify_password
 from uuid import UUID
+import re
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 
 
 async def authenticate_user(
-    db: AsyncSession, email: str, password: str
+    db: AsyncSession, username_or_email: str, password: str
 ) -> Optional[User]:
-    """Authenticate a user."""
-    user = await get_user_by_email(db, email)
+    """Authenticate a user with either username or email."""
+    # Check if it's an email format
+    if "@" in username_or_email and "." in username_or_email:
+        user = await get_user_by_email(db, username_or_email)
+    else:
+        user = await get_user_by_username(db, username_or_email)
+    
     if not user:
         return None
     if not verify_password(password, user.password_hash):
