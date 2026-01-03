@@ -148,10 +148,19 @@ async def submit_comparison_result(
     all_items = sort_items_linked_list_style(result.scalars().all())
 
     # Find next comparison
-    comparison_session.current_comparison = find_next_comparison(all_items, comparison_session.current_comparison, result_request.result == "better")
+    comparison_session.current_comparison.is_winner = result_request.result == "better"
+    comparison_session.current_comparison = find_next_comparison(all_items, comparison_session.current_comparison)
 
     # TODO: Update reference item and target item from Pydantic to SQLAlchemy models
     if comparison_session.current_comparison.done:
+        # Set reference item pointers
+        if comparison_session.current_comparison.is_winner:
+            comparison_session.current_comparison.reference_item.prev_item_id = comparison_session.current_comparison.target_item.item_id
+            comparison_session.current_comparison.reference_item.next_item_id = comparison_session.current_comparison.target_item.next_item_id
+        else:
+            comparison_session.current_comparison.reference_item.next_item_id = comparison_session.current_comparison.target_item.item_id
+            comparison_session.current_comparison.reference_item.prev_item_id = comparison_session.current_comparison.target_item.prev_item_id
+
         db.add(convert_pydantic_to_sqlalchemy(comparison_session.current_comparison.reference_item))
         await db.commit()
         stmt = select(ItemModel).where(ItemModel.item_id == comparison_session.current_comparison.target_item.item_id)
@@ -162,8 +171,10 @@ async def submit_comparison_result(
             raise HTTPException(status_code=404, detail="Item not found")
 
         # Apply in-place updates
-        item.prev_item_id = comparison_session.current_comparison.target_item.item_id
-        item.next_item_id = comparison_session.current_comparison.target_item.item_id
+        if comparison_session.current_comparison.is_winner:
+            item.next_item_id = comparison_session.current_comparison.reference_item.item_id
+        else:
+            item.prev_item_id = comparison_session.current_comparison.reference_item.item_id
         item.updated_at = datetime.utcnow()  # optional
 
         await db.flush()
@@ -175,7 +186,7 @@ async def submit_comparison_result(
 
 @router.get("/items/{item_id}", response_model=Item)
 async def read_item(
-    item_id: int,
+    item_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Item:
@@ -212,7 +223,7 @@ async def read_item(
 
 @router.put("/items/{item_id}", response_model=Item)
 async def update_item(
-    item_id: int,
+    item_id: uuid.UUID,
     item_in: ItemUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -250,6 +261,9 @@ async def update_item(
     # Update fields
     update_data = item_in.dict(exclude_unset=True)
     for field, value in update_data.items():
+        # Convert HttpUrl to string for database storage
+        if field == "image_url" and value is not None:
+            value = str(value)
         setattr(item_obj, field, value)
 
     db.add(item_obj)
@@ -261,7 +275,7 @@ async def update_item(
 
 @router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(
-    item_id: int,
+    item_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:

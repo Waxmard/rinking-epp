@@ -60,6 +60,108 @@ The API is structured around the following resources:
 - `/api/lists`: List creation and management
 - `/api/items`: Item management and ranking
 
+## Testing
+
+### Test Suite Overview
+
+The backend includes comprehensive unit tests for all API endpoints achieving full coverage of endpoint functionality.
+
+### Test Infrastructure
+
+- **Framework**: pytest with pytest-asyncio for async support
+- **Test Database**: SQLite in-memory for fast, isolated tests
+- **HTTP Client**: httpx AsyncClient for endpoint testing
+- **Test Files**:
+  - `tests/conftest.py` - Test configuration and fixtures
+  - `tests/test_users.py` - User endpoint tests
+  - `tests/test_lists.py` - List endpoint tests
+  - `tests/test_items.py` - Item endpoint tests
+  - `tests/app/utils/test_algorithm.py` - Algorithm tests
+
+### Running Tests
+
+```bash
+# Install dev dependencies (includes testing packages)
+uv sync --extra dev
+
+# Run all endpoint tests
+uv run pytest tests/test_users.py tests/test_lists.py tests/test_items.py -v
+
+# Run all tests
+uv run pytest -v
+
+# Run specific test file
+uv run pytest tests/test_users.py -v
+
+# Run specific test class
+uv run pytest tests/test_users.py::TestUserCreation -v
+
+# Run specific test
+uv run pytest tests/test_users.py::TestUserCreation::test_create_user_success -v
+
+# Run with coverage report
+uv run pytest --cov=app --cov-report=html
+```
+
+### Test Coverage
+
+#### Users Endpoints
+- ✅ User registration (success, duplicates, validation errors)
+- ✅ Login with email and username
+- ✅ Authentication token generation
+- ✅ Reading user lists (authenticated/unauthenticated)
+- ✅ Current user retrieval
+- ✅ Invalid token handling
+
+#### Lists Endpoints
+- ✅ Reading user's lists with item counts
+- ✅ Creating lists (success, duplicates, validation)
+- ✅ Reading specific lists
+- ✅ Updating lists (full and partial updates)
+- ✅ Deleting lists
+- ✅ Authorization checks (wrong user access)
+- ✅ Pagination support
+
+#### Items Endpoints
+- ✅ Creating items (first item, subsequent items with comparison)
+- ✅ Comparison workflow (better/worse results)
+- ✅ Comparison session management
+- ✅ Reading specific items
+- ✅ Updating items (full and partial updates)
+- ✅ Deleting items
+- ✅ Authorization checks
+
+#### Algorithm
+- ✅ Binary search ranking algorithm
+- ✅ Winner/loser comparison logic
+- ✅ Range narrowing behavior
+- ✅ Edge cases
+
+### Test Fixtures
+
+The test suite includes reusable fixtures for:
+- Test database sessions (SQLite in-memory)
+- Authenticated HTTP clients
+- Test users with authentication tokens
+- Test lists and items
+- Multiple users for authorization testing
+
+### Code Quality Tools
+
+```bash
+# Format code
+uv run black app/
+
+# Sort imports
+uv run isort app/
+
+# Lint code
+uv run ruff check app/
+
+# Type check
+uv run mypy app/
+```
+
 ### Ranking Algorithm
 
 The ranking algorithm is implemented in `app/utils/algorithm.py` and works by:
