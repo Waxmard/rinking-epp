@@ -35,7 +35,7 @@ npm run ios                       # iOS Simulator
 ### Backend
 ```bash
 cd fastapi
-make dev-up                       # Start with Docker
+make dev                          # Start with Docker (auto-seeds dev user)
 ```
 
 See [frontend/README.md](frontend/README.md) and [fastapi/README.md](fastapi/README.md) for detailed setup instructions.

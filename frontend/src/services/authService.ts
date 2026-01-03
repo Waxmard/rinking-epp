@@ -49,7 +49,13 @@ export const authService = {
       };
     } catch (error) {
       if (error instanceof ApiError) {
-        const message = error.data?.detail || 'Registration failed';
+        let message = 'Registration failed';
+        if (Array.isArray(error.data?.detail)) {
+          // Pydantic validation error - extract first message
+          message = error.data.detail[0]?.msg || message;
+        } else if (typeof error.data?.detail === 'string') {
+          message = error.data.detail;
+        }
         return { success: false, error: message };
       }
       return { success: false, error: 'Network error' };
@@ -85,7 +91,12 @@ export const authService = {
       };
     } catch (error) {
       if (error instanceof ApiError) {
-        const message = error.data?.detail || 'Login failed';
+        let message = 'Login failed';
+        if (Array.isArray(error.data?.detail)) {
+          message = error.data.detail[0]?.msg || message;
+        } else if (typeof error.data?.detail === 'string') {
+          message = error.data.detail;
+        }
         return { success: false, error: message };
       }
       return { success: false, error: 'Network error' };

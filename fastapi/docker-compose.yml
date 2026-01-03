@@ -26,6 +26,8 @@ services:
     container_name: tiernerd-backend
     ports:
       - "8000:8000"
+    volumes:
+      - ./scripts:/app/scripts
     environment:
       - DATABASE_URL=postgresql+asyncpg://tiernerd:tiernerd_dev@postgres:5432/tiernerd
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-prod}
