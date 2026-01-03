@@ -3,8 +3,8 @@ import { api, ApiError } from './api';
 // Types matching backend schemas
 export interface User {
   user_id: string;
-  username: string;
   email: string;
+  username?: string;
   created_at: string;
   updated_at: string;
 }

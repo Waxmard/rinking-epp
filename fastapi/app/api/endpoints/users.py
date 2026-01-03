@@ -84,8 +84,8 @@ async def read_users(
     return [
         {
             "user_id": user.user_id,
-            "username": user.username,
             "email": user.email,
+            "username": user.username,
             "created_at": user.created_at,
         }
         for user in users

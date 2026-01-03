@@ -13,7 +13,6 @@ from app.db.database import get_db
 from app.schemas.user import TokenPayload, User
 from app.core.security import verify_password
 from uuid import UUID
-import re
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 
@@ -21,13 +20,16 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 async def authenticate_user(
     db: AsyncSession, username_or_email: str, password: str
 ) -> Optional[User]:
-    """Authenticate a user with either username or email."""
-    # Check if it's an email format
+    """Authenticate a user with email or username."""
+    # Check if it looks like an email
     if "@" in username_or_email and "." in username_or_email:
         user = await get_user_by_email(db, username_or_email)
     else:
+        # Try username first, then email as fallback
         user = await get_user_by_username(db, username_or_email)
-    
+        if not user:
+            user = await get_user_by_email(db, username_or_email)
+
     if not user:
         return None
     if not verify_password(password, user.password_hash):
@@ -61,8 +63,7 @@ async def get_current_user(
         return User(
             user_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
             email="dev@example.com",
-            username="developer",
-            is_active=True,
+            username=None,
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )

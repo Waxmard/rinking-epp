@@ -9,15 +9,14 @@ from pydantic import BaseModel, EmailStr, Field
 class UserBase(BaseModel):
     """Base user schema with shared properties."""
 
-    username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
 
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     """Schema for user creation."""
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
-    email: Optional[EmailStr] = None
+
     password: str = Field(..., min_length=8)
 
 
@@ -25,8 +24,8 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """Schema for user update."""
 
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = None
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
     password: Optional[str] = Field(None, min_length=8)
 
 
@@ -49,8 +48,8 @@ class UserPublic(BaseModel):
     """Schema for public user info."""
 
     user_id: UUID
-    username: str
     email: EmailStr
+    username: Optional[str] = None
     created_at: datetime
 
     class Config:
