@@ -1,4 +1,23 @@
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: tiernerd-postgres
+    environment:
+      POSTGRES_USER: tiernerd
+      POSTGRES_PASSWORD: tiernerd_dev
+      POSTGRES_DB: tiernerd
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tiernerd-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tiernerd -d tiernerd"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     image: tiernerd-backend:local
     build:
@@ -8,12 +27,15 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - SECRET_KEY=${SECRET_KEY}
-      - APP_ENV=${APP_ENV:-production}
-      - CORS_ORIGINS=${CORS_ORIGINS}
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DATABASE_URL=postgresql+asyncpg://tiernerd:tiernerd_dev@postgres:5432/tiernerd
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-prod}
+      - APP_ENV=${APP_ENV:-development}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8081,http://localhost:19006}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
       - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - tiernerd-network
@@ -22,6 +44,9 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  postgres_data:
 
 networks:
   tiernerd-network:
