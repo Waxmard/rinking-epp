@@ -21,8 +21,12 @@ make restart                      # Rebuild and restart
 make fresh                        # Rebuild, restart, and show logs
 make logs                         # View container logs
 make stop                         # Stop containers
-make clean                        # Stop, remove volumes, clean up (use after schema changes)
 make health                       # Check health endpoint
+
+# Database
+make seed                         # Add dev users (dev1@tiernerd.com, dev2@tiernerd.com)
+make reset                        # Clear database and re-seed
+make clean                        # Stop, remove volumes, clean up (use after schema changes)
 
 # Package management (use uv, not pip)
 uv sync                           # Install dependencies
