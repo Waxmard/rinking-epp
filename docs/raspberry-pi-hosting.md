@@ -88,7 +88,7 @@ This document outlines how to host the TierNerd application using a Raspberry Pi
 - Create custom users with appropriate permissions
 - Implement SSH key-based authentication only
 - Configure fail2ban for intrusion detection
-- Enable and configure firewall (ufw) 
+- Enable and configure firewall (ufw)
 - Disable unnecessary services
 
 ### Data Security
