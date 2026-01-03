@@ -48,7 +48,7 @@ build-compose:
 # Run the application
 .PHONY: run
 run:
-	docker-compose up -d
+	docker-compose up
 
 # Stop the application
 .PHONY: stop

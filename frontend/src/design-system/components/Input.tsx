@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: AppColors.neutral[200],
     borderRadius: AppBorders.radiusMd,
@@ -101,20 +101,17 @@ const styles = StyleSheet.create({
   },
   inputContainerFocused: {
     borderColor: AppColors.accent.primary,
-    borderWidth: 2,
   },
   inputContainerError: {
     borderColor: AppColors.error,
   },
   input: {
     flex: 1,
-    ...AppTypography.bodyLarge,
+    fontSize: 16,
+    fontWeight: '400',
     color: AppColors.secondary.primary,
-    padding: 0,
+    paddingVertical: 4,
     margin: 0,
-    marginTop: -2, // Shift text up to align with icon visual center
-    includeFontPadding: false,
-    textAlignVertical: 'top',
   },
   leftIcon: {
     marginRight: AppSpacing.sm,

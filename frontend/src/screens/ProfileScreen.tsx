@@ -31,7 +31,7 @@ interface ProfileScreenProps {
 }
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
-  const { user, userData, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -86,9 +86,9 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
             {/* User Info Card */}
             <Card style={styles.userCard}>
               <View style={styles.userInfo}>
-                {userData?.photoUrl ? (
+                {user?.photoUrl ? (
                   <Image
-                    source={{ uri: userData.photoUrl }}
+                    source={{ uri: user.photoUrl }}
                     style={styles.profileImage}
                   />
                 ) : (
@@ -97,7 +97,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                   </View>
                 )}
                 <Text style={styles.userName}>
-                  {userData?.displayName || user?.email?.split('@')[0] || 'User'}
+                  {user?.displayName || user?.email?.split('@')[0] || 'User'}
                 </Text>
                 <Text style={styles.userEmail}>{user?.email || 'No email'}</Text>
               </View>
