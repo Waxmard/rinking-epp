@@ -29,8 +29,10 @@ async function request<T>(
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
-  // Add Content-Type for JSON if body exists and not FormData
-  if (fetchOptions.body && !(fetchOptions.body instanceof URLSearchParams)) {
+  // Set Content-Type based on body type
+  if (fetchOptions.body instanceof URLSearchParams) {
+    (headers as Record<string, string>)['Content-Type'] = 'application/x-www-form-urlencoded';
+  } else if (fetchOptions.body) {
     (headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
 
