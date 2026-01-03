@@ -29,10 +29,8 @@ async function request<T>(
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
-  // Set Content-Type based on body type
-  if (fetchOptions.body instanceof URLSearchParams) {
-    (headers as Record<string, string>)['Content-Type'] = 'application/x-www-form-urlencoded';
-  } else if (fetchOptions.body) {
+  // Set Content-Type if not already set and body exists
+  if (fetchOptions.body && !(headers as Record<string, string>)['Content-Type']) {
     (headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
 
@@ -64,12 +62,15 @@ export const api = {
   get: <T>(endpoint: string, token?: string) =>
     request<T>(endpoint, { method: 'GET', token }),
 
-  post: <T>(endpoint: string, body?: any, token?: string) =>
-    request<T>(endpoint, {
+  post: <T>(endpoint: string, body?: any, token?: string) => {
+    const isFormData = body instanceof URLSearchParams;
+    return request<T>(endpoint, {
       method: 'POST',
-      body: body instanceof URLSearchParams ? body : JSON.stringify(body),
+      body: isFormData ? body.toString() : JSON.stringify(body),
+      headers: isFormData ? { 'Content-Type': 'application/x-www-form-urlencoded' } : undefined,
       token,
-    }),
+    });
+  },
 
   put: <T>(endpoint: string, body?: any, token?: string) =>
     request<T>(endpoint, {

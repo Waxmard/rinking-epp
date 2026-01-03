@@ -8,15 +8,23 @@ TAG := latest
 .PHONY: help
 help:
 	@echo "Available targets:"
+	@echo ""
+	@echo "Development:"
+	@echo "  dev            - Build and run containers (use DETACHED=1 for background)"
+	@echo "  restart        - Rebuild and restart"
+	@echo "  fresh          - Rebuild, restart, and show logs"
+	@echo "  logs           - View container logs"
+	@echo "  stop           - Stop containers"
+	@echo "  health         - Check health endpoint"
+	@echo ""
+	@echo "Database:"
+	@echo "  reset          - Clear database and re-seed"
+	@echo "  clean          - Remove containers, volumes, and images"
+	@echo ""
+	@echo "Build:"
 	@echo "  build-local    - Build for current platform only (fast)"
 	@echo "  build-multi    - Build for multiple platforms (amd64 + arm64)"
-	@echo "  build-compose  - Build using docker-compose"
-	@echo "  run            - Run the container locally"
-	@echo "  stop           - Stop the container"
-	@echo "  logs           - View container logs"
-	@echo "  clean          - Remove containers and images"
 	@echo "  push           - Push multi-platform image to registry"
-	@echo "  test-build     - Test build without caching"
 
 # Build for current platform only (faster for local development)
 .PHONY: build-local
@@ -93,9 +101,14 @@ health:
 	curl -f http://localhost:8000/health || echo "Service not healthy"
 
 # Dev commands
-.PHONY: dev-up dev-down dev-logs restart fresh quick-restart
-dev-up:
-	make build-local && make run
+.PHONY: dev dev-down dev-logs restart fresh quick-restart
+dev:
+	make build-local
+	@if [ "$(DETACHED)" = "1" ]; then \
+		docker-compose up -d; \
+	else \
+		docker-compose up; \
+	fi
 
 dev-down:
 	make stop
@@ -113,3 +126,13 @@ fresh: build-local stop run
 
 quick-restart: stop run
 	@echo "Container restarted (no rebuild)"
+
+# Database commands
+.PHONY: reset
+reset:
+	@echo "Clearing database and re-seeding..."
+	@if docker-compose ps backend | grep -q "Up"; then \
+		docker-compose exec backend python scripts/seed.py --clear; \
+	else \
+		docker-compose run --rm backend python scripts/seed.py --clear; \
+	fi

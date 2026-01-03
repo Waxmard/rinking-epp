@@ -16,13 +16,19 @@ TierNerd is a cross-platform mobile app for creating ranked tier lists (S-F) thr
 cd fastapi
 
 # Docker (use these, not raw docker commands)
-make dev-up                       # Build and run containers
+make dev                          # Build and run containers (auto-seeds dev user)
+make dev DETACHED=1               # Run in background
 make restart                      # Rebuild and restart
 make fresh                        # Rebuild, restart, and show logs
 make logs                         # View container logs
 make stop                         # Stop containers
-make clean                        # Stop, remove volumes, clean up (use after schema changes)
 make health                       # Check health endpoint
+
+# Database
+make reset                        # Clear database and re-seed
+make clean                        # Stop, remove volumes, clean up (use after schema changes)
+
+# Dev credentials (auto-created on startup): dev@tiernerd.com / devpassword
 
 # Package management (use uv, not pip)
 uv sync                           # Install dependencies

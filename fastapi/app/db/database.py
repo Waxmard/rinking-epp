@@ -1,13 +1,10 @@
 from typing import AsyncGenerator, Optional
-from uuid import UUID
-from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy import select
 
 from app.db.models import Item, List, User, Base
 from app.settings import settings
-import bcrypt
 
 # Create async engine with connection pool settings for production
 connect_args = {}
@@ -51,36 +48,18 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def create_tables() -> None:
-    """Create all database tables."""
+    """Create all database tables and seed dev users."""
     async with engine.begin() as conn:
-        if settings.APP_ENV == "development":
-            # Only drop/recreate tables in development
-            await conn.run_sync(Base.metadata.drop_all)
-            await conn.run_sync(Base.metadata.create_all)
-        else:
-            # In production, just ensure tables exist (use Alembic for migrations)
-            await conn.run_sync(Base.metadata.create_all)
-    
-    # Create default development user after tables are committed
+        await conn.run_sync(Base.metadata.create_all)
+
+    # Auto-seed dev users in development
     if settings.APP_ENV == "development":
-        default_user = User(
-            user_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
-            username="developer",
-            email="dev@example.com",
-            password_hash=bcrypt.hashpw(b"devpassword", bcrypt.gensalt()).decode('utf-8'),
-            created_at=datetime.now(),
-            updated_at=datetime.now()
-        )
-        
-        try:
-            async with SessionLocal() as session:
-                session.add(default_user)
-                await session.commit()
-        except Exception as e:
-            print(f"Error creating default user: {e}")
-            # Don't raise in production if user already exists
-            if settings.APP_ENV == "development":
-                raise
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+        from scripts.seed import seed_users
+        async with SessionLocal() as session:
+            await seed_users(session)
 
 
 async def create_user(db: AsyncSession, username: str, email: str, password_hash: str) -> User:
