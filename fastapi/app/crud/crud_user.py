@@ -24,7 +24,7 @@ async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def get_user_by_id(db: AsyncSession, user_id: int) -> User | None:
+async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> User | None:
     """
     Get a user by ID.
     """
@@ -72,7 +72,7 @@ async def update_user(db: AsyncSession, db_obj: User, obj_in: UserUpdate) -> Use
     return db_obj
 
 
-async def delete_user(db: AsyncSession, user_id: int) -> None:
+async def delete_user(db: AsyncSession, user_id: uuid.UUID) -> None:
     """
     Delete a user.
     """
