@@ -23,7 +23,7 @@ target "backend" {
 
 target "local" {
   inherits = ["backend"]
-  platforms = ["linux/amd64"]
+  platforms = []  # Uses native platform (arm64 on Apple Silicon, amd64 on Intel)
   tags = ["tiernerd-backend:local"]
   output = ["type=docker"]
 }
