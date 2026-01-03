@@ -32,7 +32,7 @@ services:
       - APP_ENV=${APP_ENV:-development}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8081,http://localhost:19006}
       - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
-      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-180}
     depends_on:
       postgres:
         condition: service_healthy

@@ -50,7 +50,7 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { userData } = useAuth();
+  const { user } = useAuth();
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -138,9 +138,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   style={styles.profileButton}
                   activeOpacity={0.7}
                 >
-                  {userData?.photoUrl ? (
+                  {user?.photoUrl ? (
                     <Image
-                      source={{ uri: userData.photoUrl }}
+                      source={{ uri: user.photoUrl }}
                       style={styles.profileImage}
                     />
                   ) : (
