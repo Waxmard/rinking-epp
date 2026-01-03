@@ -31,7 +31,6 @@ The dev user is auto-created on startup:
 
 Run `make help` for all available commands.
 
-### Development
 ## Development
 
 ### API Structure
@@ -63,7 +62,7 @@ The backend includes comprehensive unit tests for all API endpoints achieving fu
 
 ```bash
 # Install dev dependencies (includes testing packages)
-uv sync --extra dev
+uv sync --group dev
 
 # Run all endpoint tests
 uv run pytest tests/test_users.py tests/test_lists.py tests/test_items.py -v
@@ -145,41 +144,7 @@ uv run mypy app/
 
 ### Ranking Algorithm
 
-The ranking algorithm is implemented in `app/utils/algorithm.py` and works by:
-1. Presenting users with binary comparisons between items
-2. Using the results to determine each item's position
-3. Converting positions to ratings (10.0 for top item, 0.1 for bottom)
-4. Mapping numeric ratings to tier rankings (S, A, B, C, D, F)
-
-### Tier Classification System
-
-Numeric ratings are mapped to tiers using the following ranges:
-
-| Tier | Rating Range |
-|------|-------------|
-| S    | 9.0 - 10.0   |
-| A    | 7.5 - 8.9    |
-| B    | 6.0 - 7.4    |
-| C    | 4.5 - 5.9    |
-| D    | 3.0 - 4.4    |
-| F    | 0.1 - 2.9    |
-
-
-# Start Postgres db locally
-psql -U postgres -h localhost -d ranking_app
-
-# Sample Test Requests
-
-Post Lists Request
-```bash
-make dev              # Build and run containers (auto-seeds dev user)
-make dev DETACHED=1   # Run in background
-make restart          # Rebuild and restart
-make fresh            # Rebuild, restart, and show logs
-make logs             # View container logs
-make stop             # Stop containers
-make health           # Check health endpoint
-```
+The ranking algorithm is implemented in `app/core/algorithm.py` and uses binary search to efficiently determine item positions through pairwise comparisons.
 
 ### Database
 ```bash
