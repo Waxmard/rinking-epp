@@ -44,6 +44,21 @@ class User(UserBase):
         from_attributes = True
 
 
+# Public user info (no sensitive data)
+class UserPublic(BaseModel):
+    """Schema for public user info."""
+
+    user_id: UUID
+    username: str
+    email: EmailStr
+    created_at: datetime
+
+    class Config:
+        """Pydantic config."""
+
+        from_attributes = True
+
+
 # Properties stored in token
 class UserInDB(User):
     """Schema for user in database."""

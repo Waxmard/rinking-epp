@@ -1,8 +1,9 @@
 from datetime import timedelta
-from typing import Any
+from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import (
@@ -11,7 +12,8 @@ from app.core.auth import (
     get_current_user,
 )
 from app.db.database import get_db
-from app.schemas.user import Token, User, UserCreate
+from app.db.models import User as UserModel
+from app.schemas.user import Token, User, UserCreate, UserPublic
 
 router = APIRouter()
 
@@ -63,6 +65,31 @@ async def login_for_access_token(
         ),
         "token_type": "bearer",
     }
+
+
+@router.get("/", response_model=List[UserPublic])
+async def read_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Retrieve users. Requires authentication.
+    """
+    query = select(UserModel).offset(skip).limit(limit)
+    result = await db.execute(query)
+    users = result.scalars().all()
+    
+    return [
+        {
+            "user_id": user.user_id,
+            "username": user.username,
+            "email": user.email,
+            "created_at": user.created_at,
+        }
+        for user in users
+    ]
 
 
 @router.get("/me", response_model=User)
