@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from datetime import datetime
 import uuid
 
-from sqlalchemy import text
+from sqlalchemy import text, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import SessionLocal, engine
@@ -45,8 +45,16 @@ async def clear_database(session: AsyncSession) -> None:
 
 
 async def seed_users(session: AsyncSession) -> None:
-    """Create dev users."""
+    """Create dev users if they don't exist."""
     for user_data in DEV_USERS:
+        # Check if user already exists
+        result = await session.execute(
+            select(User).where(User.email == user_data["email"])
+        )
+        if result.scalar_one_or_none():
+            print(f"User already exists: {user_data['email']}")
+            continue
+
         user = User(
             user_id=uuid.uuid4(),
             email=user_data["email"],

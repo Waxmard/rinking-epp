@@ -10,7 +10,7 @@ help:
 	@echo "Available targets:"
 	@echo ""
 	@echo "Development:"
-	@echo "  dev-up         - Build and run containers"
+	@echo "  dev            - Build and run containers (use DETACHED=1 for background)"
 	@echo "  restart        - Rebuild and restart"
 	@echo "  fresh          - Rebuild, restart, and show logs"
 	@echo "  logs           - View container logs"
@@ -18,7 +18,6 @@ help:
 	@echo "  health         - Check health endpoint"
 	@echo ""
 	@echo "Database:"
-	@echo "  seed           - Add dev users to database"
 	@echo "  reset          - Clear database and re-seed"
 	@echo "  clean          - Remove containers, volumes, and images"
 	@echo ""
@@ -102,9 +101,14 @@ health:
 	curl -f http://localhost:8000/health || echo "Service not healthy"
 
 # Dev commands
-.PHONY: dev-up dev-down dev-logs restart fresh quick-restart
-dev-up:
-	make build-local && make run
+.PHONY: dev dev-down dev-logs restart fresh quick-restart
+dev:
+	make build-local
+	@if [ "$(DETACHED)" = "1" ]; then \
+		docker-compose up -d; \
+	else \
+		docker-compose up; \
+	fi
 
 dev-down:
 	make stop
@@ -124,17 +128,9 @@ quick-restart: stop run
 	@echo "Container restarted (no rebuild)"
 
 # Database commands
-.PHONY: seed reset
-seed:
-	@echo "Seeding database with dev users..."
-	@if docker-compose ps backend | grep -q "Up"; then \
-		docker-compose exec backend python scripts/seed.py; \
-	else \
-		docker-compose run --rm backend python scripts/seed.py; \
-	fi
-
+.PHONY: reset
 reset:
-	@echo "Resetting database and seeding..."
+	@echo "Clearing database and re-seeding..."
 	@if docker-compose ps backend | grep -q "Up"; then \
 		docker-compose exec backend python scripts/seed.py --clear; \
 	else \

@@ -5,18 +5,18 @@ FastAPI backend for the TierNerd ranking app.
 ## Quick Start
 
 ```bash
-# Start the backend (builds and runs Docker containers)
-make dev-up
+# Start the backend (builds and runs Docker containers, auto-seeds dev user)
+make dev
 
-# In another terminal, seed the database with dev users
-make seed
+# Or run in background
+make dev DETACHED=1
 ```
 
 The API is now running at http://localhost:8000
 
 ## Dev Credentials
 
-After running `make seed`, you can login with:
+The dev user is auto-created on startup:
 
 | Email | Password |
 |-------|----------|
@@ -33,17 +33,17 @@ Run `make help` for all available commands.
 
 ### Development
 ```bash
-make dev-up      # Build and run containers
-make restart     # Rebuild and restart
-make fresh       # Rebuild, restart, and show logs
-make logs        # View container logs
-make stop        # Stop containers
-make health      # Check health endpoint
+make dev              # Build and run containers (auto-seeds dev user)
+make dev DETACHED=1   # Run in background
+make restart          # Rebuild and restart
+make fresh            # Rebuild, restart, and show logs
+make logs             # View container logs
+make stop             # Stop containers
+make health           # Check health endpoint
 ```
 
 ### Database
 ```bash
-make seed        # Add dev users to database
 make reset       # Clear database and re-seed
 make clean       # Remove containers, volumes, and images
 ```
