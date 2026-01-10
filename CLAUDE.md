@@ -97,3 +97,4 @@ npm run typecheck                 # TypeScript check
 - Comparison sessions are stored in-memory (not persistent)
 - API endpoints prefixed with `/api/`
 - Do not run `npm run ios`, `npm run android`, or `npx expo start` - user runs these in a separate terminal
+- Do not run git commit/push - user handles staging, committing, and pushing themselves
