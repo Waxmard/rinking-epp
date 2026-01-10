@@ -12,7 +12,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../providers/AuthContext';
 import { Card, Button } from '../design-system/components';
-import { AppColors, AppSpacing, AppTypography, AppBorders } from '../design-system/tokens';
+import {
+  AppColors,
+  AppSpacing,
+  AppTypography,
+  AppBorders,
+} from '../design-system/tokens';
 
 // Temporary inline shadows to fix import issue
 const AppShadows = {
@@ -51,11 +56,11 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { user } = useAuth();
-  
+
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  
+
   // Mock data for recent lists (showing up to 3)
   const [recentLists] = useState<RecentList[]>([
     {
@@ -92,8 +97,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const formatDate = (date: Date): string => {
     const now = new Date();
-    const difference = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const difference = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
     if (difference === 0) return 'today';
     if (difference === 1) return 'yesterday';
     if (difference < 7) return `${difference} days ago`;
@@ -121,7 +128,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}>
+          <Animated.View
+            style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}
+          >
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerRow}>
@@ -132,7 +141,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                   />
                   <Text style={styles.brandText}>TierNerd</Text>
                 </View>
-                
+
                 <TouchableOpacity
                   onPress={handleProfilePress}
                   style={styles.profileButton}
@@ -145,7 +154,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     />
                   ) : (
                     <View style={styles.profilePlaceholder}>
-                      <Ionicons name="person" size={20} color={AppColors.neutral[600]} />
+                      <Ionicons
+                        name="person"
+                        size={20}
+                        color={AppColors.neutral[600]}
+                      />
                     </View>
                   )}
                 </TouchableOpacity>
@@ -159,7 +172,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 onPress={handleCreatePress}
                 fullWidth
                 style={styles.createButton}
-                icon={<Ionicons name="add-circle-outline" size={24} color={AppColors.textOnPrimary} />}
+                icon={
+                  <Ionicons
+                    name="add-circle-outline"
+                    size={24}
+                    color={AppColors.textOnPrimary}
+                  />
+                }
               />
             </View>
 
@@ -169,18 +188,34 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 <Card style={styles.statsCard}>
                   <View style={styles.statsRow}>
                     <View style={styles.statItem}>
-                      <Text style={styles.statValue}>{userStats.totalLists}</Text>
+                      <Text style={styles.statValue}>
+                        {userStats.totalLists}
+                      </Text>
                       <Text style={styles.statLabel}>Lists</Text>
                     </View>
                     <View style={styles.statDivider} />
                     <View style={styles.statItem}>
-                      <Text style={styles.statValue}>{userStats.totalItems}</Text>
+                      <Text style={styles.statValue}>
+                        {userStats.totalItems}
+                      </Text>
                       <Text style={styles.statLabel}>Items</Text>
                     </View>
                     <View style={styles.statDivider} />
                     <View style={styles.statItem}>
-                      <View style={[styles.tierBadge, { backgroundColor: AppColors.tierColors[userStats.mostUsedTier as keyof typeof AppColors.tierColors] }]}>
-                        <Text style={styles.tierBadgeText}>{userStats.mostUsedTier}</Text>
+                      <View
+                        style={[
+                          styles.tierBadge,
+                          {
+                            backgroundColor:
+                              AppColors.tierColors[
+                                userStats.mostUsedTier as keyof typeof AppColors.tierColors
+                              ],
+                          },
+                        ]}
+                      >
+                        <Text style={styles.tierBadgeText}>
+                          {userStats.mostUsedTier}
+                        </Text>
                       </View>
                       <Text style={styles.statLabel}>Top Tier</Text>
                     </View>
@@ -204,14 +239,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                             </Text>
                             <View style={styles.listMeta}>
                               <Text style={styles.listMetaText}>
-                                {list.itemCount} items • Modified {formatDate(list.updatedAt)}
+                                {list.itemCount} items • Modified{' '}
+                                {formatDate(list.updatedAt)}
                               </Text>
                             </View>
                           </View>
-                          <Ionicons 
-                            name="chevron-forward" 
-                            size={20} 
-                            color={AppColors.neutral[400]} 
+                          <Ionicons
+                            name="chevron-forward"
+                            size={20}
+                            color={AppColors.neutral[400]}
                           />
                         </View>
                       </Card>
@@ -226,8 +262,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                     activeOpacity={0.8}
                     onPress={() => navigation.navigate('Lists')}
                   >
-                    <Ionicons name="list-outline" size={20} color={AppColors.primary} />
-                    <Text style={styles.secondaryButtonText}>View All Lists</Text>
+                    <Ionicons
+                      name="list-outline"
+                      size={20}
+                      color={AppColors.primary}
+                    />
+                    <Text style={styles.secondaryButtonText}>
+                      View All Lists
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -240,7 +282,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
                 />
                 <Text style={styles.emptyStateTitle}>Welcome to TierNerd!</Text>
                 <Text style={styles.emptyStateText}>
-                  Create your first tier list and start ranking your favorite things
+                  Create your first tier list and start ranking your favorite
+                  things
                 </Text>
                 <Button
                   title="Create Your First List"

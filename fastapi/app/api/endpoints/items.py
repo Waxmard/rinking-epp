@@ -1,4 +1,4 @@
-from typing import Any, List, Union
+from typing import Union
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -20,11 +20,15 @@ from app.schemas.user import User
 from app.core.algorithm import find_next_comparison
 import uuid
 from datetime import datetime
-from app.utils.helper import sort_items_linked_list_style, convert_pydantic_to_sqlalchemy
+from app.utils.helper import (
+    sort_items_linked_list_style,
+    convert_pydantic_to_sqlalchemy,
+)
 
 router = APIRouter()
 
 session_id_cache = dict()
+
 
 @router.post("/", response_model=Union[Item, ComparisonSession])
 async def create_item(
@@ -35,13 +39,13 @@ async def create_item(
 ) -> Union[Item, ComparisonSession]:
     """
     Create a new item within a list.
-    
+
     Args:
         list_id: ID of the list to add the item to
         item_in: Item creation data
         db: Database session
         current_user: Current authenticated user
-    
+
     Returns:
         Created item object
     """
@@ -93,7 +97,7 @@ async def create_item(
         comparison_index=middle,
         max_index=len(all_items) - 1,
         is_winner=None,
-        done=False
+        done=False,
     )
 
     # Create session ID (using timestamp for simplicity)
@@ -106,7 +110,7 @@ async def create_item(
         current_comparison=comparison,
         is_complete=False,
         created_at=datetime.now(),
-        updated_at=datetime.now()
+        updated_at=datetime.now(),
     )
 
     session_id_cache[session_id] = comparison_session
@@ -123,13 +127,13 @@ async def submit_comparison_result(
 ) -> Union[ComparisonSession, None]:
     """
     Submit a comparison result and get the next comparison.
-    
+
     Args:
         session_id: ID of the comparison session
         result: Comparison result (better or worse)
         db: Database session
         current_user: Current authenticated user
-    
+
     Returns:
         Next comparison if more comparisons are needed
         Final ranking result if comparisons are complete
@@ -149,21 +153,38 @@ async def submit_comparison_result(
 
     # Find next comparison
     comparison_session.current_comparison.is_winner = result_request.result == "better"
-    comparison_session.current_comparison = find_next_comparison(all_items, comparison_session.current_comparison)
+    comparison_session.current_comparison = find_next_comparison(
+        all_items, comparison_session.current_comparison
+    )
 
     # TODO: Update reference item and target item from Pydantic to SQLAlchemy models
     if comparison_session.current_comparison.done:
         # Set reference item pointers
         if comparison_session.current_comparison.is_winner:
-            comparison_session.current_comparison.reference_item.prev_item_id = comparison_session.current_comparison.target_item.item_id
-            comparison_session.current_comparison.reference_item.next_item_id = comparison_session.current_comparison.target_item.next_item_id
+            comparison_session.current_comparison.reference_item.prev_item_id = (
+                comparison_session.current_comparison.target_item.item_id
+            )
+            comparison_session.current_comparison.reference_item.next_item_id = (
+                comparison_session.current_comparison.target_item.next_item_id
+            )
         else:
-            comparison_session.current_comparison.reference_item.next_item_id = comparison_session.current_comparison.target_item.item_id
-            comparison_session.current_comparison.reference_item.prev_item_id = comparison_session.current_comparison.target_item.prev_item_id
+            comparison_session.current_comparison.reference_item.next_item_id = (
+                comparison_session.current_comparison.target_item.item_id
+            )
+            comparison_session.current_comparison.reference_item.prev_item_id = (
+                comparison_session.current_comparison.target_item.prev_item_id
+            )
 
-        db.add(convert_pydantic_to_sqlalchemy(comparison_session.current_comparison.reference_item))
+        db.add(
+            convert_pydantic_to_sqlalchemy(
+                comparison_session.current_comparison.reference_item
+            )
+        )
         await db.commit()
-        stmt = select(ItemModel).where(ItemModel.item_id == comparison_session.current_comparison.target_item.item_id)
+        stmt = select(ItemModel).where(
+            ItemModel.item_id
+            == comparison_session.current_comparison.target_item.item_id
+        )
         result = await db.execute(stmt)
         item = result.scalar_one_or_none()
 
@@ -172,15 +193,19 @@ async def submit_comparison_result(
 
         # Apply in-place updates
         if comparison_session.current_comparison.is_winner:
-            item.next_item_id = comparison_session.current_comparison.reference_item.item_id
+            item.next_item_id = (
+                comparison_session.current_comparison.reference_item.item_id
+            )
         else:
-            item.prev_item_id = comparison_session.current_comparison.reference_item.item_id
+            item.prev_item_id = (
+                comparison_session.current_comparison.reference_item.item_id
+            )
         item.updated_at = datetime.utcnow()  # optional
 
         await db.flush()
         session_id_cache.pop(session_id)
         return None
-        
+
     return comparison_session
 
 
@@ -192,12 +217,12 @@ async def read_item(
 ) -> Item:
     """
     Get a specific item by ID.
-    
+
     Args:
         item_id: ID of the item to retrieve
         db: Database session
         current_user: Current authenticated user
-    
+
     Returns:
         Item object with details
     """
@@ -230,13 +255,13 @@ async def update_item(
 ) -> Item:
     """
     Update an item's metadata.
-    
+
     Args:
         item_id: ID of the item to update
         item_in: Item update data
         db: Database session
         current_user: Current authenticated user
-    
+
     Returns:
         Updated item object
     """
@@ -281,12 +306,12 @@ async def delete_item(
 ) -> None:
     """
     Delete an item.
-    
+
     Args:
         item_id: ID of the item to delete
         db: Database session
         current_user: Current authenticated user
-    
+
     Returns:
         None
     """
@@ -312,6 +337,7 @@ async def delete_item(
     await db.delete(item_obj)
     await db.commit()
 
+
 @router.get("/comparison/{session_id}/status", response_model=ComparisonSession)
 async def get_comparison_status(
     session_id: str,
@@ -320,12 +346,12 @@ async def get_comparison_status(
 ) -> ComparisonSession:
     """
     Get the status of a comparison session.
-    
+
     Args:
         session_id: ID of the comparison session
         db: Database session
         current_user: Current authenticated user
-    
+
     Returns:
         Current status of the comparison session
     """

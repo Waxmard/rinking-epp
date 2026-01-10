@@ -15,13 +15,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../providers/AuthContext';
 import { Button, Input } from '../design-system/components';
-import { AppColors, AppSpacing, AppTypography, AppBorders } from '../design-system/tokens';
+import {
+  AppColors,
+  AppSpacing,
+  AppTypography,
+  AppBorders,
+} from '../design-system/tokens';
 
 interface RegisterScreenProps {
   navigation?: any;
 }
 
-export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
+export const RegisterScreen: React.FC<RegisterScreenProps> = ({
+  navigation,
+}) => {
   const { register, signInWithGoogle, isLoading, error } = useAuth();
 
   // Form state
@@ -61,7 +68,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
     console.log('Registration initiated');
     const success = await register(email, password);
     if (success) {
-      console.log('Registration successful - navigation will happen automatically');
+      console.log(
+        'Registration successful - navigation will happen automatically'
+      );
     }
   };
 
@@ -104,7 +113,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                   placeholder="name@example.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  leftIcon={<Ionicons name="mail-outline" size={20} color={AppColors.neutral[600]} />}
+                  leftIcon={
+                    <Ionicons
+                      name="mail-outline"
+                      size={20}
+                      color={AppColors.neutral[600]}
+                    />
+                  }
                 />
 
                 <Input
@@ -113,7 +128,13 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                   onChangeText={setPassword}
                   placeholder="••••••••"
                   secureTextEntry={!passwordVisible}
-                  leftIcon={<Ionicons name="lock-closed-outline" size={20} color={AppColors.neutral[600]} />}
+                  leftIcon={
+                    <Ionicons
+                      name="lock-closed-outline"
+                      size={20}
+                      color={AppColors.neutral[600]}
+                    />
+                  }
                   rightIcon={
                     <Ionicons
                       name={passwordVisible ? 'eye-outline' : 'eye-off-outline'}
@@ -130,19 +151,33 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                   onChangeText={setConfirmPassword}
                   placeholder="••••••••"
                   secureTextEntry={!confirmPasswordVisible}
-                  leftIcon={<Ionicons name="lock-closed-outline" size={20} color={AppColors.neutral[600]} />}
-                  rightIcon={
+                  leftIcon={
                     <Ionicons
-                      name={confirmPasswordVisible ? 'eye-outline' : 'eye-off-outline'}
+                      name="lock-closed-outline"
                       size={20}
                       color={AppColors.neutral[600]}
                     />
                   }
-                  onRightIconPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                  rightIcon={
+                    <Ionicons
+                      name={
+                        confirmPasswordVisible
+                          ? 'eye-outline'
+                          : 'eye-off-outline'
+                      }
+                      size={20}
+                      color={AppColors.neutral[600]}
+                    />
+                  }
+                  onRightIconPress={() =>
+                    setConfirmPasswordVisible(!confirmPasswordVisible)
+                  }
                 />
 
                 {passwordError && (
-                  <Text style={styles.passwordError}>Passwords do not match</Text>
+                  <Text style={styles.passwordError}>
+                    Passwords do not match
+                  </Text>
                 )}
 
                 <Button
@@ -177,14 +212,18 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) =>
                         source={require('../../assets/google-logo.png')}
                         style={styles.googleIcon}
                       />
-                      <Text style={styles.googleButtonText}>Sign up with Google</Text>
+                      <Text style={styles.googleButtonText}>
+                        Sign up with Google
+                      </Text>
                     </>
                   )}
                 </TouchableOpacity>
 
                 {/* Login link */}
                 <View style={styles.loginContainer}>
-                  <Text style={styles.loginText}>Already have an account? </Text>
+                  <Text style={styles.loginText}>
+                    Already have an account?{' '}
+                  </Text>
                   <TouchableOpacity
                     activeOpacity={0.7}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

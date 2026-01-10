@@ -8,7 +8,7 @@ from app.core.auth import get_current_user
 from app.db.database import get_db
 from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
-from app.schemas.list import List, ListCreate, ListSimple, ListUpdate
+from app.schemas.list import List, ListSimple, ListUpdate
 from app.schemas.user import User
 
 import uuid
@@ -124,31 +124,6 @@ async def read_list(
             status_code=status.HTTP_404_NOT_FOUND, detail="List not found"
         )
 
-    # Get items in this list
-    query = (
-        select(ItemModel)
-        .where(ItemModel.list_id == list_id)
-    )
-
-    result = await db.execute(query)
-    items = result.scalars().all()
-
-    # Format items
-    items_data = [
-        {
-            "item_id": item.item_id,
-            "list_id": item.list_id,
-            "name": item.name,
-            "description": item.description,
-            "image_url": item.image_url,
-            "position": item.position,
-            "rating": item.rating,
-            "created_at": item.created_at,
-            "updated_at": item.updated_at,
-        }
-        for item in items
-    ]
-
     # Prepare response
     return {
         "list_id": list_obj.list_id,
@@ -192,10 +167,7 @@ async def update_list(
     await db.refresh(list_obj)
 
     # Get items to include in response
-    query = (
-        select(ItemModel)
-        .where(ItemModel.list_id == list_id)
-    )
+    query = select(ItemModel).where(ItemModel.list_id == list_id)
 
     result = await db.execute(query)
     items = result.scalars().all()

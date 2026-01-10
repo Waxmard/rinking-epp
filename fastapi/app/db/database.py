@@ -22,7 +22,7 @@ engine = create_async_engine(
     echo=False,
     pool_pre_ping=True,
     pool_recycle=3600,
-    connect_args=connect_args
+    connect_args=connect_args,
 )
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
@@ -56,13 +56,17 @@ async def create_tables() -> None:
     if settings.APP_ENV == "development":
         import sys
         from pathlib import Path
+
         sys.path.insert(0, str(Path(__file__).parent.parent.parent))
         from scripts.seed import seed_users
+
         async with SessionLocal() as session:
             await seed_users(session)
 
 
-async def create_user(db: AsyncSession, username: str, email: str, password_hash: str) -> User:
+async def create_user(
+    db: AsyncSession, username: str, email: str, password_hash: str
+) -> User:
     """
     Create a new user.
 
@@ -82,7 +86,9 @@ async def create_user(db: AsyncSession, username: str, email: str, password_hash
     return user
 
 
-async def create_user_list(db: AsyncSession, user: User, title: str, description: Optional[str] = None) -> List:
+async def create_user_list(
+    db: AsyncSession, user: User, title: str, description: Optional[str] = None
+) -> List:
     """
     Create a new list for a specific user, linking it directly to the user object.
 
@@ -102,9 +108,15 @@ async def create_user_list(db: AsyncSession, user: User, title: str, description
     return list
 
 
-async def add_item_to_user_list(db: AsyncSession, list: List, name: str, description: Optional[str] = None,
-                              image_url: Optional[str] = None, position: Optional[int] = None,
-                              rating: Optional[float] = None) -> Item:
+async def add_item_to_user_list(
+    db: AsyncSession,
+    list: List,
+    name: str,
+    description: Optional[str] = None,
+    image_url: Optional[str] = None,
+    position: Optional[int] = None,
+    rating: Optional[float] = None,
+) -> Item:
     """
     Add an item to a specific user's list, linking it directly to the list object.
 
@@ -126,7 +138,7 @@ async def add_item_to_user_list(db: AsyncSession, list: List, name: str, descrip
         description=description,
         image_url=image_url,
         position=position,
-        rating=rating
+        rating=rating,
     )
     db.add(item)
     await db.commit()
@@ -149,7 +161,9 @@ async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User
     return result.scalar_one_or_none()
 
 
-async def get_user_lists_with_items(db: AsyncSession, user_id: int) -> list[tuple[List, list[Item]]]:
+async def get_user_lists_with_items(
+    db: AsyncSession, user_id: int
+) -> list[tuple[List, list[Item]]]:
     """
     Get all lists belonging to a user along with their items.
 
@@ -165,7 +179,7 @@ async def get_user_lists_with_items(db: AsyncSession, user_id: int) -> list[tupl
         .outerjoin(Item, Item.list_id == List.list_id)
         .where(List.user_id == user_id)
     )
-    
+
     # Group items by list
     lists_with_items = {}
     for list, item in result:
@@ -173,11 +187,13 @@ async def get_user_lists_with_items(db: AsyncSession, user_id: int) -> list[tupl
             lists_with_items[list.list_id] = (list, [])
         if item:
             lists_with_items[list.list_id][1].append(item)
-    
+
     return list(lists_with_items.values())
 
 
-async def get_list_with_items(db: AsyncSession, list_id: int) -> tuple[List, list[Item]]:
+async def get_list_with_items(
+    db: AsyncSession, list_id: int
+) -> tuple[List, list[Item]]:
     """
     Get a specific list along with all its items.
 
@@ -193,7 +209,7 @@ async def get_list_with_items(db: AsyncSession, list_id: int) -> tuple[List, lis
         .outerjoin(Item, Item.list_id == List.list_id)
         .where(List.list_id == list_id)
     )
-    
+
     list_obj = None
     items = []
     for list, item in result:
@@ -201,5 +217,5 @@ async def get_list_with_items(db: AsyncSession, list_id: int) -> tuple[List, lis
             list_obj = list
         if item:
             items.append(item)
-    
+
     return list_obj, items

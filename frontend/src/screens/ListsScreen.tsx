@@ -23,22 +23,26 @@ export const ListsScreen: React.FC<ListsScreenProps> = ({ navigation }) => {
     >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => navigation?.goBack()}
             style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={24} color={AppColors.textOnPrimary} />
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={AppColors.textOnPrimary}
+            />
           </TouchableOpacity>
           <Text style={styles.title}>All Lists</Text>
           <View style={styles.placeholder} />
         </View>
-        
+
         <ScrollView style={styles.content}>
           <View style={styles.emptyState}>
-            <Ionicons 
-              name="list-outline" 
-              size={64} 
-              color={AppColors.textOnPrimary} 
+            <Ionicons
+              name="list-outline"
+              size={64}
+              color={AppColors.textOnPrimary}
               style={styles.emptyIcon}
             />
             <Text style={styles.emptyTitle}>No Lists Yet</Text>

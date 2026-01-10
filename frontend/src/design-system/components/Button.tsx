@@ -67,7 +67,11 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? AppColors.textOnPrimary : AppColors.accent.primary}
+          color={
+            variant === 'primary'
+              ? AppColors.textOnPrimary
+              : AppColors.accent.primary
+          }
           size="small"
         />
       ) : (
@@ -94,7 +98,7 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: AppSpacing.sm,
   },
-  
+
   // Variants
   primary: {
     backgroundColor: AppColors.accent.primary,
@@ -107,7 +111,7 @@ const styles = StyleSheet.create({
   textVariant: {
     backgroundColor: 'transparent',
   },
-  
+
   // Sizes
   small: {
     paddingHorizontal: AppSpacing.md,
@@ -124,7 +128,7 @@ const styles = StyleSheet.create({
     paddingVertical: AppSpacing.lg,
     minHeight: 56,
   },
-  
+
   // States
   fullWidth: {
     width: '100%',
@@ -132,7 +136,7 @@ const styles = StyleSheet.create({
   disabled: {
     opacity: 0.5,
   },
-  
+
   // Text styles
   text: {
     ...AppTypography.labelLarge,
@@ -147,7 +151,7 @@ const styles = StyleSheet.create({
   textText: {
     color: AppColors.accent.primary,
   },
-  
+
   // Text sizes
   smallText: {
     fontSize: 14,
@@ -158,7 +162,7 @@ const styles = StyleSheet.create({
   largeText: {
     fontSize: 18,
   },
-  
+
   disabledText: {
     opacity: 0.7,
   },

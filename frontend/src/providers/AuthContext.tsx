@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
@@ -19,7 +25,11 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   signIn: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, username?: string) => Promise<boolean>;
+  register: (
+    email: string,
+    password: string,
+    username?: string
+  ) => Promise<boolean>;
   signInWithGoogle: () => Promise<boolean>;
   signOut: () => Promise<void>;
 }
@@ -68,7 +78,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       scopes: ['openid', 'profile', 'email'],
       responseType: AuthSession.ResponseType.Token,
       redirectUri: AuthSession.makeRedirectUri({
-        scheme: 'tiernerd'
+        scheme: 'tiernerd',
       }),
     },
     discovery
@@ -93,7 +103,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (result.success && result.user) {
             const localUser = toLocalUser(result.user);
             setUser(localUser);
-            await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
+            await AsyncStorage.setItem(
+              USER_DATA_KEY,
+              JSON.stringify(localUser)
+            );
           } else {
             // Token invalid, clear storage
             await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
@@ -115,7 +128,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (USE_MOCK_AUTH) {
         // Mock authentication
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
         const mockUser: User = {
           id: '123456789',
           email: email,
@@ -148,7 +161,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (email: string, password: string, username?: string): Promise<boolean> => {
+  const register = async (
+    email: string,
+    password: string,
+    username?: string
+  ): Promise<boolean> => {
     try {
       setIsLoading(true);
       setError(null);

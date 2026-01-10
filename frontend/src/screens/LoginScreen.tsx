@@ -18,10 +18,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthContext';
 import { Button, Input } from '../design-system/components';
-import { AppColors, AppSpacing, AppTypography, AppBorders } from '../design-system/tokens';
+import {
+  AppColors,
+  AppSpacing,
+  AppTypography,
+  AppBorders,
+} from '../design-system/tokens';
 
 const { width: screenWidth } = Dimensions.get('window');
-
 
 interface LoginScreenProps {
   navigation?: any;
@@ -34,10 +38,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
-  
+
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
-
 
   useEffect(() => {
     // Start fade in animation
@@ -46,8 +49,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       duration: 1000,
       useNativeDriver: true,
     }).start();
-
-
   }, []);
 
   const handleGoogleSignIn = async () => {
@@ -65,7 +66,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     console.log('Email sign in initiated');
     const success = await signIn(email, password);
     if (success) {
-      console.log('Email sign in successful - navigation will happen automatically');
+      console.log(
+        'Email sign in successful - navigation will happen automatically'
+      );
     }
   };
 
@@ -73,11 +76,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     navigation?.navigate('Register');
   };
 
-
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
@@ -88,7 +89,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             keyboardShouldPersistTaps="handled"
             removeClippedSubviews={false}
           >
-
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
               {/* Logo */}
               <View style={styles.logoContainer}>
@@ -102,9 +102,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               {/* Login form */}
               <View style={styles.formContainer} collapsable={false}>
                 {/* Form Title */}
-                <Text style={styles.formTitle}>
-                  TierNerd
-                </Text>
+                <Text style={styles.formTitle}>TierNerd</Text>
                 <View style={styles.titleDivider} />
                 <Input
                   label="Email"
@@ -113,7 +111,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   placeholder="name@example.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  leftIcon={<Ionicons name="mail-outline" size={20} color={AppColors.neutral[600]} />}
+                  leftIcon={
+                    <Ionicons
+                      name="mail-outline"
+                      size={20}
+                      color={AppColors.neutral[600]}
+                    />
+                  }
                 />
 
                 <Input
@@ -122,7 +126,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   onChangeText={setPassword}
                   placeholder="••••••••"
                   secureTextEntry={!passwordVisible}
-                  leftIcon={<Ionicons name="lock-closed-outline" size={20} color={AppColors.neutral[600]} />}
+                  leftIcon={
+                    <Ionicons
+                      name="lock-closed-outline"
+                      size={20}
+                      color={AppColors.neutral[600]}
+                    />
+                  }
                   rightIcon={
                     <Ionicons
                       name={passwordVisible ? 'eye-outline' : 'eye-off-outline'}
@@ -138,7 +148,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   activeOpacity={0.7}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                  <Text style={styles.forgotPasswordText}>
+                    Forgot Password?
+                  </Text>
                 </TouchableOpacity>
 
                 <Button
@@ -173,7 +185,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                         source={require('../../assets/google-logo.png')}
                         style={styles.googleIcon}
                       />
-                      <Text style={styles.googleButtonText}>Sign in with Google</Text>
+                      <Text style={styles.googleButtonText}>
+                        Sign in with Google
+                      </Text>
                     </>
                   )}
                 </TouchableOpacity>

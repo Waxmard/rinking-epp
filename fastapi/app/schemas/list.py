@@ -1,10 +1,8 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
-
-from app.schemas.item import Item
 
 
 # Shared properties
@@ -18,6 +16,7 @@ class ListBase(BaseModel):
 # Properties to receive via API on creation
 class ListCreate(ListBase):
     """Schema for list creation."""
+
     pass
 
 

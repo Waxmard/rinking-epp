@@ -41,17 +41,17 @@ async def root():
 async def health_check():
     """Health check endpoint for container monitoring."""
     from app.db.database import engine
-    
+
     try:
         # Check database connectivity
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
-        
+
         return {
             "status": "healthy",
             "service": "tiernerd-backend",
             "version": "0.1.0",
-            "database": "connected"
+            "database": "connected",
         }
     except Exception as e:
         return {
@@ -59,7 +59,7 @@ async def health_check():
             "service": "tiernerd-backend",
             "version": "0.1.0",
             "database": "disconnected",
-            "error": str(e)
+            "error": str(e),
         }
 
 
