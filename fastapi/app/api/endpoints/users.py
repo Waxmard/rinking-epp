@@ -1,8 +1,6 @@
 from datetime import timedelta
 from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,10 +12,10 @@ from app.core.auth import (
 from app.db.database import get_db
 from app.db.models import User as UserModel
 from app.schemas.user import Token, User, UserCreate, UserPublic
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
-
-create_user = None
 
 
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
@@ -26,7 +24,7 @@ async def create_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -
     Create a new user.
     """
     # Check if user exists
-    from app.crud.crud_user import get_user_by_email, create_user
+    from app.crud.crud_user import create_user, get_user_by_email
 
     user = await get_user_by_email(db, email=user_in.email)
     if user:

@@ -1,6 +1,8 @@
-from typing import Any, List as TypeList
+import uuid
+from datetime import datetime
+from typing import Any
+from typing import List as TypeList
 
-from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,9 +12,7 @@ from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
 from app.schemas.list import List, ListSimple, ListUpdate
 from app.schemas.user import User
-
-import uuid
-from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 
@@ -167,10 +167,10 @@ async def update_list(
     await db.refresh(list_obj)
 
     # Get items to include in response
-    query = select(ItemModel).where(ItemModel.list_id == list_id)
+    items_query = select(ItemModel).where(ItemModel.list_id == list_id)
 
-    result = await db.execute(query)
-    items = result.scalars().all()
+    items_result = await db.execute(items_query)
+    items = items_result.scalars().all()
 
     # Format items
     items_data = [
@@ -180,7 +180,7 @@ async def update_list(
             "name": item.name,
             "description": item.description,
             "image_url": item.image_url,
-            "position": item.position,
+            "position": getattr(item, "position", None),
             "rating": item.rating,
             "created_at": item.created_at,
             "updated_at": item.updated_at,

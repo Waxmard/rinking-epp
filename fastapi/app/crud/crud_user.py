@@ -1,14 +1,16 @@
+import uuid
+from datetime import datetime
+from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_password_hash
 from app.db.models import User
 from app.schemas.user import UserCreate, UserUpdate
-import uuid
-from datetime import datetime
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
+async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     """
     Get a user by email.
     """
@@ -16,7 +18,7 @@ async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
+async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
     """
     Get a user by username.
     """
@@ -24,7 +26,7 @@ async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> User | None:
+async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
     """
     Get a user by ID.
     """

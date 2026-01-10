@@ -1,9 +1,9 @@
+import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, HttpUrl
-import uuid
 
 
 # Shared properties

@@ -1,11 +1,9 @@
-from typing import List
+from typing import Any, List
 
-
-from app.db.models import Item
 from app.schemas.item import Comparison
 
 
-def find_next_comparison(all_items: List[Item], comparison: Comparison) -> Comparison:
+def find_next_comparison(all_items: List[Any], comparison: Comparison) -> Comparison:
     """
     Return the next comparison item
 

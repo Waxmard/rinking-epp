@@ -1,9 +1,11 @@
+import uuid
+from datetime import datetime
 from typing import Union
 
-from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.algorithm import find_next_comparison
 from app.core.auth import get_current_user
 from app.db.database import get_db
 from app.db.models import Item as ItemModel
@@ -17,13 +19,11 @@ from app.schemas.item import (
     ItemUpdate,
 )
 from app.schemas.user import User
-from app.core.algorithm import find_next_comparison
-import uuid
-from datetime import datetime
 from app.utils.helper import (
-    sort_items_linked_list_style,
     convert_pydantic_to_sqlalchemy,
+    sort_items_linked_list_style,
 )
+from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 
@@ -80,19 +80,19 @@ async def create_item(
     # Get all items in the list
     stmt = select(ItemModel).where(ItemModel.list_id == list_obj.list_id)
     result = await db.execute(stmt)
-    all_items = sort_items_linked_list_style(result.scalars().all())
+    all_items = sort_items_linked_list_style(list(result.scalars().all()))  # type: ignore[arg-type]
 
     if not all_items:
         db.add(item_obj)
         await db.commit()
         await db.refresh(item_obj)
-        return item_obj
+        return item_obj  # type: ignore[return-value]
 
     # Initialize comparison
     middle = len(all_items) // 2
     comparison = Comparison(
-        reference_item=item_obj,
-        target_item=all_items[middle],
+        reference_item=item_obj,  # type: ignore[arg-type]
+        target_item=all_items[middle],  # type: ignore[arg-type]
         min_index=0,
         comparison_index=middle,
         max_index=len(all_items) - 1,
@@ -149,9 +149,10 @@ async def submit_comparison_result(
     # Get all items in the list
     stmt = select(ItemModel).where(ItemModel.list_id == comparison_session.list_id)
     result = await db.execute(stmt)
-    all_items = sort_items_linked_list_style(result.scalars().all())
+    all_items = sort_items_linked_list_style(list(result.scalars().all()))  # type: ignore[arg-type]
 
     # Find next comparison
+    assert comparison_session.current_comparison is not None
     comparison_session.current_comparison.is_winner = result_request.result == "better"
     comparison_session.current_comparison = find_next_comparison(
         all_items, comparison_session.current_comparison
