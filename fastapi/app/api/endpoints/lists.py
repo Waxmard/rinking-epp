@@ -105,7 +105,7 @@ async def create_list(
 
 @router.get("/{list_id}", response_model=List)
 async def read_list(
-    list_id: int,
+    list_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> Any:
@@ -128,7 +128,6 @@ async def read_list(
     query = (
         select(ItemModel)
         .where(ItemModel.list_id == list_id)
-        .order_by(ItemModel.position)
     )
 
     result = await db.execute(query)
@@ -163,7 +162,7 @@ async def read_list(
 
 @router.put("/{list_id}", response_model=List)
 async def update_list(
-    list_id: int,
+    list_id: uuid.UUID,
     list_in: ListUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -196,7 +195,6 @@ async def update_list(
     query = (
         select(ItemModel)
         .where(ItemModel.list_id == list_id)
-        .order_by(ItemModel.position)
     )
 
     result = await db.execute(query)
@@ -232,7 +230,7 @@ async def update_list(
 
 @router.delete("/{list_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_list(
-    list_id: int,
+    list_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> None:

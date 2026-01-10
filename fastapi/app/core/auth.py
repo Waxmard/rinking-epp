@@ -80,10 +80,12 @@ async def get_current_user(
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
-        token_data = TokenPayload(sub=int(user_id))
+        token_data = TokenPayload(sub=user_id)
     except JWTError:
         raise credentials_exception
-    user = await get_user_by_email(db, token_data.sub)
+
+    from app.crud.crud_user import get_user_by_id
+    user = await get_user_by_id(db, UUID(token_data.sub))
     if user is None:
         raise credentials_exception
     return user

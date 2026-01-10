@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from pydantic import AnyHttpUrl, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
-    # Database
-    DATABASE_URL: PostgresDsn
+    # Database - allow string for test mode (SQLite)
+    DATABASE_URL: Union[PostgresDsn, str]
 
     # CORS
     CORS_ORIGINS: List[AnyHttpUrl] = []

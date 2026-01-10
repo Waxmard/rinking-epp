@@ -7,13 +7,13 @@ from sqlalchemy.sql import func
 from app.db.models import Item
 from app.schemas.item import Comparison
 
-def find_next_comparison(all_items: List[Item], comparison: Comparison, is_winner: bool) -> Comparison:
+def find_next_comparison(all_items: List[Item], comparison: Comparison) -> Comparison:
     """
     Return the next comparison item
 
     This fetches all items in the list and performs binary search to get the next item to compare
     """
-    if not is_winner:
+    if comparison.is_winner:
         comparison.max_index = comparison.comparison_index
     else:
         comparison.min_index = comparison.comparison_index
