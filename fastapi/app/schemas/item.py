@@ -1,9 +1,9 @@
+import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List, Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, HttpUrl
-import uuid
 
 
 # Shared properties
@@ -18,6 +18,7 @@ class ItemBase(BaseModel):
 # Properties to receive via API on creation
 class ItemCreate(ItemBase):
     """Schema for item creation."""
+
     name: str
     description: Optional[str] = None
     image_url: Optional[HttpUrl] = None
@@ -65,6 +66,7 @@ class Item(ItemBase):
 
         from_attributes = True
 
+
 # Schema for comparison
 class Comparison(BaseModel):
     """Schema for comparison."""
@@ -82,8 +84,10 @@ class Comparison(BaseModel):
 
         from_attributes = True
 
+
 # Schema for comparison
 ComparisonResult = Literal["better", "worse"]
+
 
 class ComparisonSession(BaseModel):
     """Schema for comparison session."""

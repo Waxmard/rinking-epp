@@ -1,4 +1,5 @@
 """Tests for the ranking algorithm."""
+
 import pytest
 import uuid
 from datetime import datetime
@@ -49,7 +50,7 @@ async def test_find_next_comparison_winner():
         min_index=0,
         max_index=3,
         is_winner=True,  # Reference item is better
-        done=False
+        done=False,
     )
 
     # When winner=True, max_index should become comparison_index
@@ -60,7 +61,7 @@ async def test_find_next_comparison_winner():
     assert result.min_index == 0  # min_index stays same
     assert result.comparison_index == 0  # new middle: (0+1)//2 = 0
     assert result.target_item == item1  # all_items[0]
-    assert result.done == True  # max - min = 1 - 0 = 1, so done=True
+    assert result.done is True  # max - min = 1 - 0 = 1, so done=True
 
 
 @pytest.mark.asyncio
@@ -83,7 +84,7 @@ async def test_find_next_comparison_loser():
         min_index=0,
         max_index=3,
         is_winner=False,  # Reference item is worse
-        done=False
+        done=False,
     )
 
     # When winner=False, min_index should become comparison_index
@@ -94,7 +95,7 @@ async def test_find_next_comparison_loser():
     assert result.max_index == 3  # max_index stays same
     assert result.comparison_index == 2  # new middle: (1+3)//2 = 2
     assert result.target_item == item3  # all_items[2]
-    assert result.done == False  # max - min = 3 - 1 = 2, so done=False
+    assert result.done is False  # max - min = 3 - 1 = 2, so done=False
 
 
 @pytest.mark.asyncio
@@ -111,7 +112,7 @@ async def test_find_next_comparison_narrowing_range():
         min_index=0,
         max_index=7,
         is_winner=True,  # Reference is better
-        done=False
+        done=False,
     )
 
     # First iteration: winner=True, max becomes 3
@@ -121,7 +122,7 @@ async def test_find_next_comparison_narrowing_range():
     assert result.max_index == 3
     assert result.comparison_index == 1
     assert result.target_item == items[1]
-    assert result.done == False  # 3 - 0 = 3 > 1
+    assert result.done is False  # 3 - 0 = 3 > 1
 
     # Second iteration: loser=False (winner=False means reference is worse)
     result.is_winner = False
@@ -132,7 +133,7 @@ async def test_find_next_comparison_narrowing_range():
     assert result.max_index == 3
     assert result.comparison_index == 2
     assert result.target_item == items[2]
-    assert result.done == False  # 3 - 1 = 2 > 1
+    assert result.done is False  # 3 - 1 = 2 > 1
 
     # Third iteration: winner=True
     result.is_winner = True
@@ -143,7 +144,7 @@ async def test_find_next_comparison_narrowing_range():
     assert result.max_index == 2
     assert result.comparison_index == 1
     assert result.target_item == items[1]
-    assert result.done == True  # 2 - 1 = 1, so done=True
+    assert result.done is True  # 2 - 1 = 1, so done=True
 
 
 @pytest.mark.asyncio
@@ -162,7 +163,7 @@ async def test_find_next_comparison_edge_case_two_items():
         min_index=0,
         max_index=1,
         is_winner=False,  # Reference is worse than item1
-        done=False
+        done=False,
     )
 
     # min becomes 0, new middle: (0+1)//2 = 0
@@ -172,4 +173,4 @@ async def test_find_next_comparison_edge_case_two_items():
     assert result.max_index == 1
     assert result.comparison_index == 0
     assert result.target_item == item1
-    assert result.done == True  # 1 - 0 = 1, so done=True
+    assert result.done is True  # 1 - 0 = 1, so done=True

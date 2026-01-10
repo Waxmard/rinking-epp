@@ -42,7 +42,7 @@ uv run mypy app/                  # Type check
 
 # Testing
 uv run pytest                     # Run all tests
-uv run pytest tests/app/utils/test_algorithm.py  # Run single test file
+uv run pytest tests/test_items.py # Run single test file
 uv run pytest -k "test_name"      # Run specific test
 ```
 
@@ -54,7 +54,13 @@ npm install                       # Install dependencies
 npm run ios                       # Run on iOS simulator
 npm run android                   # Run on Android emulator
 npm run web                       # Run web version
-npx tsc --noEmit                  # TypeScript check
+
+# Code quality
+npm run lint                      # Run ESLint
+npm run lint:fix                  # Fix ESLint errors
+npm run format                    # Format with Prettier
+npm run format:check              # Check formatting
+npm run typecheck                 # TypeScript check
 ```
 
 ## Architecture
@@ -91,3 +97,4 @@ npx tsc --noEmit                  # TypeScript check
 - Comparison sessions are stored in-memory (not persistent)
 - API endpoints prefixed with `/api/`
 - Do not run `npm run ios`, `npm run android`, or `npx expo start` - user runs these in a separate terminal
+- Do not run git commit/push - user handles staging, committing, and pushing themselves

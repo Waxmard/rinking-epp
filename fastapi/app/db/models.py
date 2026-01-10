@@ -1,13 +1,17 @@
 import datetime
-from typing import List as ListType, Optional
+import uuid
+from typing import List as ListType
+from typing import Optional
 
 from sqlalchemy import ForeignKey, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-import uuid
+
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
+
     pass
+
 
 class User(Base):
     """User model."""
@@ -16,7 +20,9 @@ class User(Base):
 
     user_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True)
-    username: Mapped[Optional[str]] = mapped_column(String(50), unique=True, index=True, nullable=True)
+    username: Mapped[Optional[str]] = mapped_column(
+        String(50), unique=True, index=True, nullable=True
+    )
     password_hash: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(

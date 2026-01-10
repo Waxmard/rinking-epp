@@ -8,7 +8,7 @@ export const AppSpacing = {
   xl: 32,
   xxl: 40,
   xxxl: 48,
-  
+
   // Common padding/margin helpers
   screenPadding: 16,
   cardPadding: 16,
@@ -16,7 +16,7 @@ export const AppSpacing = {
     horizontal: 16,
     vertical: 12,
   },
-  
+
   // Input spacing
   inputPadding: {
     horizontal: 16,

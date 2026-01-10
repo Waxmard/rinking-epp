@@ -30,7 +30,10 @@ async function request<T>(
   }
 
   // Set Content-Type if not already set and body exists
-  if (fetchOptions.body && !(headers as Record<string, string>)['Content-Type']) {
+  if (
+    fetchOptions.body &&
+    !(headers as Record<string, string>)['Content-Type']
+  ) {
     (headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
 
@@ -67,7 +70,9 @@ export const api = {
     return request<T>(endpoint, {
       method: 'POST',
       body: isFormData ? body.toString() : JSON.stringify(body),
-      headers: isFormData ? { 'Content-Type': 'application/x-www-form-urlencoded' } : undefined,
+      headers: isFormData
+        ? { 'Content-Type': 'application/x-www-form-urlencoded' }
+        : undefined,
       token,
     });
   },

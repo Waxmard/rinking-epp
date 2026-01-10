@@ -1,10 +1,10 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.api.api import api_router
-from app.settings import settings
 from app.db.database import create_tables
+from app.settings import settings
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Ranking App API",
@@ -26,32 +26,32 @@ app.include_router(api_router, prefix="/api")
 
 
 @app.on_event("startup")
-async def startup():
+async def startup() -> None:
     """Initialize application on startup."""
     await create_tables()
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     """Root endpoint."""
     return {"message": "Welcome to the Ranking App API"}
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     """Health check endpoint for container monitoring."""
     from app.db.database import engine
-    
+
     try:
         # Check database connectivity
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
-        
+
         return {
             "status": "healthy",
             "service": "tiernerd-backend",
             "version": "0.1.0",
-            "database": "connected"
+            "database": "connected",
         }
     except Exception as e:
         return {
@@ -59,7 +59,7 @@ async def health_check():
             "service": "tiernerd-backend",
             "version": "0.1.0",
             "database": "disconnected",
-            "error": str(e)
+            "error": str(e),
         }
 
 

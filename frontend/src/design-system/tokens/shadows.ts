@@ -24,13 +24,13 @@ const createShadow = (
 export const AppShadows = {
   // Small shadow
   sm: createShadow({ width: 0, height: 1 }, 0.18, 1.0, 1),
-  
+
   // Medium shadow
-  md: createShadow({ width: 0, height: 2 }, 0.20, 2.5, 3),
-  
+  md: createShadow({ width: 0, height: 2 }, 0.2, 2.5, 3),
+
   // Large shadow
   lg: createShadow({ width: 0, height: 4 }, 0.25, 5, 6),
-  
+
   // Extra large shadow
-  xl: createShadow({ width: 0, height: 8 }, 0.30, 10, 10),
+  xl: createShadow({ width: 0, height: 8 }, 0.3, 10, 10),
 };

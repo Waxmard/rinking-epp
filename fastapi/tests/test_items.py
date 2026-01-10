@@ -1,10 +1,11 @@
 """Tests for item endpoints."""
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import User, List as ListModel, Item as ItemModel
+from app.db.models import List as ListModel, Item as ItemModel
 
 
 @pytest.mark.asyncio
@@ -12,7 +13,11 @@ class TestCreateItem:
     """Tests for creating items endpoint."""
 
     async def test_create_first_item_success(
-        self, client: AsyncClient, test_list: ListModel, auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test creating first item in an empty list."""
         response = await client.post(
@@ -43,8 +48,12 @@ class TestCreateItem:
         assert str(db_items[0].item_id) == data["item_id"]
 
     async def test_create_second_item_starts_comparison(
-        self, client: AsyncClient, test_list: ListModel, test_item: ItemModel,
-        auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        test_item: ItemModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test creating second item starts a comparison session."""
         # Verify we start with 1 item in database
@@ -69,7 +78,7 @@ class TestCreateItem:
         # Should return a ComparisonSession
         assert "session_id" in data
         assert "current_comparison" in data
-        assert data["is_complete"] == False
+        assert data["is_complete"] is False
         # Verify comparison data
         comparison = data["current_comparison"]
         assert "reference_item" in comparison
@@ -137,7 +146,11 @@ class TestComparisonFlow:
     """Tests for comparison workflow."""
 
     async def test_submit_comparison_result_better(
-        self, client: AsyncClient, test_list: ListModel, test_item: ItemModel, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        test_item: ItemModel,
+        auth_headers: dict,
     ):
         """Test submitting comparison result where new item is better."""
         # Create second item to start comparison
@@ -165,7 +178,11 @@ class TestComparisonFlow:
         assert response.status_code == 200
 
     async def test_submit_comparison_result_worse(
-        self, client: AsyncClient, test_list: ListModel, test_item: ItemModel, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        test_item: ItemModel,
+        auth_headers: dict,
     ):
         """Test submitting comparison result where new item is worse."""
         # Create second item to start comparison
@@ -205,7 +222,11 @@ class TestComparisonFlow:
         assert response.status_code == 404
 
     async def test_get_comparison_status(
-        self, client: AsyncClient, test_list: ListModel, test_item: ItemModel, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        test_item: ItemModel,
+        auth_headers: dict,
     ):
         """Test getting comparison session status."""
         # Create second item to start comparison
@@ -248,7 +269,11 @@ class TestReadItem:
     """Tests for reading a specific item endpoint."""
 
     async def test_read_item_success(
-        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_item: ItemModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test reading a specific item."""
         response = await client.get(
@@ -279,6 +304,7 @@ class TestReadItem:
     async def test_read_item_not_found(self, client: AsyncClient, auth_headers: dict):
         """Test reading non-existent item fails."""
         import uuid
+
         fake_id = uuid.uuid4()
         response = await client.get(f"/api/items/items/{fake_id}", headers=auth_headers)
         assert response.status_code == 404
@@ -298,7 +324,11 @@ class TestUpdateItem:
     """Tests for updating items endpoint."""
 
     async def test_update_item_success(
-        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_item: ItemModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test successful item update."""
         original_name = test_item.name
@@ -357,6 +387,7 @@ class TestUpdateItem:
     async def test_update_item_not_found(self, client: AsyncClient, auth_headers: dict):
         """Test updating non-existent item fails."""
         import uuid
+
         fake_id = uuid.uuid4()
         response = await client.put(
             f"/api/items/items/{fake_id}",
@@ -386,7 +417,11 @@ class TestDeleteItem:
     """Tests for deleting items endpoint."""
 
     async def test_delete_item_success(
-        self, client: AsyncClient, test_item: ItemModel, auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_item: ItemModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test successful item deletion."""
         item_id = test_item.item_id
@@ -423,9 +458,7 @@ class TestDeleteItem:
         assert items_after == items_before - 1
 
         # Verify item is deleted via API
-        response = await client.get(
-            f"/api/items/items/{item_id}", headers=auth_headers
-        )
+        response = await client.get(f"/api/items/items/{item_id}", headers=auth_headers)
         assert response.status_code == 404
 
     async def test_delete_item_unauthenticated(
@@ -438,6 +471,7 @@ class TestDeleteItem:
     async def test_delete_item_not_found(self, client: AsyncClient, auth_headers: dict):
         """Test deleting non-existent item fails."""
         import uuid
+
         fake_id = uuid.uuid4()
         response = await client.delete(
             f"/api/items/items/{fake_id}", headers=auth_headers

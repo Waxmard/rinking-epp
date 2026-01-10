@@ -1,25 +1,28 @@
 """Test configuration and fixtures."""
+
 import asyncio
 import os
 from typing import AsyncGenerator, Generator
-from uuid import UUID
 
 # Set test environment variables before importing app
 os.environ["SECRET_KEY"] = "test-secret-key-for-testing-only"
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 os.environ["APP_ENV"] = "test"
 
-import pytest
-import pytest_asyncio
-from fastapi.testclient import TestClient
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+import pytest  # noqa: E402
+import pytest_asyncio  # noqa: E402
+from httpx import AsyncClient, ASGITransport  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
-from app.core.auth import create_access_token
-from app.db.database import get_db
-from app.db.models import Base, User, List as ListModel, Item as ItemModel
-from app.main import app
-from app.core.security import get_password_hash
+from app.core.auth import create_access_token  # noqa: E402
+from app.db.database import get_db  # noqa: E402
+from app.db.models import Base, User, List as ListModel, Item as ItemModel  # noqa: E402
+from app.main import app  # noqa: E402
+from app.core.security import get_password_hash  # noqa: E402
 
 
 # Test database URL - using SQLite for tests
@@ -181,7 +184,9 @@ async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
 
 
 @pytest_asyncio.fixture
-async def multiple_items(test_db: AsyncSession, test_list: ListModel) -> list[ItemModel]:
+async def multiple_items(
+    test_db: AsyncSession, test_list: ListModel
+) -> list[ItemModel]:
     """Create multiple test items."""
     from datetime import datetime
     import uuid

@@ -1,4 +1,5 @@
 """Tests for list endpoints."""
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -12,8 +13,12 @@ class TestReadLists:
     """Tests for reading lists endpoint."""
 
     async def test_read_lists_authenticated(
-        self, client: AsyncClient, test_user: User, test_list: ListModel,
-        auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test reading lists when authenticated."""
         response = await client.get("/api/lists/", headers=auth_headers)
@@ -82,7 +87,11 @@ class TestReadLists:
         assert len(user2_lists) == 0
 
     async def test_read_lists_pagination(
-        self, client: AsyncClient, test_user: User, test_list: ListModel, auth_headers: dict
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_list: ListModel,
+        auth_headers: dict,
     ):
         """Test lists pagination."""
         # Test with limit
@@ -101,7 +110,11 @@ class TestCreateList:
     """Tests for creating lists endpoint."""
 
     async def test_create_list_success(
-        self, client: AsyncClient, test_user: User, auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test successful list creation."""
         response = await client.post(
@@ -181,7 +194,9 @@ class TestReadList:
         self, client: AsyncClient, test_list: ListModel, auth_headers: dict
     ):
         """Test reading a specific list."""
-        response = await client.get(f"/api/lists/{test_list.list_id}", headers=auth_headers)
+        response = await client.get(
+            f"/api/lists/{test_list.list_id}", headers=auth_headers
+        )
         assert response.status_code == 200
         data = response.json()
         assert str(data["list_id"]) == str(test_list.list_id)
@@ -198,6 +213,7 @@ class TestReadList:
     async def test_read_list_not_found(self, client: AsyncClient, auth_headers: dict):
         """Test reading non-existent list fails."""
         import uuid
+
         fake_id = uuid.uuid4()
         response = await client.get(f"/api/lists/{fake_id}", headers=auth_headers)
         assert response.status_code == 404
@@ -220,7 +236,11 @@ class TestUpdateList:
     """Tests for updating lists endpoint."""
 
     async def test_update_list_success(
-        self, client: AsyncClient, test_list: ListModel, auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test successful list update."""
         original_title = test_list.title
@@ -251,7 +271,7 @@ class TestUpdateList:
         self, client: AsyncClient, test_list: ListModel, auth_headers: dict
     ):
         """Test partial list update (only title)."""
-        original_description = test_list.description
+        _original_description = test_list.description  # noqa: F841
         response = await client.put(
             f"/api/lists/{test_list.list_id}",
             json={
@@ -278,6 +298,7 @@ class TestUpdateList:
     async def test_update_list_not_found(self, client: AsyncClient, auth_headers: dict):
         """Test updating non-existent list fails."""
         import uuid
+
         fake_id = uuid.uuid4()
         response = await client.put(
             f"/api/lists/{fake_id}",
@@ -310,7 +331,11 @@ class TestDeleteList:
     """Tests for deleting lists endpoint."""
 
     async def test_delete_list_success(
-        self, client: AsyncClient, test_list: ListModel, auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test successful list deletion."""
         list_id = test_list.list_id
@@ -321,9 +346,7 @@ class TestDeleteList:
         )
         assert result.scalar_one_or_none() is not None
 
-        response = await client.delete(
-            f"/api/lists/{list_id}", headers=auth_headers
-        )
+        response = await client.delete(f"/api/lists/{list_id}", headers=auth_headers)
         assert response.status_code == 204
 
         # Verify list is deleted from database
@@ -346,6 +369,7 @@ class TestDeleteList:
     async def test_delete_list_not_found(self, client: AsyncClient, auth_headers: dict):
         """Test deleting non-existent list fails."""
         import uuid
+
         fake_id = uuid.uuid4()
         response = await client.delete(f"/api/lists/{fake_id}", headers=auth_headers)
         assert response.status_code == 404

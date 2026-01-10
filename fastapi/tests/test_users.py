@@ -1,4 +1,5 @@
 """Tests for user endpoints."""
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -12,7 +13,9 @@ from app.core.security import verify_password
 class TestUserCreation:
     """Tests for user creation endpoint."""
 
-    async def test_create_user_success(self, client: AsyncClient, test_db: AsyncSession):
+    async def test_create_user_success(
+        self, client: AsyncClient, test_db: AsyncSession
+    ):
         """Test successful user creation."""
         response = await client.post(
             "/api/users/",
@@ -119,7 +122,9 @@ class TestUserLogin:
         assert "access_token" in data
         assert data["token_type"] == "bearer"
 
-    async def test_login_success_with_username(self, client: AsyncClient, test_user: User):
+    async def test_login_success_with_username(
+        self, client: AsyncClient, test_user: User
+    ):
         """Test successful login with username."""
         response = await client.post(
             "/api/users/token",
@@ -162,7 +167,11 @@ class TestReadUsers:
     """Tests for reading users endpoint."""
 
     async def test_read_users_authenticated(
-        self, client: AsyncClient, test_user: User, auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test reading users list when authenticated."""
         response = await client.get("/api/users/", headers=auth_headers)
@@ -193,8 +202,12 @@ class TestReadUsers:
         assert response.status_code == 401
 
     async def test_read_users_pagination(
-        self, client: AsyncClient, test_user: User, test_user2: User,
-        auth_headers: dict, test_db: AsyncSession
+        self,
+        client: AsyncClient,
+        test_user: User,
+        test_user2: User,
+        auth_headers: dict,
+        test_db: AsyncSession,
     ):
         """Test users pagination."""
         # Verify we have 2 users in database

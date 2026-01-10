@@ -1,25 +1,25 @@
 from datetime import datetime, timedelta
 from typing import Any, Optional, Union
+from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.settings import settings
+from app.core.security import verify_password
 from app.crud.crud_user import get_user_by_email, get_user_by_username
 from app.db.database import get_db
+from app.db.models import User as UserModel
 from app.schemas.user import TokenPayload, User
-from app.core.security import verify_password
-from uuid import UUID
+from app.settings import settings
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 
 
 async def authenticate_user(
     db: AsyncSession, username_or_email: str, password: str
-) -> Optional[User]:
+) -> Optional[UserModel]:
     """Authenticate a user with email or username."""
     # Check if it looks like an email
     if "@" in username_or_email and "." in username_or_email:
@@ -56,7 +56,7 @@ def create_access_token(
 
 async def get_current_user(
     db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)
-) -> User:
+) -> Union[User, UserModel]:
     """Get the current authenticated user."""
     if settings.APP_ENV == "development":
         # In development mode, return a mock user
@@ -67,7 +67,7 @@ async def get_current_user(
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
-    
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -77,7 +77,7 @@ async def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        user_id: str = payload.get("sub")
+        user_id: Optional[str] = payload.get("sub")
         if user_id is None:
             raise credentials_exception
         token_data = TokenPayload(sub=user_id)
@@ -85,6 +85,7 @@ async def get_current_user(
         raise credentials_exception
 
     from app.crud.crud_user import get_user_by_id
+
     user = await get_user_by_id(db, UUID(token_data.sub))
     if user is None:
         raise credentials_exception

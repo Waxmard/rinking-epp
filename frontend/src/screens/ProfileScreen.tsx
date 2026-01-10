@@ -13,7 +13,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../providers/AuthContext';
 import { Card } from '../design-system/components';
-import { AppColors, AppSpacing, AppTypography, AppBorders } from '../design-system/tokens';
+import {
+  AppColors,
+  AppSpacing,
+  AppTypography,
+  AppBorders,
+} from '../design-system/tokens';
 
 // Temporary inline shadows to fix import issue
 const AppShadows = {
@@ -32,7 +37,7 @@ interface ProfileScreenProps {
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { user, signOut } = useAuth();
-  
+
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -77,7 +82,11 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                 activeOpacity={0.7}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Ionicons name="arrow-back" size={24} color={AppColors.secondary.primary} />
+                <Ionicons
+                  name="arrow-back"
+                  size={24}
+                  color={AppColors.secondary.primary}
+                />
               </TouchableOpacity>
               <Text style={styles.headerTitle}>Profile</Text>
               <View style={styles.backButton} />
@@ -93,13 +102,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                   />
                 ) : (
                   <View style={styles.profilePlaceholder}>
-                    <Ionicons name="person" size={40} color={AppColors.neutral[600]} />
+                    <Ionicons
+                      name="person"
+                      size={40}
+                      color={AppColors.neutral[600]}
+                    />
                   </View>
                 )}
                 <Text style={styles.userName}>
                   {user?.displayName || user?.email?.split('@')[0] || 'User'}
                 </Text>
-                <Text style={styles.userEmail}>{user?.email || 'No email'}</Text>
+                <Text style={styles.userEmail}>
+                  {user?.email || 'No email'}
+                </Text>
               </View>
             </Card>
 
@@ -112,7 +127,8 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                     key={item.id}
                     style={[
                       styles.settingsItem,
-                      index < settingsItems.length - 1 && styles.settingsItemBorder,
+                      index < settingsItems.length - 1 &&
+                        styles.settingsItemBorder,
                     ]}
                     activeOpacity={0.7}
                   >

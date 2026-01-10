@@ -38,7 +38,7 @@ build-local:
 	fi
 
 # Build for multiple platforms (for sharing with teammates)
-.PHONY: build-multi  
+.PHONY: build-multi
 build-multi:
 	@if docker buildx version > /dev/null 2>&1; then \
 		echo "Using buildx for multi-platform build..."; \

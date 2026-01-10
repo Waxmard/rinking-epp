@@ -13,15 +13,15 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from datetime import datetime
-import uuid
+from datetime import datetime  # noqa: E402
+import uuid  # noqa: E402
 
-from sqlalchemy import text, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text, select  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
 
-from app.db.database import SessionLocal, engine
-from app.db.models import Base, User
-from app.core.security import get_password_hash
+from app.db.database import SessionLocal, engine  # noqa: E402
+from app.db.models import Base, User  # noqa: E402
+from app.core.security import get_password_hash  # noqa: E402
 
 
 # Dev user to seed
