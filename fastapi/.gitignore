@@ -4,9 +4,6 @@ __pycache__/
 *.pyo
 *.pyd
 
-# uv-related files
-uv.lock
-
 # Environments
 .venv
 venv
