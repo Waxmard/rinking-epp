@@ -101,16 +101,16 @@ async def create_user_list(
     Returns:
         Created List object
     """
-    list = List(user=user, title=title, description=description)
-    db.add(list)
+    list_obj = List(user=user, title=title, description=description)
+    db.add(list_obj)
     await db.commit()
-    await db.refresh(list)
-    return list
+    await db.refresh(list_obj)
+    return list_obj
 
 
 async def add_item_to_user_list(
     db: AsyncSession,
-    list: List,
+    list_obj: List,
     name: str,
     description: Optional[str] = None,
     image_url: Optional[str] = None,
@@ -122,7 +122,7 @@ async def add_item_to_user_list(
 
     Args:
         db: Database session
-        list: List object to add the item to
+        list_obj: List object to add the item to
         name: Name of the item
         description: Optional description of the item
         image_url: Optional URL of the item's image
@@ -133,7 +133,7 @@ async def add_item_to_user_list(
         Created Item object
     """
     item = Item(
-        list=list,
+        list=list_obj,
         name=name,
         description=description,
         image_url=image_url,
