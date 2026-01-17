@@ -9,6 +9,7 @@ from app.core.auth import (
     create_access_token,
     get_current_user,
 )
+from app.core.constants import INCORRECT_LOGIN_ERROR, USER_ALREADY_EXISTS_ERROR
 from app.db.database import get_db
 from app.db.models import User as UserModel
 from app.schemas.user import Token, User, UserCreate, UserPublic
@@ -30,7 +31,7 @@ async def create_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)) -
     if user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A user with this email already exists",
+            detail=USER_ALREADY_EXISTS_ERROR,
         )
 
     # Create new user
@@ -52,7 +53,7 @@ async def login_for_access_token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
+            detail=INCORRECT_LOGIN_ERROR,
             headers={"WWW-Authenticate": "Bearer"},
         )
 

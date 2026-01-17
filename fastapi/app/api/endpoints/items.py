@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Union
 
 from sqlalchemy import select
@@ -7,6 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.algorithm import find_next_comparison
 from app.core.auth import get_current_user
+from app.core.constants import (
+    COMPARISON_SESSION_NOT_FOUND_ERROR,
+    ITEM_NOT_FOUND_ERROR,
+    SESSION_NOT_FOUND_ERROR,
+)
 from app.db.database import get_db
 from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
@@ -27,7 +32,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 
-session_id_cache = dict()
+session_id_cache = {}
 
 
 @router.post("/", response_model=Union[Item, ComparisonSession])
@@ -73,8 +78,8 @@ async def create_item(
         next_item_id=None,  # Initially unranked
         rating=None,  # Initially unrated
         tier=None,  # Initially unrated
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
 
     # Get all items in the list
@@ -101,7 +106,7 @@ async def create_item(
     )
 
     # Create session ID (using timestamp for simplicity)
-    session_id = f"session_{int(datetime.now().timestamp())}"
+    session_id = f"session_{int(datetime.now(timezone.utc).timestamp())}"
 
     comparison_session = ComparisonSession(
         session_id=session_id,
@@ -109,8 +114,8 @@ async def create_item(
         item_id=item_obj.item_id,
         current_comparison=comparison,
         is_complete=False,
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
 
     session_id_cache[session_id] = comparison_session
@@ -143,7 +148,7 @@ async def submit_comparison_result(
     if not comparison_session:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Comparison session not found or invalid",
+            detail=COMPARISON_SESSION_NOT_FOUND_ERROR,
         )
 
     # Get all items in the list
@@ -158,7 +163,6 @@ async def submit_comparison_result(
         all_items, comparison_session.current_comparison
     )
 
-    # TODO: Update reference item and target item from Pydantic to SQLAlchemy models
     if comparison_session.current_comparison.done:
         # Set reference item pointers
         if comparison_session.current_comparison.is_winner:
@@ -190,7 +194,9 @@ async def submit_comparison_result(
         item = result.scalar_one_or_none()
 
         if item is None:
-            raise HTTPException(status_code=404, detail="Item not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=ITEM_NOT_FOUND_ERROR
+            )
 
         # Apply in-place updates
         if comparison_session.current_comparison.is_winner:
@@ -201,7 +207,7 @@ async def submit_comparison_result(
             item.prev_item_id = (
                 comparison_session.current_comparison.reference_item.item_id
             )
-        item.updated_at = datetime.utcnow()  # optional
+        item.updated_at = datetime.now(timezone.utc)  # optional
 
         await db.flush()
         session_id_cache.pop(session_id)
@@ -240,7 +246,7 @@ async def read_item(
     if not row:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Item not found or does not belong to current user",
+            detail=ITEM_NOT_FOUND_ERROR,
         )
 
     item_obj = row[0]
@@ -279,7 +285,7 @@ async def update_item(
     if not row:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Item not found or does not belong to current user",
+            detail=ITEM_NOT_FOUND_ERROR,
         )
 
     item_obj = row[0]
@@ -329,7 +335,7 @@ async def delete_item(
     if not row:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Item not found or does not belong to current user",
+            detail=ITEM_NOT_FOUND_ERROR,
         )
 
     item_obj = row[0]
@@ -360,7 +366,7 @@ async def get_comparison_status(
     if not comparison_session:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Session not found or invalid",
+            detail=SESSION_NOT_FOUND_ERROR,
         )
 
     return comparison_session

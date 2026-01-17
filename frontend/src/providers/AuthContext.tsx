@@ -3,15 +3,13 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useMemo,
+  useCallback,
   ReactNode,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as WebBrowser from 'expo-web-browser';
-import * as AuthSession from 'expo-auth-session';
 import { USE_MOCK_AUTH } from '../config/api';
 import { authService, User as ApiUser } from '../services/authService';
-
-WebBrowser.maybeCompleteAuthSession();
 
 interface User {
   id: string;
@@ -60,29 +58,10 @@ const toLocalUser = (apiUser: ApiUser): User => ({
   photoUrl: undefined,
 });
 
-// Mock Google OAuth config (kept for future use)
-const discovery = {
-  authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-  tokenEndpoint: 'https://oauth2.googleapis.com/token',
-};
-
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Google OAuth setup (for future use)
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
-      scopes: ['openid', 'profile', 'email'],
-      responseType: AuthSession.ResponseType.Token,
-      redirectUri: AuthSession.makeRedirectUri({
-        scheme: 'tiernerd',
-      }),
-    },
-    discovery
-  );
 
   useEffect(() => {
     checkAuthState();
@@ -121,87 +100,97 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signIn = async (email: string, password: string): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const signIn = useCallback(
+    async (email: string, password: string): Promise<boolean> => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      if (USE_MOCK_AUTH) {
-        // Mock authentication
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const mockUser: User = {
-          id: '123456789',
-          email: email,
-          displayName: email.split('@')[0],
-          photoUrl: undefined,
-        };
-        await AsyncStorage.setItem(AUTH_TOKEN_KEY, 'mock-auth-token');
-        await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(mockUser));
-        setUser(mockUser);
-        return true;
-      }
+        if (USE_MOCK_AUTH) {
+          // Mock authentication
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          const mockUser: User = {
+            id: '123456789',
+            email: email,
+            displayName: email.split('@')[0],
+            photoUrl: undefined,
+          };
+          await AsyncStorage.setItem(AUTH_TOKEN_KEY, 'mock-auth-token');
+          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(mockUser));
+          setUser(mockUser);
+          return true;
+        }
 
-      // Real authentication
-      const result = await authService.login(email, password);
-      if (result.success && result.user && result.token) {
-        const localUser = toLocalUser(result.user);
-        await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
-        await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
-        setUser(localUser);
-        return true;
-      } else {
-        setError(result.error || 'Login failed');
+        // Real authentication
+        const result = await authService.login(email, password);
+        if (result.success && result.user && result.token) {
+          const localUser = toLocalUser(result.user);
+          await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
+          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
+          setUser(localUser);
+          return true;
+        } else {
+          setError(result.error || 'Login failed');
+          return false;
+        }
+      } catch (error: any) {
+        setError(error.message || 'Authentication failed');
         return false;
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error: any) {
-      setError(error.message || 'Authentication failed');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    []
+  );
 
-  const register = async (
-    email: string,
-    password: string,
-    username?: string
-  ): Promise<boolean> => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const register = useCallback(
+    async (
+      email: string,
+      password: string,
+      username?: string
+    ): Promise<boolean> => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      if (USE_MOCK_AUTH) {
-        // Mock registration (same as login for mock)
-        return signIn(email, password);
-      }
+        if (USE_MOCK_AUTH) {
+          // Mock registration (same as login for mock)
+          return signIn(email, password);
+        }
 
-      // Real registration
-      const result = await authService.register({ email, password, username });
-      if (result.success && result.user && result.token) {
-        const localUser = toLocalUser(result.user);
-        await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
-        await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
-        setUser(localUser);
-        return true;
-      } else {
-        setError(result.error || 'Registration failed');
+        // Real registration
+        const result = await authService.register({
+          email,
+          password,
+          username,
+        });
+        if (result.success && result.user && result.token) {
+          const localUser = toLocalUser(result.user);
+          await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
+          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
+          setUser(localUser);
+          return true;
+        } else {
+          setError(result.error || 'Registration failed');
+          return false;
+        }
+      } catch (error: any) {
+        setError(error.message || 'Registration failed');
         return false;
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error: any) {
-      setError(error.message || 'Registration failed');
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [signIn]
+  );
 
-  const signInWithGoogle = async (): Promise<boolean> => {
+  const signInWithGoogle = useCallback(async (): Promise<boolean> => {
     // Google OAuth not yet implemented - show message
     setError('Google sign-in coming soon! Please use email/password for now.');
     return false;
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       setIsLoading(true);
       await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
@@ -212,21 +201,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      user,
+      isLoading,
+      error,
+      signIn,
+      register,
+      signInWithGoogle,
+      signOut,
+    }),
+    [user, isLoading, error, signIn, register, signInWithGoogle, signOut]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        error,
-        signIn,
-        register,
-        signInWithGoogle,
-        signOut,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };

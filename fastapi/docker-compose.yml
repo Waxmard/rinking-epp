@@ -4,7 +4,7 @@ services:
     container_name: tiernerd-postgres
     environment:
       POSTGRES_USER: tiernerd
-      POSTGRES_PASSWORD: tiernerd_dev
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: tiernerd
     ports:
       - "5432:5432"
@@ -29,7 +29,7 @@ services:
     volumes:
       - ./scripts:/app/scripts
     environment:
-      - DATABASE_URL=postgresql+asyncpg://tiernerd:tiernerd_dev@postgres:5432/tiernerd
+      - DATABASE_URL=postgresql+asyncpg://tiernerd:${POSTGRES_PASSWORD}@postgres:5432/tiernerd
       - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-prod}
       - APP_ENV=${APP_ENV:-development}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8081,http://localhost:19006}

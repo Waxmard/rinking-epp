@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from typing import List as TypeList
 
@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
+from app.core.constants import LIST_ALREADY_EXISTS_ERROR, LIST_NOT_FOUND_ERROR
 from app.db.database import get_db
 from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
@@ -77,7 +78,7 @@ async def create_list(
     if list_obj:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="List already exists for current user",
+            detail=LIST_ALREADY_EXISTS_ERROR,
         )
 
     list_obj = ListModel(
@@ -85,8 +86,8 @@ async def create_list(
         title=name,
         user_id=current_user.user_id,
         description=description,
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
     db.add(list_obj)
     await db.commit()
@@ -121,7 +122,7 @@ async def read_list(
 
     if not list_obj:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="List not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
         )
 
     # Prepare response
@@ -154,7 +155,7 @@ async def update_list(
 
     if not list_obj:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="List not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
         )
 
     # Update fields
@@ -218,7 +219,7 @@ async def delete_list(
 
     if not list_obj:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="List not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
         )
 
     # Delete the list (items will be cascade deleted due to relationship)

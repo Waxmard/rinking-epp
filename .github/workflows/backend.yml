@@ -21,8 +21,9 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "fastapi/uv.lock"
-      - run: uv sync --extra dev
-      - run: uv run pytest
+      - run: uv sync --extra dev --group dev
+      - name: Run tests with coverage
+        run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=60
 
   lint:
     name: Lint

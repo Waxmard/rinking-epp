@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     model_config = SettingsConfigDict(
-        env_file=(".env", ".env.local"), case_sensitive=True
+        env_file=(".env", ".env.local"), case_sensitive=True, extra="ignore"
     )
 
 
