@@ -44,6 +44,7 @@ uv run mypy app/                  # Type check
 uv run pytest                     # Run all tests
 uv run pytest tests/test_items.py # Run single test file
 uv run pytest -k "test_name"      # Run specific test
+uv run pytest --cov=app --cov-report=term-missing  # Run with coverage
 ```
 
 ### Frontend (frontend/)
@@ -67,7 +68,7 @@ npm run typecheck                 # TypeScript check
 
 ### Backend Structure (fastapi/app/)
 - `api/endpoints/` - Route handlers (users, lists, items)
-- `core/` - Auth (JWT), security (bcrypt), ranking algorithm
+- `core/` - Auth (JWT), security (argon2), constants, ranking algorithm
 - `crud/` - Database operations
 - `db/` - SQLAlchemy models and async database setup
 - `schemas/` - Pydantic request/response models
