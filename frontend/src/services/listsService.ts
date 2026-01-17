@@ -11,4 +11,12 @@ export interface ListSimple {
 
 export const listsService = {
   getLists: (token: string) => api.get<ListSimple[]>('/api/lists/', token),
+  createList: (name: string, description: string, token: string) =>
+    api.post<ListSimple>(
+      `/api/lists/?name=${encodeURIComponent(
+        name
+      )}&description=${encodeURIComponent(description)}`,
+      undefined,
+      token
+    ),
 };

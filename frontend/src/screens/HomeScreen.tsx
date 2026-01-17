@@ -24,6 +24,7 @@ import {
   TierDistributionBar,
   TierDistribution,
 } from '../components/TierDistributionBar';
+import { CreateListModal } from '../components/CreateListModal';
 import { listsService, ListSimple } from '../services/listsService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -67,6 +68,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [lists, setLists] = useState<TierList[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -125,7 +127,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const handleCreatePress = () => {
-    console.log('Create new tier list');
+    setShowCreateModal(true);
   };
 
   const handleListPress = (listId: string) => {
@@ -273,6 +275,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         </Animated.View>
 
         <FAB onPress={handleCreatePress} />
+
+        <CreateListModal
+          visible={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={fetchLists}
+        />
       </SafeAreaView>
     </View>
   );
