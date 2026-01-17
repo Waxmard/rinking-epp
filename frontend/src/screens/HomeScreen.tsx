@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   Animated,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +24,7 @@ import {
   TierDistributionBar,
   TierDistribution,
 } from '../components/TierDistributionBar';
+import { listsService, ListSimple } from '../services/listsService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const COLUMN_GAP = AppSpacing.md;
@@ -41,51 +43,54 @@ interface HomeScreenProps {
   navigation?: any;
 }
 
-// Mock data for tier lists
-const MOCK_LISTS: TierList[] = [
-  {
-    id: '1',
-    title: 'Best Programming Languages',
-    itemCount: 15,
-    updatedAt: new Date(),
-    tierDistribution: { S: 2, A: 3, B: 4, C: 3, D: 2, F: 1 },
-  },
-  {
-    id: '2',
-    title: 'Marvel Movies',
-    itemCount: 32,
-    updatedAt: new Date(Date.now() - 86400000),
-    tierDistribution: { S: 5, A: 8, B: 10, C: 6, D: 2, F: 1 },
-  },
-  {
-    id: '3',
-    title: 'Coffee Shops in NYC',
-    itemCount: 8,
-    updatedAt: new Date(Date.now() - 172800000),
-    tierDistribution: { S: 1, A: 2, B: 3, C: 1, D: 1, F: 0 },
-  },
-  {
-    id: '4',
-    title: 'Favorite Albums of 2024',
-    itemCount: 20,
-    updatedAt: new Date(Date.now() - 259200000),
-    tierDistribution: { S: 3, A: 5, B: 5, C: 4, D: 2, F: 1 },
-  },
-  {
-    id: '5',
-    title: 'Pizza Toppings',
-    itemCount: 12,
-    updatedAt: new Date(Date.now() - 604800000),
-    tierDistribution: { S: 2, A: 3, B: 2, C: 2, D: 2, F: 1 },
-  },
-];
+// Placeholder tier distribution for items that haven't been ranked yet
+const PLACEHOLDER_TIER_DISTRIBUTION: TierDistribution = {
+  S: 0,
+  A: 0,
+  B: 0,
+  C: 0,
+  D: 0,
+  F: 0,
+};
+
+// Convert API ListSimple to local TierList format
+const toTierList = (apiList: ListSimple): TierList => ({
+  id: apiList.list_id,
+  title: apiList.title,
+  itemCount: apiList.item_count,
+  updatedAt: new Date(apiList.updated_at),
+  tierDistribution: PLACEHOLDER_TIER_DISTRIBUTION,
+});
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const [lists, setLists] = useState<TierList[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  const fetchLists = useCallback(async () => {
+    if (!token) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const apiLists = await listsService.getLists(token);
+      setLists(apiLists.map(toTierList));
+    } catch (err: any) {
+      console.error('Error fetching lists:', err);
+      setError(err.message || 'Failed to load lists');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    fetchLists();
+  }, [fetchLists]);
 
   useEffect(() => {
     Animated.parallel([
@@ -210,7 +215,53 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     </View>
   );
 
-  const lists = MOCK_LISTS; // Replace with actual data later
+  const renderLoading = () => (
+    <View style={styles.loadingState}>
+      <ActivityIndicator size="large" color={AppColors.accent.primary} />
+    </View>
+  );
+
+  const renderError = () => (
+    <View style={styles.errorState}>
+      <Ionicons
+        name="alert-circle-outline"
+        size={48}
+        color={AppColors.textSecondary}
+      />
+      <Text style={styles.errorTitle}>Something went wrong</Text>
+      <Text style={styles.errorText}>{error}</Text>
+      <TouchableOpacity style={styles.retryButton} onPress={fetchLists}>
+        <Text style={styles.retryButtonText}>Try Again</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderContent = () => {
+    // Show loading while waiting for token OR while fetching
+    if (!token || isLoading) {
+      return renderLoading();
+    }
+
+    if (error) {
+      return renderError();
+    }
+
+    if (lists.length === 0) {
+      return renderEmptyState();
+    }
+
+    return (
+      <FlatList
+        data={lists}
+        renderItem={renderListCard}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -222,20 +273,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           ]}
         >
           {renderHeader()}
-
-          {lists.length > 0 ? (
-            <FlatList
-              data={lists}
-              renderItem={renderListCard}
-              keyExtractor={(item) => item.id}
-              numColumns={2}
-              columnWrapperStyle={styles.row}
-              contentContainerStyle={styles.listContent}
-              showsVerticalScrollIndicator={false}
-            />
-          ) : (
-            renderEmptyState()
-          )}
+          {renderContent()}
         </Animated.View>
 
         <FAB onPress={handleCreatePress} />
@@ -372,5 +410,40 @@ const styles = StyleSheet.create({
     color: AppColors.textSecondary,
     textAlign: 'center',
     marginBottom: AppSpacing.xl,
+  },
+  loadingState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: HORIZONTAL_PADDING,
+  },
+  errorTitle: {
+    ...AppTypography.headlineSmall,
+    color: AppColors.secondary.emphasis,
+    fontWeight: '600',
+    marginTop: AppSpacing.md,
+    marginBottom: AppSpacing.xs,
+  },
+  errorText: {
+    ...AppTypography.bodyMedium,
+    color: AppColors.textSecondary,
+    textAlign: 'center',
+    marginBottom: AppSpacing.lg,
+  },
+  retryButton: {
+    backgroundColor: AppColors.accent.primary,
+    paddingHorizontal: AppSpacing.lg,
+    paddingVertical: AppSpacing.sm,
+    borderRadius: AppBorders.radiusSm,
+  },
+  retryButtonText: {
+    ...AppTypography.bodyMedium,
+    color: AppColors.dominant.primary,
+    fontWeight: '600',
   },
 });
