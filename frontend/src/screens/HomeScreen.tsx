@@ -1,58 +1,84 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Image,
   Animated,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../providers/AuthContext';
-import { Card, Button } from '../design-system/components';
+import { Card, FAB } from '../design-system/components';
 import {
   AppColors,
   AppSpacing,
   AppTypography,
   AppBorders,
 } from '../design-system/tokens';
+import {
+  TierDistributionBar,
+  TierDistribution,
+} from '../components/TierDistributionBar';
 
-// Temporary inline shadows to fix import issue
-const AppShadows = {
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-};
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const COLUMN_GAP = AppSpacing.md;
+const HORIZONTAL_PADDING = AppSpacing.lg;
+const CARD_WIDTH = (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2;
 
-interface RecentList {
+interface TierList {
   id: string;
   title: string;
   itemCount: number;
   updatedAt: Date;
-}
-
-interface UserStats {
-  totalLists: number;
-  totalItems: number;
-  mostUsedTier: string;
+  tierDistribution: TierDistribution;
 }
 
 interface HomeScreenProps {
   navigation?: any;
 }
+
+// Mock data for tier lists
+const MOCK_LISTS: TierList[] = [
+  {
+    id: '1',
+    title: 'Best Programming Languages',
+    itemCount: 15,
+    updatedAt: new Date(),
+    tierDistribution: { S: 2, A: 3, B: 4, C: 3, D: 2, F: 1 },
+  },
+  {
+    id: '2',
+    title: 'Marvel Movies',
+    itemCount: 32,
+    updatedAt: new Date(Date.now() - 86400000),
+    tierDistribution: { S: 5, A: 8, B: 10, C: 6, D: 2, F: 1 },
+  },
+  {
+    id: '3',
+    title: 'Coffee Shops in NYC',
+    itemCount: 8,
+    updatedAt: new Date(Date.now() - 172800000),
+    tierDistribution: { S: 1, A: 2, B: 3, C: 1, D: 1, F: 0 },
+  },
+  {
+    id: '4',
+    title: 'Favorite Albums of 2024',
+    itemCount: 20,
+    updatedAt: new Date(Date.now() - 259200000),
+    tierDistribution: { S: 3, A: 5, B: 5, C: 4, D: 2, F: 1 },
+  },
+  {
+    id: '5',
+    title: 'Pizza Toppings',
+    itemCount: 12,
+    updatedAt: new Date(Date.now() - 604800000),
+    tierDistribution: { S: 2, A: 3, B: 2, C: 2, D: 2, F: 1 },
+  },
+];
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { user } = useAuth();
@@ -61,25 +87,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
-  // Mock data for recent lists (showing up to 3)
-  const [recentLists] = useState<RecentList[]>([
-    {
-      id: '1',
-      title: 'Best Programming Languages',
-      itemCount: 15,
-      updatedAt: new Date(),
-    },
-  ]);
-
-  // Mock user stats
-  const [userStats] = useState<UserStats>({
-    totalLists: 1,
-    totalItems: 15,
-    mostUsedTier: 'A',
-  });
-
   useEffect(() => {
-    // Start animations
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -119,179 +127,125 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     console.log('Navigate to list', listId);
   };
 
-  return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+  const renderListCard = ({
+    item,
+    index,
+  }: {
+    item: TierList;
+    index: number;
+  }) => {
+    const isLeftColumn = index % 2 === 0;
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => handleListPress(item.id)}
+        style={[
+          styles.cardWrapper,
+          isLeftColumn ? styles.cardLeft : styles.cardRight,
+        ]}
+      >
+        <Card style={styles.listCard}>
+          <Text style={styles.listTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+          <Text style={styles.itemCount}>{item.itemCount} items</Text>
+          <TierDistributionBar
+            distribution={item.tierDistribution}
+            style={styles.tierBar}
+          />
+          <Text style={styles.updatedAt}>
+            Modified {formatDate(item.updatedAt)}
+          </Text>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerRow}>
+        <View style={styles.brandSection}>
+          <Image
+            source={require('../../assets/logo-transparent.png')}
+            style={styles.logo}
+          />
+          <Text style={styles.brandText}>TierNerd</Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleProfilePress}
+          style={styles.profileButton}
+          activeOpacity={0.7}
         >
-          <Animated.View
-            style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}
-          >
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.headerRow}>
-                <View style={styles.brandSection}>
-                  <Image
-                    source={require('../../assets/logo-transparent.png')}
-                    style={styles.logo}
-                  />
-                  <Text style={styles.brandText}>TierNerd</Text>
-                </View>
-
-                <TouchableOpacity
-                  onPress={handleProfilePress}
-                  style={styles.profileButton}
-                  activeOpacity={0.7}
-                >
-                  {user?.photoUrl ? (
-                    <Image
-                      source={{ uri: user.photoUrl }}
-                      style={styles.profileImage}
-                    />
-                  ) : (
-                    <View style={styles.profilePlaceholder}>
-                      <Ionicons
-                        name="person"
-                        size={20}
-                        color={AppColors.neutral[600]}
-                      />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Hero Section */}
-            <View style={styles.heroSection}>
-              <Button
-                title="Create New Tier List"
-                onPress={handleCreatePress}
-                fullWidth
-                style={styles.createButton}
-                icon={
-                  <Ionicons
-                    name="add-circle-outline"
-                    size={24}
-                    color={AppColors.textOnPrimary}
-                  />
-                }
+          {user?.photoUrl ? (
+            <Image
+              source={{ uri: user.photoUrl }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={styles.profilePlaceholder}>
+              <Ionicons
+                name="person"
+                size={20}
+                color={AppColors.neutral[600]}
               />
             </View>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-            {recentLists.length > 0 ? (
-              <>
-                {/* Quick Stats */}
-                <Card style={styles.statsCard}>
-                  <View style={styles.statsRow}>
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>
-                        {userStats.totalLists}
-                      </Text>
-                      <Text style={styles.statLabel}>Lists</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>
-                        {userStats.totalItems}
-                      </Text>
-                      <Text style={styles.statLabel}>Items</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                      <View
-                        style={[
-                          styles.tierBadge,
-                          {
-                            backgroundColor:
-                              AppColors.tierColors[
-                                userStats.mostUsedTier as keyof typeof AppColors.tierColors
-                              ],
-                          },
-                        ]}
-                      >
-                        <Text style={styles.tierBadgeText}>
-                          {userStats.mostUsedTier}
-                        </Text>
-                      </View>
-                      <Text style={styles.statLabel}>Top Tier</Text>
-                    </View>
-                  </View>
-                </Card>
+  const renderSectionTitle = () => (
+    <Text style={styles.sectionTitle}>Your Lists</Text>
+  );
 
-                {/* Recent Lists */}
-                <View style={styles.recentSection}>
-                  <Text style={styles.sectionTitle}>Recent Lists</Text>
-                  {recentLists.map((list) => (
-                    <TouchableOpacity
-                      key={list.id}
-                      activeOpacity={0.8}
-                      onPress={() => handleListPress(list.id)}
-                    >
-                      <Card style={styles.listCard}>
-                        <View style={styles.listHeader}>
-                          <View style={styles.listInfo}>
-                            <Text style={styles.listTitle} numberOfLines={1}>
-                              {list.title}
-                            </Text>
-                            <View style={styles.listMeta}>
-                              <Text style={styles.listMetaText}>
-                                {list.itemCount} items • Modified{' '}
-                                {formatDate(list.updatedAt)}
-                              </Text>
-                            </View>
-                          </View>
-                          <Ionicons
-                            name="chevron-forward"
-                            size={20}
-                            color={AppColors.neutral[400]}
-                          />
-                        </View>
-                      </Card>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+  const renderEmptyState = () => (
+    <View style={styles.emptyState}>
+      <Image
+        source={require('../../assets/logo-transparent.png')}
+        style={styles.emptyStateImage}
+      />
+      <Text style={styles.emptyStateTitle}>Welcome to TierNerd!</Text>
+      <Text style={styles.emptyStateText}>
+        Create your first tier list and start ranking your favorite things
+      </Text>
+    </View>
+  );
 
-                {/* Secondary Actions */}
-                <View style={styles.secondaryActions}>
-                  <TouchableOpacity
-                    style={styles.secondaryButton}
-                    activeOpacity={0.8}
-                    onPress={() => navigation.navigate('Lists')}
-                  >
-                    <Ionicons
-                      name="list-outline"
-                      size={20}
-                      color={AppColors.primary}
-                    />
-                    <Text style={styles.secondaryButtonText}>
-                      View All Lists
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              /* Empty State */
-              <View style={styles.emptyState}>
-                <Image
-                  source={require('../../assets/logo-transparent.png')}
-                  style={styles.emptyStateImage}
-                />
-                <Text style={styles.emptyStateTitle}>Welcome to TierNerd!</Text>
-                <Text style={styles.emptyStateText}>
-                  Create your first tier list and start ranking your favorite
-                  things
-                </Text>
-                <Button
-                  title="Create Your First List"
-                  onPress={handleCreatePress}
-                  style={styles.emptyStateButton}
-                />
-              </View>
-            )}
-          </Animated.View>
-        </ScrollView>
+  const lists = MOCK_LISTS; // Replace with actual data later
+
+  return (
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <Animated.View
+          style={[
+            styles.animatedContainer,
+            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
+          ]}
+        >
+          {renderHeader()}
+
+          {lists.length > 0 ? (
+            <>
+              {renderSectionTitle()}
+              <FlatList
+                data={lists}
+                renderItem={renderListCard}
+                keyExtractor={(item) => item.id}
+                numColumns={2}
+                columnWrapperStyle={styles.row}
+                contentContainerStyle={styles.listContent}
+                showsVerticalScrollIndicator={false}
+              />
+            </>
+          ) : (
+            renderEmptyState()
+          )}
+        </Animated.View>
+
+        <FAB onPress={handleCreatePress} />
       </SafeAreaView>
     </View>
   );
@@ -305,13 +259,13 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  scrollContent: {
-    paddingHorizontal: AppSpacing.lg,
-    paddingBottom: AppSpacing.xxxl,
+  animatedContainer: {
+    flex: 1,
   },
   header: {
-    marginBottom: AppSpacing.xl,
+    paddingHorizontal: HORIZONTAL_PADDING,
     paddingTop: AppSpacing.md,
+    paddingBottom: AppSpacing.lg,
   },
   headerRow: {
     flexDirection: 'row',
@@ -340,7 +294,11 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.surface,
     borderWidth: 1,
     borderColor: AppColors.neutral[300],
-    ...AppShadows.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   profileImage: {
     width: '100%',
@@ -353,120 +311,63 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  heroSection: {
-    marginBottom: AppSpacing.xl,
-  },
-  createButton: {
-    backgroundColor: AppColors.primary,
-    paddingVertical: AppSpacing.lg,
-    ...AppShadows.lg,
-  },
-  statsCard: {
-    backgroundColor: AppColors.dominant.primary,
-    borderRadius: AppBorders.radiusLg,
-    padding: AppSpacing.lg,
-    marginBottom: AppSpacing.xl,
-    ...AppShadows.md,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    ...AppTypography.headlineMedium,
-    color: AppColors.secondary.emphasis,
-    fontWeight: '700',
-  },
-  statLabel: {
-    ...AppTypography.labelSmall,
-    color: AppColors.textSecondary,
-    marginTop: AppSpacing.xs,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: AppColors.neutral[200],
-  },
-  tierBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: AppSpacing.xxs,
-  },
-  tierBadgeText: {
-    ...AppTypography.labelMedium,
-    color: AppColors.textOnPrimary,
-    fontWeight: 'bold',
-  },
-  recentSection: {
-    marginBottom: AppSpacing.xl,
-  },
   sectionTitle: {
     ...AppTypography.titleMedium,
     color: AppColors.secondary.emphasis,
     fontWeight: '600',
+    paddingHorizontal: HORIZONTAL_PADDING,
     marginBottom: AppSpacing.md,
+  },
+  listContent: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingBottom: AppSpacing.xxxl + 56, // Extra space for FAB
+  },
+  row: {
+    justifyContent: 'space-between',
+  },
+  cardWrapper: {
+    width: CARD_WIDTH,
+    marginBottom: COLUMN_GAP,
+  },
+  cardLeft: {
+    marginRight: COLUMN_GAP / 2,
+  },
+  cardRight: {
+    marginLeft: COLUMN_GAP / 2,
   },
   listCard: {
     backgroundColor: AppColors.dominant.primary,
     borderRadius: AppBorders.radiusMd,
     padding: AppSpacing.md,
-    marginBottom: AppSpacing.sm,
-    ...AppShadows.md,
-  },
-  listHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  listInfo: {
-    flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
   listTitle: {
     ...AppTypography.bodyLarge,
     color: AppColors.secondary.emphasis,
     fontWeight: '600',
-    marginBottom: AppSpacing.xxs,
+    marginBottom: AppSpacing.xs,
   },
-  listMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  listMetaText: {
+  itemCount: {
     ...AppTypography.bodySmall,
     color: AppColors.textSecondary,
+    marginBottom: AppSpacing.sm,
   },
-  secondaryActions: {
-    marginTop: AppSpacing.lg,
+  tierBar: {
+    marginBottom: AppSpacing.sm,
   },
-  secondaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: AppColors.surface,
-    borderWidth: 1,
-    borderColor: AppColors.primary,
-    borderRadius: AppBorders.radiusMd,
-    paddingVertical: AppSpacing.md,
-    paddingHorizontal: AppSpacing.lg,
-  },
-  secondaryButtonText: {
-    ...AppTypography.labelLarge,
-    color: AppColors.primary,
-    fontWeight: '500',
-    marginLeft: AppSpacing.sm,
+  updatedAt: {
+    ...AppTypography.labelSmall,
+    color: AppColors.neutral[400],
   },
   emptyState: {
+    flex: 1,
     alignItems: 'center',
-    paddingTop: AppSpacing.xxxl,
-    paddingHorizontal: AppSpacing.lg,
+    justifyContent: 'center',
+    paddingHorizontal: HORIZONTAL_PADDING,
   },
   emptyStateImage: {
     width: 120,
@@ -485,8 +386,5 @@ const styles = StyleSheet.create({
     color: AppColors.textSecondary,
     textAlign: 'center',
     marginBottom: AppSpacing.xl,
-  },
-  emptyStateButton: {
-    backgroundColor: AppColors.primary,
   },
 });
