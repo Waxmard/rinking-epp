@@ -26,13 +26,11 @@ RUN uv sync
 # Production stage
 FROM python:3.11-slim
 
-# Install runtime dependencies
+# Install runtime dependencies and create non-root user
 RUN apt-get update && apt-get install -y \
     libpq5 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create non-root user
-RUN useradd -m -u 1000 appuser
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -m -u 1000 appuser
 
 # Set working directory
 WORKDIR /app
