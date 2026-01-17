@@ -28,7 +28,7 @@
     "expo-linear-gradient": "~15.0.8",
     "expo-status-bar": "~3.0.9",
     "expo-web-browser": "~15.0.10",
-    "react": "19.1.0",
+    "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.30.0",
@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@types/react": "~19.1.10",
+    "@types/react": "~19.2.8",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
     "eslint": "^9.39.2",
