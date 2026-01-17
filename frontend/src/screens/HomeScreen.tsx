@@ -113,12 +113,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handleCreatePress = () => {
     console.log('Create new tier list');
-    // navigation.navigate('CreateList');
   };
 
   const handleListPress = (listId: string) => {
     console.log('Navigate to list', listId);
-    // navigation.navigate('ListDetail', { listId });
   };
 
   return (
