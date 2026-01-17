@@ -59,13 +59,6 @@ async def get_current_user(
     db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)
 ) -> Union[User, UserModel]:
     """Get the current authenticated user."""
-    if settings.APP_ENV == "development":
-        # In development mode, return the seeded dev user
-        dev_user = await get_user_by_email(db, "dev@tiernerd.com")
-        if dev_user:
-            return dev_user
-        # Fall through to normal auth if dev user doesn't exist
-
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=INVALID_CREDENTIALS_ERROR,
