@@ -171,10 +171,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     <View style={styles.header}>
       <View style={styles.headerRow}>
         <View style={styles.brandSection}>
-          <Image
-            source={require('../../assets/logo-transparent.png')}
-            style={styles.logo}
-          />
           <Text style={styles.brandText}>TierNerd</Text>
         </View>
 
@@ -306,11 +302,6 @@ const styles = StyleSheet.create({
   brandSection: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  logo: {
-    width: 36,
-    height: 36,
-    marginRight: AppSpacing.sm,
   },
   brandText: {
     ...AppTypography.headlineMedium,
