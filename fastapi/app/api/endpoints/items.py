@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Union
 
 from sqlalchemy import select
@@ -201,7 +201,7 @@ async def submit_comparison_result(
             item.prev_item_id = (
                 comparison_session.current_comparison.reference_item.item_id
             )
-        item.updated_at = datetime.utcnow()  # optional
+        item.updated_at = datetime.now(timezone.utc)  # optional
 
         await db.flush()
         session_id_cache.pop(session_id)
