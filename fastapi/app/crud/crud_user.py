@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import select
@@ -43,8 +43,8 @@ async def create_user(db: AsyncSession, obj_in: UserCreate) -> User:
         email=obj_in.email,
         username=obj_in.username,
         password_hash=get_password_hash(obj_in.password),
-        created_at=datetime.now(),
-        updated_at=datetime.now(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
     db.add(db_obj)
     await db.commit()
