@@ -188,17 +188,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
               <Ionicons
                 name="person"
                 size={20}
-                color={AppColors.neutral[600]}
+                color={AppColors.accent.primary}
               />
             </View>
           )}
         </TouchableOpacity>
       </View>
     </View>
-  );
-
-  const renderSectionTitle = () => (
-    <Text style={styles.sectionTitle}>Your Lists</Text>
   );
 
   const renderEmptyState = () => (
@@ -228,18 +224,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           {renderHeader()}
 
           {lists.length > 0 ? (
-            <>
-              {renderSectionTitle()}
-              <FlatList
-                data={lists}
-                renderItem={renderListCard}
-                keyExtractor={(item) => item.id}
-                numColumns={2}
-                columnWrapperStyle={styles.row}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-              />
-            </>
+            <FlatList
+              data={lists}
+              renderItem={renderListCard}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              columnWrapperStyle={styles.row}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+            />
           ) : (
             renderEmptyState()
           )}
@@ -293,7 +286,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: AppColors.surface,
     borderWidth: 1,
-    borderColor: AppColors.neutral[300],
+    borderColor: AppColors.accent.light,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -310,13 +303,6 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  sectionTitle: {
-    ...AppTypography.titleMedium,
-    color: AppColors.secondary.emphasis,
-    fontWeight: '600',
-    paddingHorizontal: HORIZONTAL_PADDING,
-    marginBottom: AppSpacing.md,
   },
   listContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
