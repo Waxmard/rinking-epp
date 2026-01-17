@@ -60,14 +60,11 @@ async def get_current_user(
 ) -> Union[User, UserModel]:
     """Get the current authenticated user."""
     if settings.APP_ENV == "development":
-        # In development mode, return a mock user
-        return User(
-            user_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
-            email="dev@example.com",
-            username=None,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        # In development mode, return the seeded dev user
+        dev_user = await get_user_by_email(db, "dev@tiernerd.com")
+        if dev_user:
+            return dev_user
+        # Fall through to normal auth if dev user doesn't exist
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

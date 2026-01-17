@@ -3,7 +3,7 @@ import uuid
 from typing import List as ListType
 from typing import Optional
 
-from sqlalchemy import ForeignKey, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -24,9 +24,11 @@ class User(Base):
         String(50), unique=True, index=True, nullable=True
     )
     password_hash: Mapped[str] = mapped_column(String(255))
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     updated_at: Mapped[datetime.datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     # Relationships
@@ -44,9 +46,11 @@ class List(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id"))
     title: Mapped[str] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     updated_at: Mapped[datetime.datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     # Relationships
@@ -70,9 +74,11 @@ class Item(Base):
     next_item_id: Mapped[Optional[uuid.UUID]] = mapped_column(nullable=True)
     rating: Mapped[Optional[float]] = mapped_column(nullable=True)
     tier: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     updated_at: Mapped[datetime.datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
     # Relationships
