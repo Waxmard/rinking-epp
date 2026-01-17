@@ -1,10 +1,12 @@
 """Tests for the ranking algorithm."""
 
-import pytest
 import uuid
 from datetime import datetime
-from app.schemas.item import Item, Comparison
+
+import pytest
+
 from app.core.algorithm import find_next_comparison
+from app.schemas.item import Comparison, Item
 
 
 def create_test_item(name: str, item_id: int = None) -> Item:
@@ -122,7 +124,7 @@ async def test_find_next_comparison_narrowing_range():
     assert result.max_index == 3
     assert result.comparison_index == 1
     assert result.target_item == items[1]
-    assert result.done is False  # 3 - 0 = 3 > 1
+    assert result.done is False
 
     # Second iteration: loser=False (winner=False means reference is worse)
     result.is_winner = False
@@ -133,7 +135,7 @@ async def test_find_next_comparison_narrowing_range():
     assert result.max_index == 3
     assert result.comparison_index == 2
     assert result.target_item == items[2]
-    assert result.done is False  # 3 - 1 = 2 > 1
+    assert result.done is False
 
     # Third iteration: winner=True
     result.is_winner = True
