@@ -33,6 +33,13 @@ class TestReadLists:
         assert "title" in list_data
         assert "description" in list_data
         assert "item_count" in list_data
+        assert "tier_distribution" in list_data
+        assert list_data["tier_distribution"]["S"] >= 0
+        assert list_data["tier_distribution"]["A"] >= 0
+        assert list_data["tier_distribution"]["B"] >= 0
+        assert list_data["tier_distribution"]["C"] >= 0
+        assert list_data["tier_distribution"]["D"] >= 0
+        assert list_data["tier_distribution"]["F"] >= 0
 
         # Verify data matches database
         result = await test_db.execute(

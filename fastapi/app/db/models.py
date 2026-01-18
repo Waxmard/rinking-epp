@@ -18,7 +18,9 @@ class User(Base):
 
     __tablename__ = "users"
 
-    user_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, index=True, default=uuid.uuid4
+    )
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True)
     username: Mapped[Optional[str]] = mapped_column(
         String(50), unique=True, index=True, nullable=True
@@ -43,7 +45,9 @@ class List(Base):
 
     __tablename__ = "lists"
 
-    list_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, index=True)
+    list_id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, index=True, default=uuid.uuid4
+    )
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id"))
     title: Mapped[str] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -66,7 +70,9 @@ class Item(Base):
 
     __tablename__ = "items"
 
-    item_id: Mapped[uuid.UUID] = mapped_column(primary_key=True, index=True)
+    item_id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, index=True, default=uuid.uuid4
+    )
     list_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("lists.list_id"))
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

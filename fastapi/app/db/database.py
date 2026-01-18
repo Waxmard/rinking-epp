@@ -1,3 +1,4 @@
+import uuid
 from typing import AsyncGenerator, Optional
 
 from sqlalchemy import select
@@ -79,7 +80,12 @@ async def create_user(
     Returns:
         Created User object
     """
-    user = User(username=username, email=email, password_hash=password_hash)
+    user = User(
+        user_id=uuid.uuid4(),
+        username=username,
+        email=email,
+        password_hash=password_hash,
+    )
     db.add(user)
     await db.commit()
     await db.refresh(user)
@@ -101,7 +107,12 @@ async def create_user_list(
     Returns:
         Created List object
     """
-    list_obj = List(user=user, title=title, description=description)
+    list_obj = List(
+        list_id=uuid.uuid4(),
+        user=user,
+        title=title,
+        description=description,
+    )
     db.add(list_obj)
     await db.commit()
     await db.refresh(list_obj)
@@ -114,7 +125,6 @@ async def add_item_to_user_list(
     name: str,
     description: Optional[str] = None,
     image_url: Optional[str] = None,
-    position: Optional[int] = None,
     rating: Optional[float] = None,
 ) -> Item:
     """
@@ -126,18 +136,17 @@ async def add_item_to_user_list(
         name: Name of the item
         description: Optional description of the item
         image_url: Optional URL of the item's image
-        position: Optional position of the item in the list
         rating: Optional rating for the item
 
     Returns:
         Created Item object
     """
     item = Item(
+        item_id=uuid.uuid4(),
         list=list_obj,
         name=name,
         description=description,
         image_url=image_url,
-        position=position,
         rating=rating,
     )
     db.add(item)

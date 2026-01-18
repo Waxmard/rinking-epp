@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Any
 from typing import List as TypeList
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
@@ -28,9 +28,18 @@ async def read_lists(
     """
     Retrieve lists created by the current user.
     """
-    # Get lists with item count
+    # Get lists with item count and tier distribution
     query = (
-        select(ListModel, func.count(ItemModel.item_id).label("item_count"))
+        select(
+            ListModel,
+            func.count(ItemModel.item_id).label("item_count"),
+            func.sum(case((ItemModel.tier == "S", 1), else_=0)).label("tier_s"),
+            func.sum(case((ItemModel.tier == "A", 1), else_=0)).label("tier_a"),
+            func.sum(case((ItemModel.tier == "B", 1), else_=0)).label("tier_b"),
+            func.sum(case((ItemModel.tier == "C", 1), else_=0)).label("tier_c"),
+            func.sum(case((ItemModel.tier == "D", 1), else_=0)).label("tier_d"),
+            func.sum(case((ItemModel.tier == "F", 1), else_=0)).label("tier_f"),
+        )
         .outerjoin(ItemModel)
         .where(ListModel.user_id == current_user.user_id)
         .group_by(ListModel.list_id)
@@ -43,7 +52,17 @@ async def read_lists(
 
     # Prepare response
     response = []
-    for list_obj, item_count in lists_with_counts:
+    for row in lists_with_counts:
+        list_obj = row[0]
+        item_count = row[1] or 0
+        tier_distribution = {
+            "S": row[2] or 0,
+            "A": row[3] or 0,
+            "B": row[4] or 0,
+            "C": row[5] or 0,
+            "D": row[6] or 0,
+            "F": row[7] or 0,
+        }
         list_dict = {
             "list_id": list_obj.list_id,
             "user_id": list_obj.user_id,
@@ -52,6 +71,7 @@ async def read_lists(
             "created_at": list_obj.created_at,
             "updated_at": list_obj.updated_at,
             "item_count": item_count,
+            "tier_distribution": tier_distribution,
         }
         response.append(list_dict)
 
