@@ -187,14 +187,25 @@ async def read_list_items(
     if not items:
         return []
 
-    # Try to sort by linked list order, fall back to unsorted if structure is invalid
-    try:
-        sorted_items = sort_items_linked_list_style(items)
-    except ValueError:
-        # Linked list structure invalid, return unsorted
-        sorted_items = items
+    # Group items by tier_set since each tier_set has its own linked list
+    tier_set_groups: dict[str | None, list] = {}
+    for item in items:
+        tier_set = item.tier_set
+        if tier_set not in tier_set_groups:
+            tier_set_groups[tier_set] = []
+        tier_set_groups[tier_set].append(item)
 
-    return sorted_items
+    # Sort each tier_set's linked list separately, then combine
+    all_sorted: list = []
+    for tier_set, group_items in tier_set_groups.items():
+        try:
+            sorted_group = sort_items_linked_list_style(group_items)
+            all_sorted.extend(sorted_group)
+        except ValueError:
+            # Linked list structure invalid for this group, add unsorted
+            all_sorted.extend(group_items)
+
+    return all_sorted
 
 
 @router.put("/{list_id}", response_model=List)
