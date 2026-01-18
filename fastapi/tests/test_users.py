@@ -169,12 +169,12 @@ class TestReadUsers:
     async def test_read_users_authenticated(
         self,
         client: AsyncClient,
-        test_user: User,
-        auth_headers: dict,
+        admin_user: User,
+        admin_auth_headers: dict,
         test_db: AsyncSession,
     ):
-        """Test reading users list when authenticated."""
-        response = await client.get("/api/users/", headers=auth_headers)
+        """Test reading users list when authenticated as admin."""
+        response = await client.get("/api/users/", headers=admin_auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
@@ -192,9 +192,20 @@ class TestReadUsers:
         db_users = result.scalars().all()
         assert len(data) == len(db_users)
 
-        # Verify the test_user is in the response
+        # Verify the admin_user is in the response
         user_ids_in_response = [u["user_id"] for u in data]
-        assert str(test_user.user_id) in user_ids_in_response
+        assert str(admin_user.user_id) in user_ids_in_response
+
+    async def test_read_users_non_admin_forbidden(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        auth_headers: dict,
+    ):
+        """Test reading users list as non-admin returns 403."""
+        response = await client.get("/api/users/", headers=auth_headers)
+        assert response.status_code == 403
+        assert response.json()["detail"] == "Admin access required"
 
     async def test_read_users_unauthenticated(self, client: AsyncClient):
         """Test reading users list without authentication fails."""
@@ -204,25 +215,25 @@ class TestReadUsers:
     async def test_read_users_pagination(
         self,
         client: AsyncClient,
+        admin_user: User,
         test_user: User,
-        test_user2: User,
-        auth_headers: dict,
+        admin_auth_headers: dict,
         test_db: AsyncSession,
     ):
         """Test users pagination."""
-        # Verify we have 2 users in database
+        # Verify we have 2 users in database (admin_user and test_user)
         result = await test_db.execute(select(User))
         db_users = result.scalars().all()
         assert len(db_users) == 2
 
         # Test with limit
-        response = await client.get("/api/users/?limit=1", headers=auth_headers)
+        response = await client.get("/api/users/?limit=1", headers=admin_auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert len(data) == 1
 
         # Test with skip
-        response = await client.get("/api/users/?skip=1", headers=auth_headers)
+        response = await client.get("/api/users/?skip=1", headers=admin_auth_headers)
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
