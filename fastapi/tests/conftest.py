@@ -188,7 +188,7 @@ async def test_list(test_db: AsyncSession, test_user: User) -> ListModel:
 
 @pytest_asyncio.fixture
 async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
-    """Create a test item."""
+    """Create a test item with tier_set and valid linked list structure."""
     from datetime import datetime
     import uuid
 
@@ -201,7 +201,8 @@ async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
         prev_item_id=None,
         next_item_id=None,
         rating=None,
-        tier=None,
+        tier="A",
+        tier_set="good",
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
@@ -215,7 +216,7 @@ async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
 async def multiple_items(
     test_db: AsyncSession, test_list: ListModel
 ) -> list[ItemModel]:
-    """Create multiple test items."""
+    """Create multiple test items with tier_set."""
     from datetime import datetime
     import uuid
 
@@ -230,7 +231,8 @@ async def multiple_items(
             prev_item_id=None,
             next_item_id=None,
             rating=None,
-            tier=None,
+            tier="A" if i < 3 else "S",
+            tier_set="good",
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )

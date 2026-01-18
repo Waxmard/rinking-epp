@@ -49,6 +49,9 @@ def convert_pydantic_to_sqlalchemy(pyd_item: Item) -> ItemModel:
         tier=(
             pyd_item.tier.value if pyd_item.tier else None
         ),  # assuming TierRank is an Enum
+        tier_set=(
+            pyd_item.tier_set.value if pyd_item.tier_set else None
+        ),  # TierSet enum
         created_at=pyd_item.created_at,
         updated_at=pyd_item.updated_at,
     )

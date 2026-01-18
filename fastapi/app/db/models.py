@@ -81,6 +81,7 @@ class Item(Base):
     next_item_id: Mapped[Optional[uuid.UUID]] = mapped_column(nullable=True)
     rating: Mapped[Optional[float]] = mapped_column(nullable=True)
     tier: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)
+    tier_set: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -90,3 +91,38 @@ class Item(Base):
 
     # Relationships
     list: Mapped[List] = relationship("List", back_populates="items")
+
+
+class ComparisonSession(Base):
+    """Comparison session model for persisting active comparison sessions."""
+
+    __tablename__ = "comparison_sessions"
+
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, index=True, default=uuid.uuid4
+    )
+    list_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("lists.list_id"))
+    new_item_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("items.item_id"))
+    target_item_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("items.item_id"), nullable=True
+    )
+    tier_set: Mapped[str] = mapped_column(String(10))
+    min_index: Mapped[int] = mapped_column(default=0)
+    max_index: Mapped[int] = mapped_column(default=0)
+    comparison_index: Mapped[int] = mapped_column(default=0)
+    is_complete: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    # Relationships
+    list: Mapped[List] = relationship("List")
+    new_item: Mapped[Item] = relationship(
+        "Item", foreign_keys=[new_item_id], lazy="joined"
+    )
+    target_item: Mapped[Optional[Item]] = relationship(
+        "Item", foreign_keys=[target_item_id], lazy="joined"
+    )

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Union
+from typing import List, Union
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +13,7 @@ from app.core.constants import (
     SESSION_NOT_FOUND_ERROR,
 )
 from app.db.database import get_db
+from app.db.models import ComparisonSession as ComparisonSessionModel
 from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
 from app.schemas.item import (
@@ -24,15 +25,44 @@ from app.schemas.item import (
     ItemUpdate,
 )
 from app.schemas.user import User
-from app.utils.helper import (
-    convert_pydantic_to_sqlalchemy,
-    sort_items_linked_list_style,
-)
+from app.utils.helper import sort_items_linked_list_style
 from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 
-session_id_cache = {}
+# Tier assignment mapping: tier_set -> (high_tier, low_tier)
+TIER_SET_MAP = {
+    "good": ("S", "A"),
+    "mid": ("B", "C"),
+    "bad": ("D", "F"),
+}
+
+
+def assign_tiers_for_set(sorted_items: List[ItemModel], tier_set: str) -> None:
+    """
+    Assign tiers to items in a sorted list based on their position.
+    Top 50% gets the higher tier, bottom 50% gets the lower tier.
+
+    Args:
+        sorted_items: Items sorted from lowest to highest rank
+        tier_set: The tier set (good, mid, bad)
+    """
+    if not sorted_items or tier_set not in TIER_SET_MAP:
+        return
+
+    high_tier, low_tier = TIER_SET_MAP[tier_set]
+    total = len(sorted_items)
+
+    # Items are sorted from lowest to highest
+    # Bottom half (first half of list) gets low tier
+    # Top half (second half of list) gets high tier
+    midpoint = total // 2
+
+    for i, item in enumerate(sorted_items):
+        if i < midpoint:
+            item.tier = low_tier
+        else:
+            item.tier = high_tier
 
 
 @router.post("/", response_model=Union[Item, ComparisonSession])
@@ -73,31 +103,78 @@ async def create_item(
         list_id=list_obj.list_id,
         name=item_in.name,
         description=item_in.description,
-        image_url=str(item_in.image_url),
+        image_url=str(item_in.image_url) if item_in.image_url else None,
         prev_item_id=None,
         next_item_id=None,  # Initially unranked
         rating=None,  # Initially unrated
         tier=None,  # Initially unrated
+        tier_set=item_in.tier_set.value,  # Set tier_set from request
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
     )
 
-    # Get all items in the list
-    stmt = select(ItemModel).where(ItemModel.list_id == list_obj.list_id)
+    # Get all items in the list that have the same tier_set
+    stmt = select(ItemModel).where(
+        ItemModel.list_id == list_obj.list_id,
+        ItemModel.tier_set == item_in.tier_set.value,
+    )
     result = await db.execute(stmt)
-    all_items = sort_items_linked_list_style(list(result.scalars().all()))  # type: ignore[arg-type]
+    set_items = list(result.scalars().all())
 
-    if not all_items:
+    # Filter to only items that have been ranked (have a tier assigned)
+    ranked_items = [i for i in set_items if i.tier is not None]
+
+    # If no ranked items exist in this set, this is the first item
+    if not ranked_items:
+        # Assign initial tier based on tier_set (lower tier since it's the only item)
+        tier_map = {"good": "A", "mid": "C", "bad": "F"}
+        item_obj.tier = tier_map[item_in.tier_set.value]
         db.add(item_obj)
         await db.commit()
         await db.refresh(item_obj)
         return item_obj  # type: ignore[return-value]
 
-    # Initialize comparison
+    # Sort the ranked items by linked list order
+    try:
+        all_items = sort_items_linked_list_style(ranked_items)  # type: ignore[arg-type]
+    except ValueError:
+        # Invalid linked list structure, treat as empty
+        tier_map = {"good": "A", "mid": "C", "bad": "F"}
+        item_obj.tier = tier_map[item_in.tier_set.value]
+        db.add(item_obj)
+        await db.commit()
+        await db.refresh(item_obj)
+        return item_obj  # type: ignore[return-value]
+
+    # Initialize comparison - save new item first to get a valid item_id
+    db.add(item_obj)
+    await db.flush()
+
     middle = len(all_items) // 2
+    target_item = all_items[middle]
+
+    # Create session in database
+    session_id = uuid.uuid4()
+    db_session = ComparisonSessionModel(
+        session_id=session_id,
+        list_id=list_obj.list_id,
+        new_item_id=item_obj.item_id,
+        target_item_id=target_item.item_id,
+        tier_set=item_in.tier_set.value,
+        min_index=0,
+        max_index=len(all_items) - 1,
+        comparison_index=middle,
+        is_complete=False,
+    )
+    db.add(db_session)
+    await db.commit()
+    await db.refresh(db_session)
+    await db.refresh(item_obj)
+
+    # Build response
     comparison = Comparison(
         reference_item=item_obj,  # type: ignore[arg-type]
-        target_item=all_items[middle],  # type: ignore[arg-type]
+        target_item=target_item,  # type: ignore[arg-type]
         min_index=0,
         comparison_index=middle,
         max_index=len(all_items) - 1,
@@ -105,20 +182,15 @@ async def create_item(
         done=False,
     )
 
-    # Create session ID (using timestamp for simplicity)
-    session_id = f"session_{int(datetime.now(timezone.utc).timestamp())}"
-
     comparison_session = ComparisonSession(
-        session_id=session_id,
+        session_id=str(session_id),
         list_id=list_obj.list_id,
         item_id=item_obj.item_id,
         current_comparison=comparison,
         is_complete=False,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=db_session.created_at,
+        updated_at=db_session.updated_at,
     )
-
-    session_id_cache[session_id] = comparison_session
 
     return comparison_session
 
@@ -144,74 +216,148 @@ async def submit_comparison_result(
         Final ranking result if comparisons are complete
         None if session is invalid/expired
     """
-    comparison_session = session_id_cache.get(session_id)
-    if not comparison_session:
+    # Parse session_id as UUID
+    try:
+        session_uuid = uuid.UUID(session_id)
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=COMPARISON_SESSION_NOT_FOUND_ERROR,
         )
 
-    # Get all items in the list
-    stmt = select(ItemModel).where(ItemModel.list_id == comparison_session.list_id)
+    # Load session from database
+    stmt = select(ComparisonSessionModel).where(
+        ComparisonSessionModel.session_id == session_uuid,
+        ComparisonSessionModel.is_complete == False,  # noqa: E712
+    )
     result = await db.execute(stmt)
-    all_items = sort_items_linked_list_style(list(result.scalars().all()))  # type: ignore[arg-type]
+    db_session = result.scalar_one_or_none()
 
-    # Find next comparison
-    assert comparison_session.current_comparison is not None
-    comparison_session.current_comparison.is_winner = result_request.result == "better"
-    comparison_session.current_comparison = find_next_comparison(
-        all_items, comparison_session.current_comparison
+    if not db_session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=COMPARISON_SESSION_NOT_FOUND_ERROR,
+        )
+
+    # Verify list ownership
+    list_stmt = select(ListModel).where(
+        ListModel.list_id == db_session.list_id,
+        ListModel.user_id == current_user.user_id,
+    )
+    list_result = await db.execute(list_stmt)
+    if not list_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=COMPARISON_SESSION_NOT_FOUND_ERROR,
+        )
+
+    ref_tier_set = db_session.tier_set
+
+    # Get all ranked items in the list with the same tier_set
+    stmt = select(ItemModel).where(
+        ItemModel.list_id == db_session.list_id,
+        ItemModel.tier_set == ref_tier_set,
+    )
+    result = await db.execute(stmt)
+    set_items = list(result.scalars().all())
+
+    # Filter to ranked items only (exclude the new item being ranked)
+    ranked_items = [
+        i
+        for i in set_items
+        if i.tier is not None and i.item_id != db_session.new_item_id
+    ]
+    all_items = sort_items_linked_list_style(ranked_items)  # type: ignore[arg-type]
+
+    # Get the new item and current target item
+    new_item_stmt = select(ItemModel).where(ItemModel.item_id == db_session.new_item_id)
+    new_item_result = await db.execute(new_item_stmt)
+    new_item = new_item_result.scalar_one_or_none()
+
+    target_item_stmt = select(ItemModel).where(
+        ItemModel.item_id == db_session.target_item_id
+    )
+    target_item_result = await db.execute(target_item_stmt)
+    target_item = target_item_result.scalar_one_or_none()
+
+    if not new_item or not target_item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=ITEM_NOT_FOUND_ERROR
+        )
+
+    # Build the current comparison state
+    comparison = Comparison(
+        reference_item=new_item,  # type: ignore[arg-type]
+        target_item=target_item,  # type: ignore[arg-type]
+        min_index=db_session.min_index,
+        comparison_index=db_session.comparison_index,
+        max_index=db_session.max_index,
+        is_winner=result_request.result == "better",
+        done=False,
     )
 
-    if comparison_session.current_comparison.done:
+    # Find next comparison
+    comparison = find_next_comparison(all_items, comparison)
+
+    if comparison.done:
         # Set reference item pointers
-        if comparison_session.current_comparison.is_winner:
-            comparison_session.current_comparison.reference_item.prev_item_id = (
-                comparison_session.current_comparison.target_item.item_id
-            )
-            comparison_session.current_comparison.reference_item.next_item_id = (
-                comparison_session.current_comparison.target_item.next_item_id
-            )
+        if comparison.is_winner:
+            new_item.prev_item_id = comparison.target_item.item_id
+            new_item.next_item_id = comparison.target_item.next_item_id
         else:
-            comparison_session.current_comparison.reference_item.next_item_id = (
-                comparison_session.current_comparison.target_item.item_id
-            )
-            comparison_session.current_comparison.reference_item.prev_item_id = (
-                comparison_session.current_comparison.target_item.prev_item_id
-            )
+            new_item.next_item_id = comparison.target_item.item_id
+            new_item.prev_item_id = comparison.target_item.prev_item_id
 
-        db.add(
-            convert_pydantic_to_sqlalchemy(
-                comparison_session.current_comparison.reference_item
-            )
-        )
-        await db.commit()
-        stmt = select(ItemModel).where(
-            ItemModel.item_id
-            == comparison_session.current_comparison.target_item.item_id
-        )
-        result = await db.execute(stmt)
-        item = result.scalar_one_or_none()
+        new_item.updated_at = datetime.now(timezone.utc)
+        db.add(new_item)
+        await db.flush()
 
-        if item is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=ITEM_NOT_FOUND_ERROR
-            )
-
-        # Apply in-place updates
-        if comparison_session.current_comparison.is_winner:
-            item.next_item_id = (
-                comparison_session.current_comparison.reference_item.item_id
-            )
+        # Update target item pointer
+        if comparison.is_winner:
+            target_item.next_item_id = new_item.item_id
         else:
-            item.prev_item_id = (
-                comparison_session.current_comparison.reference_item.item_id
-            )
-        item.updated_at = datetime.now(timezone.utc)  # optional
+            target_item.prev_item_id = new_item.item_id
+        target_item.updated_at = datetime.now(timezone.utc)
 
         await db.flush()
-        session_id_cache.pop(session_id)
+
+        # Recalculate tiers for all items in this tier_set
+        stmt = select(ItemModel).where(
+            ItemModel.list_id == db_session.list_id,
+            ItemModel.tier_set == ref_tier_set,
+        )
+        result = await db.execute(stmt)
+        all_set_items = list(result.scalars().all())
+
+        try:
+            sorted_items = sort_items_linked_list_style(all_set_items)  # type: ignore[arg-type]
+            assign_tiers_for_set(sorted_items, ref_tier_set)  # type: ignore[arg-type]
+        except ValueError:
+            pass  # Linked list invalid, skip tier assignment
+
+        # Mark session as complete
+        db_session.is_complete = True
+        await db.commit()
         return None
+
+    # Update session in database with new comparison state
+    db_session.target_item_id = comparison.target_item.item_id
+    db_session.min_index = comparison.min_index
+    db_session.max_index = comparison.max_index
+    db_session.comparison_index = comparison.comparison_index
+    await db.commit()
+    await db.refresh(db_session)
+
+    # Build response
+    comparison_session = ComparisonSession(
+        session_id=str(db_session.session_id),
+        list_id=db_session.list_id,
+        item_id=db_session.new_item_id,
+        current_comparison=comparison,
+        is_complete=False,
+        created_at=db_session.created_at,
+        updated_at=db_session.updated_at,
+    )
 
     return comparison_session
 
@@ -362,11 +508,76 @@ async def get_comparison_status(
     Returns:
         Current status of the comparison session
     """
-    comparison_session = session_id_cache.get(session_id)
-    if not comparison_session:
+    # Parse session_id as UUID
+    try:
+        session_uuid = uuid.UUID(session_id)
+    except ValueError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=SESSION_NOT_FOUND_ERROR,
         )
 
-    return comparison_session
+    # Load session from database
+    stmt = select(ComparisonSessionModel).where(
+        ComparisonSessionModel.session_id == session_uuid,
+    )
+    result = await db.execute(stmt)
+    db_session = result.scalar_one_or_none()
+
+    if not db_session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=SESSION_NOT_FOUND_ERROR,
+        )
+
+    # Verify list ownership
+    list_stmt = select(ListModel).where(
+        ListModel.list_id == db_session.list_id,
+        ListModel.user_id == current_user.user_id,
+    )
+    list_result = await db.execute(list_stmt)
+    if not list_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=SESSION_NOT_FOUND_ERROR,
+        )
+
+    # Get the new item and current target item
+    new_item_stmt = select(ItemModel).where(ItemModel.item_id == db_session.new_item_id)
+    new_item_result = await db.execute(new_item_stmt)
+    new_item = new_item_result.scalar_one_or_none()
+
+    target_item_stmt = select(ItemModel).where(
+        ItemModel.item_id == db_session.target_item_id
+    )
+    target_item_result = await db.execute(target_item_stmt)
+    target_item = target_item_result.scalar_one_or_none()
+
+    if not new_item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=ITEM_NOT_FOUND_ERROR,
+        )
+
+    # Build comparison if session is not complete
+    comparison = None
+    if not db_session.is_complete and target_item:
+        comparison = Comparison(
+            reference_item=new_item,  # type: ignore[arg-type]
+            target_item=target_item,  # type: ignore[arg-type]
+            min_index=db_session.min_index,
+            comparison_index=db_session.comparison_index,
+            max_index=db_session.max_index,
+            is_winner=None,
+            done=False,
+        )
+
+    return ComparisonSession(
+        session_id=str(db_session.session_id),
+        list_id=db_session.list_id,
+        item_id=db_session.new_item_id,
+        current_comparison=comparison,
+        is_complete=db_session.is_complete,
+        created_at=db_session.created_at,
+        updated_at=db_session.updated_at,
+    )

@@ -11,8 +11,10 @@ from app.core.constants import LIST_ALREADY_EXISTS_ERROR, LIST_NOT_FOUND_ERROR
 from app.db.database import get_db
 from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
+from app.schemas.item import Item
 from app.schemas.list import List, ListSimple, ListUpdate
 from app.schemas.user import User
+from app.utils.helper import sort_items_linked_list_style
 from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
@@ -154,6 +156,45 @@ async def read_list(
         "created_at": list_obj.created_at,
         "updated_at": list_obj.updated_at,
     }
+
+
+@router.get("/{list_id}/items", response_model=TypeList[Item])
+async def read_list_items(
+    list_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Get all items for a list, ordered by tier then by linked list position.
+    """
+    # Verify list exists and belongs to current user
+    query = select(ListModel).where(
+        ListModel.list_id == list_id, ListModel.user_id == current_user.user_id
+    )
+    result = await db.execute(query)
+    list_obj = result.scalar_one_or_none()
+
+    if not list_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
+        )
+
+    # Fetch all items for this list
+    items_query = select(ItemModel).where(ItemModel.list_id == list_id)
+    items_result = await db.execute(items_query)
+    items = list(items_result.scalars().all())
+
+    if not items:
+        return []
+
+    # Try to sort by linked list order, fall back to unsorted if structure is invalid
+    try:
+        sorted_items = sort_items_linked_list_style(items)
+    except ValueError:
+        # Linked list structure invalid, return unsorted
+        sorted_items = items
+
+    return sorted_items
 
 
 @router.put("/{list_id}", response_model=List)

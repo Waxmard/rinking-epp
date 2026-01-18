@@ -27,6 +27,7 @@ class TestCreateItem:
                 "name": "First Item",
                 "description": "The first item",
                 "image_url": "https://example.com/first.jpg",
+                "tier_set": "good",
             },
             headers=auth_headers,
         )
@@ -35,6 +36,8 @@ class TestCreateItem:
         assert data["name"] == "First Item"
         assert data["description"] == "The first item"
         assert "item_id" in data
+        assert data["tier_set"] == "good"
+        assert data["tier"] == "A"  # First item gets lower tier
 
         # Verify item was created in database
         result = await test_db.execute(
@@ -70,6 +73,7 @@ class TestCreateItem:
                 "name": "Second Item",
                 "description": "The second item",
                 "image_url": "https://example.com/second.jpg",
+                "tier_set": "good",
             },
             headers=auth_headers,
         )
@@ -85,13 +89,12 @@ class TestCreateItem:
         assert "target_item" in comparison
         assert comparison["reference_item"]["name"] == "Second Item"
 
-        # Note: Second item is NOT yet committed to database during comparison
-        # It will only be saved when comparison is complete
+        # Second item is saved to database during comparison (but not yet ranked)
         result = await test_db.execute(
             select(ItemModel).where(ItemModel.list_id == test_list.list_id)
         )
         items_after = result.scalars().all()
-        assert len(items_after) == 1  # Still only 1 item until comparison completes
+        assert len(items_after) == 2  # Both items exist now
 
     async def test_create_item_unauthenticated(
         self, client: AsyncClient, test_list: ListModel
@@ -104,6 +107,7 @@ class TestCreateItem:
                 "name": "New Item",
                 "description": "Description",
                 "image_url": "https://example.com/image.jpg",
+                "tier_set": "good",
             },
         )
         assert response.status_code == 401
@@ -119,6 +123,7 @@ class TestCreateItem:
                 "name": "New Item",
                 "description": "Description",
                 "image_url": "https://example.com/image.jpg",
+                "tier_set": "good",
             },
             headers=auth_headers,
         )
@@ -135,6 +140,7 @@ class TestCreateItem:
                 "name": "New Item",
                 "description": "Description",
                 "image_url": "https://example.com/image.jpg",
+                "tier_set": "good",
             },
             headers=auth_headers_user2,
         )
@@ -161,6 +167,7 @@ class TestComparisonFlow:
                 "name": "Better Item",
                 "description": "A better item",
                 "image_url": "https://example.com/better.jpg",
+                "tier_set": "good",
             },
             headers=auth_headers,
         )
@@ -193,6 +200,7 @@ class TestComparisonFlow:
                 "name": "Worse Item",
                 "description": "A worse item",
                 "image_url": "https://example.com/worse.jpg",
+                "tier_set": "good",
             },
             headers=auth_headers,
         )
@@ -237,6 +245,7 @@ class TestComparisonFlow:
                 "name": "New Item",
                 "description": "Description",
                 "image_url": "https://example.com/new.jpg",
+                "tier_set": "good",
             },
             headers=auth_headers,
         )
