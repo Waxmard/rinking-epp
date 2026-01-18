@@ -114,12 +114,12 @@ async def create_item(
     )
 
     # Get all items in the list that have the same tier_set
-    stmt = select(ItemModel).where(
+    items_stmt = select(ItemModel).where(
         ItemModel.list_id == list_obj.list_id,
         ItemModel.tier_set == item_in.tier_set.value,
     )
-    result = await db.execute(stmt)
-    set_items = list(result.scalars().all())
+    items_result = await db.execute(items_stmt)
+    set_items = list(items_result.scalars().all())
 
     # Filter to only items that have been ranked (have a tier assigned)
     ranked_items = [i for i in set_items if i.tier is not None]
@@ -254,12 +254,12 @@ async def submit_comparison_result(
     ref_tier_set = db_session.tier_set
 
     # Get all ranked items in the list with the same tier_set
-    stmt = select(ItemModel).where(
+    items_stmt = select(ItemModel).where(
         ItemModel.list_id == db_session.list_id,
         ItemModel.tier_set == ref_tier_set,
     )
-    result = await db.execute(stmt)
-    set_items = list(result.scalars().all())
+    items_result = await db.execute(items_stmt)
+    set_items = list(items_result.scalars().all())
 
     # Filter to ranked items only (exclude the new item being ranked)
     ranked_items = [
@@ -322,12 +322,12 @@ async def submit_comparison_result(
         await db.flush()
 
         # Recalculate tiers for all items in this tier_set
-        stmt = select(ItemModel).where(
+        rebalance_stmt = select(ItemModel).where(
             ItemModel.list_id == db_session.list_id,
             ItemModel.tier_set == ref_tier_set,
         )
-        result = await db.execute(stmt)
-        all_set_items = list(result.scalars().all())
+        rebalance_result = await db.execute(rebalance_stmt)
+        all_set_items = list(rebalance_result.scalars().all())
 
         try:
             sorted_items = sort_items_linked_list_style(all_set_items)  # type: ignore[arg-type]
