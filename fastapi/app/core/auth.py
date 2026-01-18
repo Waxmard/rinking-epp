@@ -83,7 +83,7 @@ async def get_current_user(
     return user
 
 
-async def get_current_admin_user(
+def get_current_admin_user(
     current_user: UserModel = Depends(get_current_user),
 ) -> UserModel:
     """Require the current user to be an admin."""
