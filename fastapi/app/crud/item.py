@@ -49,6 +49,7 @@ async def get_by_list_and_tier_set(
 async def create(db: AsyncSession, item: ItemModel) -> ItemModel:
     """Create a new item (add to session, commit not performed)."""
     db.add(item)
+    await db.flush()
     return item
 
 
@@ -61,6 +62,7 @@ async def update(
             value = str(value)
         setattr(item, field, value)
     db.add(item)
+    await db.flush()
     return item
 
 

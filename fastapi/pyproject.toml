@@ -69,4 +69,19 @@ ignore_missing_imports = true
 dev = [
     "pre-commit>=4.3.0",
     "pytest-cov>=7.0.0",
+    "pylint>=3.0.0",
+    "bandit>=1.7.0",
 ]
+
+[tool.pylint.messages_control]
+disable = [
+    "missing-docstring",
+    "too-few-public-methods",
+    "import-error",
+]
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.bandit]
+exclude_dirs = ["tests"]

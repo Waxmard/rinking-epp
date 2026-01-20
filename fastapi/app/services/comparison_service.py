@@ -98,8 +98,7 @@ def build_comparison_session_response(
     )
 
 
-async def process_comparison_result(
-    db: AsyncSession,
+def process_comparison_result(
     db_session: ComparisonSessionModel,
     is_winner: bool,
     new_item: ItemModel,
@@ -110,7 +109,6 @@ async def process_comparison_result(
     Process a comparison result and determine the next step.
 
     Args:
-        db: Database session
         db_session: The comparison session
         is_winner: Whether the new item won the comparison
         new_item: The new item being ranked

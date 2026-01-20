@@ -194,8 +194,8 @@ async def submit_comparison_result(
 
     # Process the comparison result
     is_winner = result_request.result == "better"
-    comparison = await process_comparison_result(
-        db, db_session, is_winner, new_item, target_item, ranked_items
+    comparison = process_comparison_result(
+        db_session, is_winner, new_item, target_item, ranked_items
     )
 
     if comparison.done:

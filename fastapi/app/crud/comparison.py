@@ -26,7 +26,7 @@ async def get_active(
     result = await db.execute(
         select(ComparisonSessionModel).where(
             ComparisonSessionModel.session_id == session_id,
-            ComparisonSessionModel.is_complete == False,  # noqa: E712
+            ComparisonSessionModel.is_complete.is_(False),
         )
     )
     return result.scalar_one_or_none()
@@ -37,10 +37,11 @@ async def create(
 ) -> ComparisonSessionModel:
     """Create a new comparison session."""
     db.add(session)
+    await db.flush()
     return session
 
 
-async def update(
+async def update(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     db: AsyncSession,
     session: ComparisonSessionModel,
     target_item_id: uuid.UUID,
@@ -53,12 +54,15 @@ async def update(
     session.min_index = min_index
     session.max_index = max_index
     session.comparison_index = comparison_index
+    await db.flush()
     return session
 
 
 async def mark_complete(
-    db: AsyncSession, session: ComparisonSessionModel
+    db: AsyncSession,
+    session: ComparisonSessionModel,
 ) -> ComparisonSessionModel:
     """Mark a comparison session as complete."""
     session.is_complete = True
+    await db.flush()
     return session
