@@ -1,7 +1,6 @@
 from typing import List
 
 from app.db.models import Item as ItemModel
-from app.schemas.item import Item
 
 
 def sort_items_linked_list_style(all_items: List[ItemModel]) -> List[ItemModel]:
@@ -34,24 +33,3 @@ def sort_items_linked_list_style(all_items: List[ItemModel]) -> List[ItemModel]:
         ordered_items.append(current)
 
     return ordered_items
-
-
-def convert_pydantic_to_sqlalchemy(pyd_item: Item) -> ItemModel:
-    return ItemModel(
-        item_id=pyd_item.item_id,
-        list_id=pyd_item.list_id,
-        name=pyd_item.name,
-        description=pyd_item.description,
-        image_url=str(pyd_item.image_url) if pyd_item.image_url else None,
-        prev_item_id=pyd_item.prev_item_id,
-        next_item_id=pyd_item.next_item_id,
-        rating=pyd_item.rating,
-        tier=(
-            pyd_item.tier.value if pyd_item.tier else None
-        ),  # assuming TierRank is an Enum
-        tier_set=(
-            pyd_item.tier_set.value if pyd_item.tier_set else None
-        ),  # TierSet enum
-        created_at=pyd_item.created_at,
-        updated_at=pyd_item.updated_at,
-    )

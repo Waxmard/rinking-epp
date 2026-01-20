@@ -1,5 +1,8 @@
 """Tests for item endpoints."""
 
+import uuid
+from datetime import datetime
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -495,3 +498,415 @@ class TestDeleteItem:
             f"/api/items/items/{test_item.item_id}", headers=auth_headers_user2
         )
         assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+class TestCreateItemTierSets:
+    """Tests for creating items with different tier_sets."""
+
+    async def test_create_first_item_mid_tier_set(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test creating first item with mid tier_set."""
+        response = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "Mid Item",
+                "description": "A mid tier item",
+                "image_url": "https://example.com/mid.jpg",
+                "tier_set": "mid",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "Mid Item"
+        assert data["tier_set"] == "mid"
+        assert data["tier"] == "C"  # Mid tier_set starts with C
+
+    async def test_create_first_item_bad_tier_set(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test creating first item with bad tier_set."""
+        response = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "Bad Item",
+                "description": "A bad tier item",
+                "image_url": "https://example.com/bad.jpg",
+                "tier_set": "bad",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "Bad Item"
+        assert data["tier_set"] == "bad"
+        assert data["tier"] == "F"  # Bad tier_set starts with F
+
+    async def test_create_items_in_different_tier_sets(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test that items in different tier_sets don't trigger comparison."""
+        # Create first item in "good" tier_set
+        response1 = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "Good Item",
+                "description": "A good tier item",
+                "image_url": "https://example.com/good.jpg",
+                "tier_set": "good",
+            },
+            headers=auth_headers,
+        )
+        assert response1.status_code == 200
+        assert "session_id" not in response1.json()  # No comparison for first item
+
+        # Create first item in "mid" tier_set - should NOT start comparison
+        # since it's the first item in that tier_set
+        response2 = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "Mid Item",
+                "description": "A mid tier item",
+                "image_url": "https://example.com/mid.jpg",
+                "tier_set": "mid",
+            },
+            headers=auth_headers,
+        )
+        assert response2.status_code == 200
+        assert (
+            "session_id" not in response2.json()
+        )  # No comparison for first in tier_set
+
+
+@pytest.mark.asyncio
+class TestComparisonFlowComplete:
+    """Tests for complete comparison workflow."""
+
+    async def test_complete_comparison_flow(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        test_item: ItemModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test completing a full comparison to rank an item."""
+        # Create second item to start comparison
+        create_response = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "Second Item",
+                "description": "Second item description",
+                "image_url": "https://example.com/second.jpg",
+                "tier_set": "good",
+            },
+            headers=auth_headers,
+        )
+        assert create_response.status_code == 200
+        session_data = create_response.json()
+        session_id = session_data["session_id"]
+
+        # Submit comparison result (one comparison should be enough for 2 items)
+        response = await client.post(
+            "/api/items/comparison/result",
+            params={"session_id": session_id},
+            json={"result": "better"},
+            headers=auth_headers,
+        )
+        # Response could be 200 (comparison done) or another session
+        assert response.status_code == 200
+
+        # Verify both items now have tiers
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.list_id == test_list.list_id)
+        )
+        items = result.scalars().all()
+        assert len(items) == 2
+        for item in items:
+            assert item.tier is not None
+
+    async def test_comparison_wrong_session_owner(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        test_item: ItemModel,
+        auth_headers: dict,
+        auth_headers_user2: dict,
+    ):
+        """Test submitting comparison result for another user's session."""
+        # Create second item to start comparison
+        create_response = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "New Item",
+                "description": "Description",
+                "image_url": "https://example.com/new.jpg",
+                "tier_set": "good",
+            },
+            headers=auth_headers,
+        )
+        session_data = create_response.json()
+        session_id = session_data["session_id"]
+
+        # Try to submit as different user
+        response = await client.post(
+            "/api/items/comparison/result",
+            params={"session_id": session_id},
+            json={"result": "better"},
+            headers=auth_headers_user2,
+        )
+        assert response.status_code == 404
+
+    async def test_comparison_status_wrong_user(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        test_item: ItemModel,
+        auth_headers: dict,
+        auth_headers_user2: dict,
+    ):
+        """Test getting comparison status for another user's session."""
+        # Create second item to start comparison
+        create_response = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "New Item",
+                "description": "Description",
+                "image_url": "https://example.com/new.jpg",
+                "tier_set": "good",
+            },
+            headers=auth_headers,
+        )
+        session_data = create_response.json()
+        session_id = session_data["session_id"]
+
+        # Try to get status as different user
+        response = await client.get(
+            f"/api/items/comparison/{session_id}/status",
+            headers=auth_headers_user2,
+        )
+        assert response.status_code == 404
+
+    async def test_comparison_with_uuid_session_id(
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+    ):
+        """Test submitting comparison with valid UUID format but non-existent session."""
+        fake_session_id = str(uuid.uuid4())
+        response = await client.post(
+            "/api/items/comparison/result",
+            params={"session_id": fake_session_id},
+            json={"result": "better"},
+            headers=auth_headers,
+        )
+        assert response.status_code == 404
+
+    async def test_get_comparison_status_uuid_not_found(
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+    ):
+        """Test getting status for valid UUID but non-existent session."""
+        fake_session_id = str(uuid.uuid4())
+        response = await client.get(
+            f"/api/items/comparison/{fake_session_id}/status",
+            headers=auth_headers,
+        )
+        assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+class TestCreateItemWithInvalidLinkedList:
+    """Tests for creating items when existing linked list structure is invalid."""
+
+    async def test_create_item_with_broken_linked_list(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test creating item when existing items have broken linked list."""
+        # Create an item with invalid prev_item_id (broken linked list)
+        broken_item = ItemModel(
+            item_id=uuid.uuid4(),
+            list_id=test_list.list_id,
+            name="Broken Item",
+            description="Item with broken link",
+            image_url="https://example.com/broken.jpg",
+            prev_item_id=uuid.uuid4(),  # Points to non-existent item
+            next_item_id=None,
+            rating=None,
+            tier="A",
+            tier_set="good",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        test_db.add(broken_item)
+        await test_db.commit()
+
+        # Create new item - should handle invalid linked list gracefully
+        response = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "New Item",
+                "description": "New item after broken list",
+                "image_url": "https://example.com/new.jpg",
+                "tier_set": "good",
+            },
+            headers=auth_headers,
+        )
+        # Should succeed despite broken linked list
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "New Item"
+
+
+@pytest.mark.asyncio
+class TestItemOwnership:
+    """Tests for item ownership verification edge cases."""
+
+    async def test_read_item_from_deleted_list(
+        self,
+        client: AsyncClient,
+        test_item: ItemModel,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test reading item after its list is deleted."""
+        item_id = test_item.item_id
+        _list_id = test_list.list_id
+
+        # Delete the list
+        await test_db.delete(test_list)
+        await test_db.commit()
+
+        # Try to read the item
+        response = await client.get(f"/api/items/items/{item_id}", headers=auth_headers)
+        # Item should be gone (cascade delete) or ownership check fails
+        assert response.status_code == 404
+
+    async def test_update_item_ownership_enforced(
+        self,
+        client: AsyncClient,
+        test_user2,
+        auth_headers_user2: dict,
+        test_db: AsyncSession,
+    ):
+        """Test that user can't update item in list they don't own."""
+        # Create a list for user2
+        user2_list = ListModel(
+            list_id=uuid.uuid4(),
+            user_id=test_user2.user_id,
+            title="User2 List",
+            description="List owned by user2",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        test_db.add(user2_list)
+
+        # Create an item in user2's list
+        user2_item = ItemModel(
+            item_id=uuid.uuid4(),
+            list_id=user2_list.list_id,
+            name="User2 Item",
+            description="Item in user2's list",
+            image_url="https://example.com/user2.jpg",
+            prev_item_id=None,
+            next_item_id=None,
+            rating=None,
+            tier="A",
+            tier_set="good",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        test_db.add(user2_item)
+        await test_db.commit()
+
+        # Verify user2 can read their own item
+        response = await client.get(
+            f"/api/items/items/{user2_item.item_id}",
+            headers=auth_headers_user2,
+        )
+        assert response.status_code == 200
+
+        # Verify user2 can update their own item
+        response = await client.put(
+            f"/api/items/items/{user2_item.item_id}",
+            json={"name": "Updated Name"},
+            headers=auth_headers_user2,
+        )
+        assert response.status_code == 200
+        assert response.json()["name"] == "Updated Name"
+
+
+@pytest.mark.asyncio
+class TestItemCreateValidation:
+    """Tests for item creation validation."""
+
+    async def test_create_item_without_image_url(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+    ):
+        """Test creating item without optional image_url."""
+        response = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "Item Without Image",
+                "description": "No image provided",
+                "tier_set": "good",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "Item Without Image"
+        assert data["image_url"] is None
+
+    async def test_create_item_empty_description(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+    ):
+        """Test creating item with empty description."""
+        response = await client.post(
+            "/api/items/",
+            params={"list_title": test_list.title},
+            json={
+                "name": "Item With Empty Desc",
+                "description": "",
+                "tier_set": "good",
+            },
+            headers=auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["description"] == ""

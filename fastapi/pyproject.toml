@@ -85,3 +85,24 @@ max-line-length = 88
 
 [tool.bandit]
 exclude_dirs = ["tests"]
+
+[tool.coverage.run]
+source = ["app"]
+concurrency = ["greenlet", "thread"]
+omit = [
+    "app/__init__.py",
+    "app/main.py",
+    "app/settings.py",
+    "app/db/database.py",
+    "app/*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
