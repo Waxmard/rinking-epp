@@ -2,6 +2,7 @@
 
 import uuid
 from datetime import datetime
+from typing import Callable
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,45 +25,50 @@ from app.services.ranking import (
 )
 
 
+def create_test_item(
+    name: str = "Test Item",
+    tier: str | None = "A",
+    tier_set: str = "good",
+    list_id: uuid.UUID | None = None,
+    item_id: uuid.UUID | None = None,
+    prev_item_id: uuid.UUID | None = None,
+    next_item_id: uuid.UUID | None = None,
+) -> ItemModel:
+    """Helper function to create ItemModel instances for unit tests."""
+    return ItemModel(
+        item_id=item_id or uuid.uuid4(),
+        list_id=list_id or uuid.uuid4(),
+        name=name,
+        description="",
+        image_url=None,
+        prev_item_id=prev_item_id,
+        next_item_id=next_item_id,
+        rating=None,
+        tier=tier,
+        tier_set=tier_set,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+
+
 @pytest.mark.asyncio
 class TestComparisonService:
     """Tests for comparison service functions."""
 
-    async def test_start_comparison(self, test_db: AsyncSession, test_list: ListModel):
+    async def test_start_comparison(
+        self,
+        test_db: AsyncSession,
+        test_list: ListModel,
+        item_factory: Callable[..., ItemModel],
+    ):
         """Test starting a comparison session."""
         # Create ranked items for comparison
-        item1 = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=test_list.list_id,
-            name="Ranked Item 1",
-            description="First ranked item",
-            image_url=None,
-            prev_item_id=None,
-            next_item_id=None,
-            rating=None,
-            tier="A",
-            tier_set="good",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        item1 = item_factory(name="Ranked Item 1")
         test_db.add(item1)
         await test_db.commit()
 
         # Create new item to rank
-        new_item = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=test_list.list_id,
-            name="New Item",
-            description="Item to be ranked",
-            image_url=None,
-            prev_item_id=None,
-            next_item_id=None,
-            rating=None,
-            tier=None,
-            tier_set="good",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        new_item = item_factory(name="New Item", tier=None)
         test_db.add(new_item)
         await test_db.commit()
 
@@ -80,7 +86,7 @@ class TestComparisonService:
         assert session.new_item_id == new_item.item_id
         assert session.is_complete is False
 
-    async def test_build_comparison_session_response_complete(
+    def test_build_comparison_session_response_complete(
         self, test_db: AsyncSession, test_list: ListModel, test_item: ItemModel
     ):
         """Test building response for completed session."""
@@ -104,7 +110,7 @@ class TestComparisonService:
         assert response.is_complete is True
         assert response.current_comparison is None
 
-    async def test_build_comparison_session_response_with_comparison(
+    def test_build_comparison_session_response_with_comparison(
         self, test_db: AsyncSession, test_list: ListModel, test_item: ItemModel
     ):
         """Test building response with pre-built comparison."""
@@ -142,42 +148,19 @@ class TestComparisonService:
         assert response.current_comparison.comparison_index == 2
 
     async def test_finalize_comparison_winner(
-        self, test_db: AsyncSession, test_list: ListModel
+        self,
+        test_db: AsyncSession,
+        test_list: ListModel,
+        item_factory: Callable[..., ItemModel],
     ):
         """Test finalizing comparison when new item wins."""
         # Create target item (existing ranked item)
-        target_item = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=test_list.list_id,
-            name="Target Item",
-            description="Existing item",
-            image_url=None,
-            prev_item_id=None,
-            next_item_id=None,
-            rating=None,
-            tier="A",
-            tier_set="good",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        target_item = item_factory(name="Target Item")
         test_db.add(target_item)
         await test_db.commit()
 
         # Create new item
-        new_item = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=test_list.list_id,
-            name="New Item",
-            description="New ranked item",
-            image_url=None,
-            prev_item_id=None,
-            next_item_id=None,
-            rating=None,
-            tier=None,
-            tier_set="good",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        new_item = item_factory(name="New Item", tier=None)
         test_db.add(new_item)
         await test_db.commit()
 
@@ -225,42 +208,19 @@ class TestComparisonService:
         assert target_item.next_item_id == new_item.item_id
 
     async def test_finalize_comparison_loser(
-        self, test_db: AsyncSession, test_list: ListModel
+        self,
+        test_db: AsyncSession,
+        test_list: ListModel,
+        item_factory: Callable[..., ItemModel],
     ):
         """Test finalizing comparison when new item loses."""
         # Create target item
-        target_item = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=test_list.list_id,
-            name="Target Item",
-            description="Existing item",
-            image_url=None,
-            prev_item_id=None,
-            next_item_id=None,
-            rating=None,
-            tier="A",
-            tier_set="good",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        target_item = item_factory(name="Target Item")
         test_db.add(target_item)
         await test_db.commit()
 
         # Create new item
-        new_item = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=test_list.list_id,
-            name="New Item",
-            description="New ranked item",
-            image_url=None,
-            prev_item_id=None,
-            next_item_id=None,
-            rating=None,
-            tier=None,
-            tier_set="good",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        new_item = item_factory(name="New Item", tier=None)
         test_db.add(new_item)
         await test_db.commit()
 
@@ -308,41 +268,21 @@ class TestComparisonService:
         assert target_item.prev_item_id == new_item.item_id
 
     async def test_finalize_comparison_invalid_linked_list(
-        self, test_db: AsyncSession, test_list: ListModel
+        self,
+        test_db: AsyncSession,
+        test_list: ListModel,
+        item_factory: Callable[..., ItemModel],
     ):
         """Test finalizing comparison when linked list is invalid (ValueError recovery)."""
         # Create items with broken linked list structure
-        target_item = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=test_list.list_id,
+        target_item = item_factory(
             name="Target Item",
-            description="Existing item",
-            image_url=None,
             prev_item_id=uuid.uuid4(),  # Points to non-existent item (broken link)
-            next_item_id=None,
-            rating=None,
-            tier="A",
-            tier_set="good",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
         )
         test_db.add(target_item)
         await test_db.commit()
 
-        new_item = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=test_list.list_id,
-            name="New Item",
-            description="New ranked item",
-            image_url=None,
-            prev_item_id=None,
-            next_item_id=None,
-            rating=None,
-            tier=None,
-            tier_set="good",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        new_item = item_factory(name="New Item", tier=None)
         test_db.add(new_item)
         await test_db.commit()
 
@@ -416,57 +356,15 @@ class TestRankingService:
 
     def test_filter_ranked_items_all_ranked(self):
         """Test filtering when all items are ranked."""
-        items = [
-            ItemModel(
-                item_id=uuid.uuid4(),
-                list_id=uuid.uuid4(),
-                name=f"Item {i}",
-                tier="A",
-                tier_set="good",
-                description="",
-                image_url=None,
-                prev_item_id=None,
-                next_item_id=None,
-                rating=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            )
-            for i in range(3)
-        ]
+        items = [create_test_item(name=f"Item {i}") for i in range(3)]
         result = filter_ranked_items(items)
         assert len(result) == 3
 
     def test_filter_ranked_items_excludes_unranked(self):
         """Test that items without tier are excluded."""
         items = [
-            ItemModel(
-                item_id=uuid.uuid4(),
-                list_id=uuid.uuid4(),
-                name="Ranked",
-                tier="A",
-                tier_set="good",
-                description="",
-                image_url=None,
-                prev_item_id=None,
-                next_item_id=None,
-                rating=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            ),
-            ItemModel(
-                item_id=uuid.uuid4(),
-                list_id=uuid.uuid4(),
-                name="Unranked",
-                tier=None,
-                tier_set="good",
-                description="",
-                image_url=None,
-                prev_item_id=None,
-                next_item_id=None,
-                rating=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            ),
+            create_test_item(name="Ranked"),
+            create_test_item(name="Unranked", tier=None),
         ]
         result = filter_ranked_items(items)
         assert len(result) == 1
@@ -476,34 +374,8 @@ class TestRankingService:
         """Test that specific item_id is excluded."""
         exclude_id = uuid.uuid4()
         items = [
-            ItemModel(
-                item_id=uuid.uuid4(),
-                list_id=uuid.uuid4(),
-                name="Item 1",
-                tier="A",
-                tier_set="good",
-                description="",
-                image_url=None,
-                prev_item_id=None,
-                next_item_id=None,
-                rating=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            ),
-            ItemModel(
-                item_id=exclude_id,
-                list_id=uuid.uuid4(),
-                name="Item to exclude",
-                tier="A",
-                tier_set="good",
-                description="",
-                image_url=None,
-                prev_item_id=None,
-                next_item_id=None,
-                rating=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            ),
+            create_test_item(name="Item 1"),
+            create_test_item(name="Item to exclude", item_id=exclude_id),
         ]
         result = filter_ranked_items(items, exclude_id)
         assert len(result) == 1
@@ -512,25 +384,7 @@ class TestRankingService:
     def test_assign_tiers_for_set_good(self):
         """Test tier assignment for 'good' tier_set."""
         list_id = uuid.uuid4()
-        items = []
-
-        # Create 4 items in linked list order
-        for i in range(4):
-            item = ItemModel(
-                item_id=uuid.uuid4(),
-                list_id=list_id,
-                name=f"Item {i}",
-                tier="A",
-                tier_set="good",
-                description="",
-                image_url=None,
-                prev_item_id=None,
-                next_item_id=None,
-                rating=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            )
-            items.append(item)
+        items = [create_test_item(name=f"Item {i}", list_id=list_id) for i in range(4)]
 
         # Set up linked list (already in order for test simplicity)
         for i in range(len(items) - 1):
@@ -546,24 +400,12 @@ class TestRankingService:
     def test_assign_tiers_for_set_mid(self):
         """Test tier assignment for 'mid' tier_set."""
         list_id = uuid.uuid4()
-        items = []
-
-        for i in range(4):
-            item = ItemModel(
-                item_id=uuid.uuid4(),
-                list_id=list_id,
-                name=f"Item {i}",
-                tier="C",
-                tier_set="mid",
-                description="",
-                image_url=None,
-                prev_item_id=None,
-                next_item_id=None,
-                rating=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
+        items = [
+            create_test_item(
+                name=f"Item {i}", tier="C", tier_set="mid", list_id=list_id
             )
-            items.append(item)
+            for i in range(4)
+        ]
 
         for i in range(len(items) - 1):
             items[i].next_item_id = items[i + 1].item_id
@@ -578,24 +420,12 @@ class TestRankingService:
     def test_assign_tiers_for_set_bad(self):
         """Test tier assignment for 'bad' tier_set."""
         list_id = uuid.uuid4()
-        items = []
-
-        for i in range(2):
-            item = ItemModel(
-                item_id=uuid.uuid4(),
-                list_id=list_id,
-                name=f"Item {i}",
-                tier="F",
-                tier_set="bad",
-                description="",
-                image_url=None,
-                prev_item_id=None,
-                next_item_id=None,
-                rating=None,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
+        items = [
+            create_test_item(
+                name=f"Item {i}", tier="F", tier_set="bad", list_id=list_id
             )
-            items.append(item)
+            for i in range(2)
+        ]
 
         for i in range(len(items) - 1):
             items[i].next_item_id = items[i + 1].item_id
@@ -614,21 +444,7 @@ class TestRankingService:
 
     def test_assign_tiers_for_set_unknown_tier_set(self):
         """Test tier assignment with unknown tier_set returns early."""
-        list_id = uuid.uuid4()
-        item = ItemModel(
-            item_id=uuid.uuid4(),
-            list_id=list_id,
-            name="Item",
-            tier="A",
-            tier_set="unknown",
-            description="",
-            image_url=None,
-            prev_item_id=None,
-            next_item_id=None,
-            rating=None,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
-        )
+        item = create_test_item(name="Item", tier_set="unknown")
         original_tier = item.tier
 
         # Should return early without modifying items

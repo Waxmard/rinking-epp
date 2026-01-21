@@ -243,3 +243,38 @@ async def multiple_items(
     for item in items:
         await test_db.refresh(item)
     return items
+
+
+@pytest.fixture
+def item_factory(test_list: ListModel):
+    """Factory fixture for creating ItemModel instances with defaults."""
+    from datetime import datetime
+    import uuid as uuid_module
+
+    def _create_item(
+        name: str = "Test Item",
+        tier: str | None = "A",
+        tier_set: str = "good",
+        description: str = "",
+        image_url: str | None = None,
+        prev_item_id=None,
+        next_item_id=None,
+        rating: float | None = None,
+        list_id=None,
+    ) -> ItemModel:
+        return ItemModel(
+            item_id=uuid_module.uuid4(),
+            list_id=list_id or test_list.list_id,
+            name=name,
+            description=description,
+            image_url=image_url,
+            prev_item_id=prev_item_id,
+            next_item_id=next_item_id,
+            rating=rating,
+            tier=tier,
+            tier_set=tier_set,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+
+    return _create_item
