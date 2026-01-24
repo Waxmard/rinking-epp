@@ -10,6 +10,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Modal,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -143,6 +144,30 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     });
   };
 
+  const handleListLongPress = (list: TierList) => {
+    Alert.alert(
+      'Delete List',
+      'Are you sure you want to delete this list? All items will be permanently deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            if (!token) return;
+            try {
+              await listsService.deleteList(list.id, token);
+              setLists((prev) => prev.filter((l) => l.id !== list.id));
+            } catch (err: any) {
+              console.error('Error deleting list:', err);
+              Alert.alert('Error', err.message || 'Failed to delete list');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleListCreated = (list: CreatedList) => {
     fetchLists();
     setPendingList(list);
@@ -173,6 +198,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => handleListPress(item)}
+        onLongPress={() => handleListLongPress(item)}
         style={[
           styles.cardWrapper,
           isLeftColumn ? styles.cardLeft : styles.cardRight,

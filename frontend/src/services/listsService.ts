@@ -22,4 +22,6 @@ export const listsService = {
       undefined,
       token
     ),
+  deleteList: (listId: string, token: string) =>
+    api.delete<void>(`/api/lists/${listId}`, token),
 };

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -64,6 +65,30 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
     navigation.goBack();
   };
 
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete List',
+      'Are you sure you want to delete this list? All items will be permanently deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            if (!token) return;
+            try {
+              await listsService.deleteList(listId, token);
+              navigation.goBack();
+            } catch (err: any) {
+              console.error('Error deleting list:', err);
+              Alert.alert('Error', err.message || 'Failed to delete list');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleAddPress = () => {
     setShowAddModal(true);
   };
@@ -88,7 +113,13 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
       <Text style={styles.headerTitle} numberOfLines={1}>
         {listTitle}
       </Text>
-      <View style={styles.headerSpacer} />
+      <TouchableOpacity
+        onPress={handleDelete}
+        style={styles.deleteButton}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="trash-outline" size={24} color={AppColors.error} />
+      </TouchableOpacity>
     </View>
   );
 
@@ -198,8 +229,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: AppSpacing.sm,
   },
-  headerSpacer: {
+  deleteButton: {
     width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: -AppSpacing.sm,
   },
   listContent: {
     padding: AppSpacing.lg,
