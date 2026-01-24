@@ -51,6 +51,53 @@ def create_test_item(
     )
 
 
+def create_test_session(
+    list_id: uuid.UUID,
+    new_item_id: uuid.UUID,
+    target_item_id: uuid.UUID,
+    tier_set: str = "good",
+    is_complete: bool = False,
+    min_index: int = 0,
+    max_index: int = 0,
+    comparison_index: int = 0,
+) -> ComparisonSessionModel:
+    """Helper function to create ComparisonSessionModel instances for unit tests."""
+    return ComparisonSessionModel(
+        session_id=uuid.uuid4(),
+        list_id=list_id,
+        new_item_id=new_item_id,
+        target_item_id=target_item_id,
+        tier_set=tier_set,
+        min_index=min_index,
+        max_index=max_index,
+        comparison_index=comparison_index,
+        is_complete=is_complete,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+
+
+def create_test_comparison(
+    reference_item: ItemModel,
+    target_item: ItemModel,
+    min_index: int = 0,
+    max_index: int = 0,
+    comparison_index: int = 0,
+    is_winner: bool | None = None,
+    done: bool = False,
+) -> Comparison:
+    """Helper function to create Comparison schema instances for unit tests."""
+    return Comparison(
+        reference_item=reference_item,  # type: ignore
+        target_item=target_item,  # type: ignore
+        min_index=min_index,
+        comparison_index=comparison_index,
+        max_index=max_index,
+        is_winner=is_winner,
+        done=done,
+    )
+
+
 @pytest.mark.asyncio
 class TestComparisonService:
     """Tests for comparison service functions."""
@@ -90,18 +137,11 @@ class TestComparisonService:
         self, test_db: AsyncSession, test_list: ListModel, test_item: ItemModel
     ):
         """Test building response for completed session."""
-        session = ComparisonSessionModel(
-            session_id=uuid.uuid4(),
+        session = create_test_session(
             list_id=test_list.list_id,
             new_item_id=test_item.item_id,
             target_item_id=test_item.item_id,
-            tier_set="good",
-            min_index=0,
-            max_index=0,
-            comparison_index=0,
             is_complete=True,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
         )
 
         response = build_comparison_session_response(session, test_item, None)
@@ -114,29 +154,19 @@ class TestComparisonService:
         self, test_db: AsyncSession, test_list: ListModel, test_item: ItemModel
     ):
         """Test building response with pre-built comparison."""
-        session = ComparisonSessionModel(
-            session_id=uuid.uuid4(),
+        session = create_test_session(
             list_id=test_list.list_id,
             new_item_id=test_item.item_id,
             target_item_id=test_item.item_id,
-            tier_set="good",
-            min_index=0,
             max_index=5,
             comparison_index=2,
-            is_complete=False,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
         )
 
-        # Create a mock Comparison
-        comparison = Comparison(
-            reference_item=test_item,  # type: ignore
-            target_item=test_item,  # type: ignore
-            min_index=0,
-            comparison_index=2,
+        comparison = create_test_comparison(
+            reference_item=test_item,
+            target_item=test_item,
             max_index=5,
-            is_winner=None,
-            done=False,
+            comparison_index=2,
         )
 
         response = build_comparison_session_response(
@@ -165,27 +195,18 @@ class TestComparisonService:
         await test_db.commit()
 
         # Create session
-        session = ComparisonSessionModel(
-            session_id=uuid.uuid4(),
+        session = create_test_session(
             list_id=test_list.list_id,
             new_item_id=new_item.item_id,
             target_item_id=target_item.item_id,
-            tier_set="good",
-            min_index=0,
-            max_index=0,
-            comparison_index=0,
-            is_complete=False,
         )
         test_db.add(session)
         await test_db.commit()
 
         # Create comparison result (new item wins)
-        comparison = Comparison(
-            reference_item=new_item,  # type: ignore
-            target_item=target_item,  # type: ignore
-            min_index=0,
-            comparison_index=0,
-            max_index=0,
+        comparison = create_test_comparison(
+            reference_item=new_item,
+            target_item=target_item,
             is_winner=True,
             done=True,
         )
@@ -225,27 +246,18 @@ class TestComparisonService:
         await test_db.commit()
 
         # Create session
-        session = ComparisonSessionModel(
-            session_id=uuid.uuid4(),
+        session = create_test_session(
             list_id=test_list.list_id,
             new_item_id=new_item.item_id,
             target_item_id=target_item.item_id,
-            tier_set="good",
-            min_index=0,
-            max_index=0,
-            comparison_index=0,
-            is_complete=False,
         )
         test_db.add(session)
         await test_db.commit()
 
         # Create comparison result (new item loses)
-        comparison = Comparison(
-            reference_item=new_item,  # type: ignore
-            target_item=target_item,  # type: ignore
-            min_index=0,
-            comparison_index=0,
-            max_index=0,
+        comparison = create_test_comparison(
+            reference_item=new_item,
+            target_item=target_item,
             is_winner=False,
             done=True,
         )
@@ -287,27 +299,18 @@ class TestComparisonService:
         await test_db.commit()
 
         # Create session
-        session = ComparisonSessionModel(
-            session_id=uuid.uuid4(),
+        session = create_test_session(
             list_id=test_list.list_id,
             new_item_id=new_item.item_id,
             target_item_id=target_item.item_id,
-            tier_set="good",
-            min_index=0,
-            max_index=0,
-            comparison_index=0,
-            is_complete=False,
         )
         test_db.add(session)
         await test_db.commit()
 
         # Create comparison result
-        comparison = Comparison(
-            reference_item=new_item,  # type: ignore
-            target_item=target_item,  # type: ignore
-            min_index=0,
-            comparison_index=0,
-            max_index=0,
+        comparison = create_test_comparison(
+            reference_item=new_item,
+            target_item=target_item,
             is_winner=True,
             done=True,
         )
