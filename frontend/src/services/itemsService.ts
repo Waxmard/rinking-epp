@@ -28,6 +28,11 @@ export interface CreateItemRequest {
   image_url?: string;
 }
 
+export interface UpdateItemRequest {
+  name?: string;
+  description?: string;
+}
+
 export type CreateItemResponse = Item | ComparisonSession;
 
 // Type guard to check if response is a ComparisonSession
@@ -50,4 +55,11 @@ export const itemsService = {
       itemData,
       token
     ),
+
+  updateItem: (
+    itemId: string,
+    itemData: UpdateItemRequest,
+    token: string
+  ): Promise<Item> =>
+    api.put<Item>(`/api/items/items/${itemId}`, itemData, token),
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -30,6 +30,7 @@ interface AddItemContentProps {
   onClose: () => void;
   onSuccess: (item: Item) => void;
   listTitle: string;
+  editingItem?: Item;
 }
 
 interface AddItemModalProps extends AddItemContentProps {
@@ -54,6 +55,7 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
   onClose,
   onSuccess,
   listTitle,
+  editingItem,
 }) => {
   const { token } = useAuth();
   const [name, setName] = useState('');
@@ -61,6 +63,16 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isEditMode = !!editingItem;
+
+  // Pre-fill form when editing
+  useEffect(() => {
+    if (editingItem) {
+      setName(editingItem.name);
+      setDescription(editingItem.description ?? '');
+    }
+  }, [editingItem]);
 
   const resetForm = () => {
     setName('');
@@ -74,7 +86,7 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
     onClose();
   };
 
-  const handleCreate = async () => {
+  const handleSubmit = async () => {
     const trimmedName = name.trim();
 
     if (!trimmedName) {
@@ -87,7 +99,7 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
       return;
     }
 
-    if (!tierSet) {
+    if (!isEditMode && !tierSet) {
       setError('Please select a tier');
       return;
     }
@@ -100,24 +112,38 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
     try {
       setIsLoading(true);
       setError(null);
-      const response = await itemsService.createItem(
-        listTitle,
-        {
-          name: trimmedName,
-          tier_set: tierSet,
-          description: description.trim() || undefined,
-        },
-        token
-      );
 
-      if (isComparisonSession(response)) {
-        // TODO: Handle comparison session flow
-        // For now, close the modal - comparison flow will be added later
+      if (isEditMode && editingItem) {
+        const updatedItem = await itemsService.updateItem(
+          editingItem.item_id,
+          {
+            name: trimmedName,
+            description: description.trim() || undefined,
+          },
+          token
+        );
         resetForm();
-        onClose();
+        onSuccess(updatedItem);
       } else {
-        resetForm();
-        onSuccess(response);
+        const response = await itemsService.createItem(
+          listTitle,
+          {
+            name: trimmedName,
+            tier_set: tierSet!,
+            description: description.trim() || undefined,
+          },
+          token
+        );
+
+        if (isComparisonSession(response)) {
+          // TODO: Handle comparison session flow
+          // For now, close the modal - comparison flow will be added later
+          resetForm();
+          onClose();
+        } else {
+          resetForm();
+          onSuccess(response);
+        }
       }
     } catch (err) {
       if (err instanceof ApiError) {
@@ -132,10 +158,18 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
           } else if (typeof err.data.detail === 'string') {
             setError(err.data.detail);
           } else {
-            setError('Failed to add item. Please try again.');
+            setError(
+              isEditMode
+                ? 'Failed to update item. Please try again.'
+                : 'Failed to add item. Please try again.'
+            );
           }
         } else {
-          setError('Failed to add item. Please try again.');
+          setError(
+            isEditMode
+              ? 'Failed to update item. Please try again.'
+              : 'Failed to add item. Please try again.'
+          );
         }
       } else {
         setError('An unexpected error occurred');
@@ -154,7 +188,9 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
         >
           <TouchableWithoutFeedback>
             <View style={styles.modal}>
-              <Text style={styles.title}>Add Item</Text>
+              <Text style={styles.title}>
+                {isEditMode ? 'Edit Item' : 'Add Item'}
+              </Text>
 
               <Input
                 label="Name"
@@ -168,35 +204,37 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
                 autoFocus
               />
 
-              <View style={styles.tierSection}>
-                <Text style={styles.tierLabel}>Tier</Text>
-                <View style={styles.tierOptions}>
-                  {TIER_OPTIONS.map((option) => (
-                    <TouchableOpacity
-                      key={option.value}
-                      style={[
-                        styles.tierOption,
-                        tierSet === option.value && styles.tierOptionSelected,
-                      ]}
-                      onPress={() => {
-                        setTierSet(option.value);
-                        if (error) setError(null);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text
+              {!isEditMode && (
+                <View style={styles.tierSection}>
+                  <Text style={styles.tierLabel}>Tier</Text>
+                  <View style={styles.tierOptions}>
+                    {TIER_OPTIONS.map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
                         style={[
-                          styles.tierOptionText,
-                          tierSet === option.value &&
-                            styles.tierOptionTextSelected,
+                          styles.tierOption,
+                          tierSet === option.value && styles.tierOptionSelected,
                         ]}
+                        onPress={() => {
+                          setTierSet(option.value);
+                          if (error) setError(null);
+                        }}
+                        activeOpacity={0.7}
                       >
-                        {option.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text
+                          style={[
+                            styles.tierOptionText,
+                            tierSet === option.value &&
+                              styles.tierOptionTextSelected,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
-              </View>
+              )}
 
               <Input
                 label="Description (optional)"
@@ -219,10 +257,10 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
                   style={styles.cancelButton}
                 />
                 <Button
-                  title="Add"
-                  onPress={handleCreate}
+                  title={isEditMode ? 'Save' : 'Add'}
+                  onPress={handleSubmit}
                   loading={isLoading}
-                  disabled={!name.trim() || !tierSet}
+                  disabled={!name.trim() || (!isEditMode && !tierSet)}
                   style={styles.createButton}
                 />
               </View>
@@ -240,6 +278,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   onClose,
   onSuccess,
   listTitle,
+  editingItem,
 }) => (
   <Modal
     visible={visible}
@@ -251,6 +290,7 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
       onClose={onClose}
       onSuccess={onSuccess}
       listTitle={listTitle}
+      editingItem={editingItem}
     />
   </Modal>
 );

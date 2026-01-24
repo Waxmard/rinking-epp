@@ -44,6 +44,7 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   // Initialize modal state from promptAddItem param
   const [showAddModal, setShowAddModal] = useState(promptAddItem ?? false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -95,6 +96,23 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
 
   const handleItemCreated = (item: Item) => {
     setItems((prev) => [...prev, item]);
+    setShowAddModal(false);
+  };
+
+  const handleItemUpdated = (item: Item) => {
+    setItems((prev) =>
+      prev.map((i) => (i.item_id === item.item_id ? item : i))
+    );
+    setEditingItem(null);
+  };
+
+  const handleModalClose = () => {
+    setShowAddModal(false);
+    setEditingItem(null);
+  };
+
+  const handleItemPress = (item: Item) => {
+    setEditingItem(item);
   };
 
   const renderHeader = () => (
@@ -137,21 +155,23 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
   );
 
   const renderItem = ({ item }: { item: Item }) => (
-    <Card style={styles.itemCard}>
-      <View style={styles.itemContent}>
-        <Text style={styles.itemName}>{item.name}</Text>
-        {item.tier && (
-          <View style={styles.tierBadge}>
-            <Text style={styles.tierBadgeText}>{item.tier}</Text>
-          </View>
+    <TouchableOpacity onPress={() => handleItemPress(item)} activeOpacity={0.7}>
+      <Card style={styles.itemCard}>
+        <View style={styles.itemContent}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          {item.tier && (
+            <View style={styles.tierBadge}>
+              <Text style={styles.tierBadgeText}>{item.tier}</Text>
+            </View>
+          )}
+        </View>
+        {item.description && (
+          <Text style={styles.itemDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
         )}
-      </View>
-      {item.description && (
-        <Text style={styles.itemDescription} numberOfLines={2}>
-          {item.description}
-        </Text>
-      )}
-    </Card>
+      </Card>
+    </TouchableOpacity>
   );
 
   const renderContent = () => {
@@ -187,10 +207,11 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
         <FAB onPress={handleAddPress} />
 
         <AddItemModal
-          visible={showAddModal}
-          onClose={() => setShowAddModal(false)}
-          onSuccess={handleItemCreated}
+          visible={showAddModal || !!editingItem}
+          onClose={handleModalClose}
+          onSuccess={editingItem ? handleItemUpdated : handleItemCreated}
           listTitle={listTitle}
+          editingItem={editingItem ?? undefined}
         />
       </SafeAreaView>
     </View>
