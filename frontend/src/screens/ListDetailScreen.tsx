@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,8 @@ import {
 } from '../design-system/tokens';
 import { AddItemModal } from '../components/AddItemModal';
 import { Item } from '../services/itemsService';
+import { listsService } from '../services/listsService';
+import { useAuth } from '../providers/AuthContext';
 
 interface ListDetailScreenProps {
   route: {
@@ -35,11 +37,28 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
   route,
   navigation,
 }) => {
-  const { listTitle, promptAddItem } = route.params;
+  const { token } = useAuth();
+  const { listId, listTitle, promptAddItem } = route.params;
   const [items, setItems] = useState<Item[]>([]);
-  const [isLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   // Initialize modal state from promptAddItem param
   const [showAddModal, setShowAddModal] = useState(promptAddItem ?? false);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      if (!token) return;
+      try {
+        setIsLoading(true);
+        const fetchedItems = await listsService.getListItems(listId, token);
+        setItems(fetchedItems);
+      } catch (err) {
+        console.error('Error fetching items:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchItems();
+  }, [listId, token]);
 
   const handleBack = () => {
     navigation.goBack();

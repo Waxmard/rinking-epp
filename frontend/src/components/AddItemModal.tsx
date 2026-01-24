@@ -26,11 +26,14 @@ import {
 } from '../services/itemsService';
 import { ApiError } from '../services/api';
 
-interface AddItemModalProps {
-  visible: boolean;
+interface AddItemContentProps {
   onClose: () => void;
   onSuccess: (item: Item) => void;
   listTitle: string;
+}
+
+interface AddItemModalProps extends AddItemContentProps {
+  visible: boolean;
 }
 
 interface TierOption {
@@ -46,8 +49,8 @@ const TIER_OPTIONS: TierOption[] = [
 
 const MAX_NAME_LENGTH = 100;
 
-export const AddItemModal: React.FC<AddItemModalProps> = ({
-  visible,
+// Content component without Modal wrapper (for use in parent-controlled Modal)
+export const AddItemContent: React.FC<AddItemContentProps> = ({
   onClose,
   onSuccess,
   listTitle,
@@ -115,7 +118,6 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
       } else {
         resetForm();
         onSuccess(response);
-        onClose();
       }
     } catch (err) {
       if (err instanceof ApiError) {
@@ -144,100 +146,114 @@ export const AddItemModal: React.FC<AddItemModalProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={handleClose}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.overlay}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.keyboardView}
-          >
-            <TouchableWithoutFeedback>
-              <View style={styles.modal}>
-                <Text style={styles.title}>Add Item</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.overlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+        >
+          <TouchableWithoutFeedback>
+            <View style={styles.modal}>
+              <Text style={styles.title}>Add Item</Text>
 
-                <Input
-                  label="Name"
-                  placeholder="Enter item name"
-                  value={name}
-                  onChangeText={(text) => {
-                    setName(text);
-                    if (error) setError(null);
-                  }}
-                  maxLength={MAX_NAME_LENGTH}
-                  autoFocus
-                />
+              <Input
+                label="Name"
+                placeholder="Enter item name"
+                value={name}
+                onChangeText={(text) => {
+                  setName(text);
+                  if (error) setError(null);
+                }}
+                maxLength={MAX_NAME_LENGTH}
+                autoFocus
+              />
 
-                <View style={styles.tierSection}>
-                  <Text style={styles.tierLabel}>Tier</Text>
-                  <View style={styles.tierOptions}>
-                    {TIER_OPTIONS.map((option) => (
-                      <TouchableOpacity
-                        key={option.value}
+              <View style={styles.tierSection}>
+                <Text style={styles.tierLabel}>Tier</Text>
+                <View style={styles.tierOptions}>
+                  {TIER_OPTIONS.map((option) => (
+                    <TouchableOpacity
+                      key={option.value}
+                      style={[
+                        styles.tierOption,
+                        tierSet === option.value && styles.tierOptionSelected,
+                      ]}
+                      onPress={() => {
+                        setTierSet(option.value);
+                        if (error) setError(null);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text
                         style={[
-                          styles.tierOption,
-                          tierSet === option.value && styles.tierOptionSelected,
+                          styles.tierOptionText,
+                          tierSet === option.value &&
+                            styles.tierOptionTextSelected,
                         ]}
-                        onPress={() => {
-                          setTierSet(option.value);
-                          if (error) setError(null);
-                        }}
-                        activeOpacity={0.7}
                       >
-                        <Text
-                          style={[
-                            styles.tierOptionText,
-                            tierSet === option.value &&
-                              styles.tierOptionTextSelected,
-                          ]}
-                        >
-                          {option.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <Input
-                  label="Description (optional)"
-                  placeholder="Add a description"
-                  value={description}
-                  onChangeText={setDescription}
-                  multiline
-                  numberOfLines={3}
-                  inputStyle={styles.descriptionInput}
-                />
-
-                {error && <Text style={styles.error}>{error}</Text>}
-
-                <View style={styles.buttonRow}>
-                  <Button
-                    title="Cancel"
-                    variant="text"
-                    onPress={handleClose}
-                    disabled={isLoading}
-                    style={styles.cancelButton}
-                  />
-                  <Button
-                    title="Add"
-                    onPress={handleCreate}
-                    loading={isLoading}
-                    disabled={!name.trim() || !tierSet}
-                    style={styles.createButton}
-                  />
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
               </View>
-            </TouchableWithoutFeedback>
-          </KeyboardAvoidingView>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+
+              <Input
+                label="Description (optional)"
+                placeholder="Add a description"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={3}
+                inputStyle={styles.descriptionInput}
+              />
+
+              {error && <Text style={styles.error}>{error}</Text>}
+
+              <View style={styles.buttonRow}>
+                <Button
+                  title="Cancel"
+                  variant="text"
+                  onPress={handleClose}
+                  disabled={isLoading}
+                  style={styles.cancelButton}
+                />
+                <Button
+                  title="Add"
+                  onPress={handleCreate}
+                  loading={isLoading}
+                  disabled={!name.trim() || !tierSet}
+                  style={styles.createButton}
+                />
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
+
+// Full modal component (wraps content in Modal for backward compatibility)
+export const AddItemModal: React.FC<AddItemModalProps> = ({
+  visible,
+  onClose,
+  onSuccess,
+  listTitle,
+}) => (
+  <Modal
+    visible={visible}
+    transparent
+    animationType="fade"
+    onRequestClose={onClose}
+  >
+    <AddItemContent
+      onClose={onClose}
+      onSuccess={onSuccess}
+      listTitle={listTitle}
+    />
+  </Modal>
+);
 
 const styles = StyleSheet.create({
   overlay: {

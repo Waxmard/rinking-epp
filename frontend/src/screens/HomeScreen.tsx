@@ -9,6 +9,7 @@ import {
   Animated,
   Dimensions,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,8 +25,12 @@ import {
   TierDistributionBar,
   TierDistribution,
 } from '../components/TierDistributionBar';
-import { CreateListModal, CreatedList } from '../components/CreateListModal';
+import { CreateListContent, CreatedList } from '../components/CreateListModal';
+import { AddItemContent } from '../components/AddItemModal';
 import { listsService, ListSimple } from '../services/listsService';
+import { Item } from '../services/itemsService';
+
+type ModalStep = 'create' | 'addItem' | null;
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const COLUMN_GAP = AppSpacing.md;
@@ -68,7 +73,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [lists, setLists] = useState<TierList[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [modalStep, setModalStep] = useState<ModalStep>(null);
+  const [pendingList, setPendingList] = useState<CreatedList | null>(null);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -127,7 +133,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const handleCreatePress = () => {
-    setShowCreateModal(true);
+    setModalStep('create');
   };
 
   const handleListPress = (list: TierList) => {
@@ -139,11 +145,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   const handleListCreated = (list: CreatedList) => {
     fetchLists();
-    navigation.navigate('ListDetail', {
-      listId: list.listId,
-      listTitle: list.title,
-      promptAddItem: true,
-    });
+    setPendingList(list);
+    setModalStep('addItem');
+  };
+
+  const handleItemCreated = (_item: Item) => {
+    if (pendingList) {
+      navigation.navigate('ListDetail', {
+        listId: pendingList.listId,
+        listTitle: pendingList.title,
+      });
+      setModalStep(null);
+      setPendingList(null);
+    }
   };
 
   const renderListCard = ({
@@ -288,11 +302,32 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
         <FAB onPress={handleCreatePress} />
 
-        <CreateListModal
-          visible={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={handleListCreated}
-        />
+        <Modal
+          visible={modalStep !== null}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            setModalStep(null);
+            setPendingList(null);
+          }}
+        >
+          {modalStep === 'create' && (
+            <CreateListContent
+              onClose={() => setModalStep(null)}
+              onSuccess={handleListCreated}
+            />
+          )}
+          {modalStep === 'addItem' && pendingList && (
+            <AddItemContent
+              listTitle={pendingList.title}
+              onClose={() => {
+                setModalStep(null);
+                setPendingList(null);
+              }}
+              onSuccess={handleItemCreated}
+            />
+          )}
+        </Modal>
       </SafeAreaView>
     </View>
   );

@@ -25,16 +25,19 @@ export interface CreatedList {
   title: string;
 }
 
-interface CreateListModalProps {
-  visible: boolean;
+interface CreateListContentProps {
   onClose: () => void;
   onSuccess: (list: CreatedList) => void;
 }
 
+interface CreateListModalProps extends CreateListContentProps {
+  visible: boolean;
+}
+
 const MAX_TITLE_LENGTH = 100;
 
-export const CreateListModal: React.FC<CreateListModalProps> = ({
-  visible,
+// Content component without Modal wrapper (for use in parent-controlled Modal)
+export const CreateListContent: React.FC<CreateListContentProps> = ({
   onClose,
   onSuccess,
 }) => {
@@ -83,7 +86,7 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
       );
       resetForm();
       onSuccess({ listId: createdList.list_id, title: createdList.title });
-      onClose();
+      // Parent will close the modal when AddItem flow completes
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 409) {
@@ -112,70 +115,79 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={handleClose}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.overlay}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.keyboardView}
-          >
-            <TouchableWithoutFeedback>
-              <View style={styles.modal}>
-                <Text style={styles.title}>Create New List</Text>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.overlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+        >
+          <TouchableWithoutFeedback>
+            <View style={styles.modal}>
+              <Text style={styles.title}>Create New List</Text>
 
-                <Input
-                  label="Title"
-                  placeholder="Enter list title"
-                  value={title}
-                  onChangeText={(text) => {
-                    setTitle(text);
-                    if (error) setError(null);
-                  }}
-                  maxLength={MAX_TITLE_LENGTH}
-                  autoFocus
+              <Input
+                label="Title"
+                placeholder="Enter list title"
+                value={title}
+                onChangeText={(text) => {
+                  setTitle(text);
+                  if (error) setError(null);
+                }}
+                maxLength={MAX_TITLE_LENGTH}
+                autoFocus
+              />
+
+              <Input
+                label="Description (optional)"
+                placeholder="Add a description"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={3}
+                inputStyle={styles.descriptionInput}
+              />
+
+              {error && <Text style={styles.error}>{error}</Text>}
+
+              <View style={styles.buttonRow}>
+                <Button
+                  title="Cancel"
+                  variant="text"
+                  onPress={handleClose}
+                  disabled={isLoading}
+                  style={styles.cancelButton}
                 />
-
-                <Input
-                  label="Description (optional)"
-                  placeholder="Add a description"
-                  value={description}
-                  onChangeText={setDescription}
-                  multiline
-                  numberOfLines={3}
-                  inputStyle={styles.descriptionInput}
+                <Button
+                  title="Create"
+                  onPress={handleCreate}
+                  loading={isLoading}
+                  disabled={!title.trim()}
+                  style={styles.createButton}
                 />
-
-                {error && <Text style={styles.error}>{error}</Text>}
-
-                <View style={styles.buttonRow}>
-                  <Button
-                    title="Cancel"
-                    variant="text"
-                    onPress={handleClose}
-                    disabled={isLoading}
-                    style={styles.cancelButton}
-                  />
-                  <Button
-                    title="Create"
-                    onPress={handleCreate}
-                    loading={isLoading}
-                    disabled={!title.trim()}
-                    style={styles.createButton}
-                  />
-                </View>
               </View>
-            </TouchableWithoutFeedback>
-          </KeyboardAvoidingView>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
+
+// Full modal component (wraps content in Modal for backward compatibility)
+export const CreateListModal: React.FC<CreateListModalProps> = ({
+  visible,
+  onClose,
+  onSuccess,
+}) => (
+  <Modal
+    visible={visible}
+    transparent
+    animationType="fade"
+    onRequestClose={onClose}
+  >
+    <CreateListContent onClose={onClose} onSuccess={onSuccess} />
+  </Modal>
+);
 
 const styles = StyleSheet.create({
   overlay: {
