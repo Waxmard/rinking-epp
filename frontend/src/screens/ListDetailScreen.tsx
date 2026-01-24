@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   Image,
@@ -11,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { FAB, Card } from '../design-system/components';
+import { FAB } from '../design-system/components';
 import {
   AppColors,
   AppSpacing,
@@ -22,6 +21,19 @@ import { AddItemModal } from '../components/AddItemModal';
 import { Item } from '../services/itemsService';
 import { listsService } from '../services/listsService';
 import { useAuth } from '../providers/AuthContext';
+
+const TIER_ORDER = ['S', 'A', 'B', 'C', 'D', 'F'] as const;
+
+const groupItemsByTier = (items: Item[]): Record<string, Item[]> => {
+  const grouped: Record<string, Item[]> = {};
+  TIER_ORDER.forEach((tier) => (grouped[tier] = []));
+  items.forEach((item) => {
+    if (item.tier && grouped[item.tier]) {
+      grouped[item.tier].push(item);
+    }
+  });
+  return grouped;
+};
 
 interface ListDetailScreenProps {
   route: {
@@ -154,24 +166,42 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
     </View>
   );
 
-  const renderItem = ({ item }: { item: Item }) => (
-    <TouchableOpacity onPress={() => handleItemPress(item)} activeOpacity={0.7}>
-      <Card style={styles.itemCard}>
-        <View style={styles.itemContent}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          {item.tier && (
-            <View style={styles.tierBadge}>
-              <Text style={styles.tierBadgeText}>{item.tier}</Text>
-            </View>
-          )}
-        </View>
-        {item.description && (
-          <Text style={styles.itemDescription} numberOfLines={2}>
-            {item.description}
-          </Text>
+  const TierRow = ({
+    tier,
+    tierItems,
+  }: {
+    tier: string;
+    tierItems: Item[];
+  }) => (
+    <View style={styles.tierRow}>
+      <View
+        style={[
+          styles.tierLabel,
+          { backgroundColor: AppColors.getTierColor(tier) },
+        ]}
+      >
+        <Text style={styles.tierLabelText}>{tier}</Text>
+      </View>
+      <View style={styles.tierItemsContainer}>
+        {tierItems.length === 0 ? (
+          <Text style={styles.emptyTierPlaceholder}>No items</Text>
+        ) : (
+          tierItems.map((item) => (
+            <TouchableOpacity
+              key={item.item_id}
+              onPress={() => handleItemPress(item)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.compactItemCard}>
+                <Text style={styles.compactItemName} numberOfLines={2}>
+                  {item.name}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))
         )}
-      </Card>
-    </TouchableOpacity>
+      </View>
+    </View>
   );
 
   const renderContent = () => {
@@ -187,14 +217,14 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
       return renderEmptyState();
     }
 
+    const groupedItems = groupItemsByTier(items);
+
     return (
-      <FlatList
-        data={items}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.item_id}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      <View style={styles.tierContainer}>
+        {TIER_ORDER.map((tier) => (
+          <TierRow key={tier} tier={tier} tierItems={groupedItems[tier]} />
+        ))}
+      </View>
     );
   };
 
@@ -257,48 +287,60 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: -AppSpacing.sm,
   },
-  listContent: {
-    padding: AppSpacing.lg,
+  tierContainer: {
+    flex: 1,
+    padding: AppSpacing.md,
     paddingBottom: AppSpacing.xxxl + 56,
   },
-  itemCard: {
-    backgroundColor: AppColors.dominant.primary,
-    borderRadius: AppBorders.radiusMd,
-    padding: AppSpacing.md,
-    marginBottom: AppSpacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  itemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  itemName: {
-    ...AppTypography.bodyLarge,
-    color: AppColors.secondary.emphasis,
-    fontWeight: '600',
+  tierRow: {
     flex: 1,
-  },
-  tierBadge: {
-    backgroundColor: AppColors.accent.light,
-    paddingHorizontal: AppSpacing.sm,
-    paddingVertical: AppSpacing.xs,
+    flexDirection: 'row',
+    marginBottom: AppSpacing.xs,
+    backgroundColor: AppColors.neutral[100],
     borderRadius: AppBorders.radiusSm,
-    marginLeft: AppSpacing.sm,
+    overflow: 'hidden',
   },
-  tierBadgeText: {
-    ...AppTypography.labelSmall,
-    color: AppColors.accent.primary,
+  tierLabel: {
+    width: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tierLabelText: {
+    ...AppTypography.headlineSmall,
+    color: AppColors.textOnPrimary,
     fontWeight: '700',
   },
-  itemDescription: {
+  tierItemsContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
+    alignContent: 'flex-start',
+    padding: AppSpacing.xs,
+    gap: AppSpacing.xs,
+  },
+  compactItemCard: {
+    backgroundColor: AppColors.dominant.primary,
+    borderRadius: AppBorders.radiusSm,
+    paddingHorizontal: AppSpacing.sm,
+    paddingVertical: AppSpacing.xs,
+    maxWidth: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  compactItemName: {
     ...AppTypography.bodySmall,
-    color: AppColors.textSecondary,
-    marginTop: AppSpacing.xs,
+    color: AppColors.secondary.emphasis,
+    fontWeight: '500',
+  },
+  emptyTierPlaceholder: {
+    ...AppTypography.bodySmall,
+    color: AppColors.neutral[400],
+    fontStyle: 'italic',
+    paddingHorizontal: AppSpacing.sm,
   },
   emptyState: {
     flex: 1,
