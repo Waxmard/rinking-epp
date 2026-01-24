@@ -50,23 +50,13 @@ interface HomeScreenProps {
   navigation?: any;
 }
 
-// Placeholder tier distribution for items that haven't been ranked yet
-const PLACEHOLDER_TIER_DISTRIBUTION: TierDistribution = {
-  S: 0,
-  A: 0,
-  B: 0,
-  C: 0,
-  D: 0,
-  F: 0,
-};
-
 // Convert API ListSimple to local TierList format
 const toTierList = (apiList: ListSimple): TierList => ({
   id: apiList.list_id,
   title: apiList.title,
   itemCount: apiList.item_count,
   updatedAt: new Date(apiList.updated_at),
-  tierDistribution: PLACEHOLDER_TIER_DISTRIBUTION,
+  tierDistribution: apiList.tier_distribution,
 });
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
