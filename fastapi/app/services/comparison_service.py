@@ -1,5 +1,6 @@
 """Comparison session business logic."""
 
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
@@ -14,6 +15,8 @@ from app.db.models import Item as ItemModel
 from app.schemas.item import Comparison, ComparisonSession
 from app.services.ranking import assign_tiers_for_set
 from app.utils.helper import sort_items_linked_list_style
+
+logger = logging.getLogger(__name__)
 
 
 async def start_comparison(
@@ -181,8 +184,13 @@ async def finalize_comparison(
     try:
         sorted_items = sort_items_linked_list_style(all_set_items)  # type: ignore[arg-type]
         assign_tiers_for_set(sorted_items, tier_set)  # type: ignore[arg-type]
-    except ValueError:
-        pass  # Linked list invalid, skip tier assignment
+    except ValueError as e:
+        logger.warning(
+            "Failed to assign tiers for list_id=%s, tier_set=%s: %s",
+            list_id,
+            tier_set,
+            str(e),
+        )
 
     # Mark session as complete
     await comparison_crud.mark_complete(db, db_session)
