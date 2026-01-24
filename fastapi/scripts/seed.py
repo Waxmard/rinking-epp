@@ -24,12 +24,19 @@ from app.db.models import Base, User  # noqa: E402
 from app.core.security import get_password_hash  # noqa: E402
 
 
-# Dev user to seed
+# Dev users to seed
 DEV_USERS = [
     {
         "email": "dev@tiernerd.com",
-        "username": "dev",
+        "username": "devuser",
         "password": "devpassword",
+        "is_admin": True,
+    },
+    {
+        "email": "user@tiernerd.com",
+        "username": "testuser",
+        "password": "userpassword",
+        "is_admin": False,
     },
 ]
 
@@ -60,6 +67,7 @@ async def seed_users(session: AsyncSession) -> None:
             email=user_data["email"],
             username=user_data["username"],
             password_hash=get_password_hash(user_data["password"]),
+            is_admin=user_data.get("is_admin", False),
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )

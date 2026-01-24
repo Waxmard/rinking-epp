@@ -5,6 +5,17 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 
+class TierDistribution(BaseModel):
+    """Schema for tier distribution counts."""
+
+    S: int = 0
+    A: int = 0
+    B: int = 0
+    C: int = 0
+    D: int = 0
+    F: int = 0
+
+
 # Shared properties
 class ListBase(BaseModel):
     """Base list schema with shared properties."""
@@ -56,6 +67,7 @@ class ListSimple(ListBase):
     created_at: datetime
     updated_at: datetime
     item_count: int = 0
+    tier_distribution: TierDistribution = Field(default_factory=TierDistribution)
 
     class Config:
         """Pydantic config."""

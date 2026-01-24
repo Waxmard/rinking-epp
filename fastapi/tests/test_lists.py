@@ -1,11 +1,14 @@
 """Tests for list endpoints."""
 
+import uuid
+from datetime import datetime
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import User, List as ListModel
+from app.db.models import User, List as ListModel, Item as ItemModel
 
 
 @pytest.mark.asyncio
@@ -33,6 +36,13 @@ class TestReadLists:
         assert "title" in list_data
         assert "description" in list_data
         assert "item_count" in list_data
+        assert "tier_distribution" in list_data
+        assert list_data["tier_distribution"]["S"] >= 0
+        assert list_data["tier_distribution"]["A"] >= 0
+        assert list_data["tier_distribution"]["B"] >= 0
+        assert list_data["tier_distribution"]["C"] >= 0
+        assert list_data["tier_distribution"]["D"] >= 0
+        assert list_data["tier_distribution"]["F"] >= 0
 
         # Verify data matches database
         result = await test_db.execute(
@@ -385,3 +395,259 @@ class TestDeleteList:
             f"/api/lists/{test_list.list_id}", headers=auth_headers_user2
         )
         assert response.status_code == 404
+
+    async def test_delete_list_cascades_items(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test that deleting a list also deletes its items."""
+        list_id = test_list.list_id
+
+        # Create some items in the list
+        items = []
+        for i in range(3):
+            item = ItemModel(
+                item_id=uuid.uuid4(),
+                list_id=list_id,
+                name=f"Item {i}",
+                description=f"Description {i}",
+                image_url=f"https://example.com/img{i}.jpg",
+                prev_item_id=None,
+                next_item_id=None,
+                rating=None,
+                tier="A",
+                tier_set="good",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            )
+            test_db.add(item)
+            items.append(item)
+        await test_db.commit()
+
+        # Verify items exist
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.list_id == list_id)
+        )
+        assert len(result.scalars().all()) == 3
+
+        # Delete the list
+        response = await client.delete(f"/api/lists/{list_id}", headers=auth_headers)
+        assert response.status_code == 204
+
+        # Verify items are also deleted
+        result = await test_db.execute(
+            select(ItemModel).where(ItemModel.list_id == list_id)
+        )
+        assert len(result.scalars().all()) == 0
+
+
+@pytest.mark.asyncio
+class TestReadListItems:
+    """Tests for reading list items endpoint."""
+
+    async def test_read_list_items_empty(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+    ):
+        """Test reading items from empty list returns empty array."""
+        response = await client.get(
+            f"/api/lists/{test_list.list_id}/items", headers=auth_headers
+        )
+        assert response.status_code == 200
+        assert response.json() == []
+
+    async def test_read_list_items_with_items(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        test_item: ItemModel,
+        auth_headers: dict,
+    ):
+        """Test reading items from list with items."""
+        response = await client.get(
+            f"/api/lists/{test_list.list_id}/items", headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) >= 1
+        assert data[0]["name"] == test_item.name
+
+    async def test_read_list_items_multiple_tier_sets(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test reading items with multiple tier_sets."""
+        # Create items in different tier_sets
+        good_item = ItemModel(
+            item_id=uuid.uuid4(),
+            list_id=test_list.list_id,
+            name="Good Item",
+            description="A good item",
+            image_url="https://example.com/good.jpg",
+            prev_item_id=None,
+            next_item_id=None,
+            rating=None,
+            tier="A",
+            tier_set="good",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        mid_item = ItemModel(
+            item_id=uuid.uuid4(),
+            list_id=test_list.list_id,
+            name="Mid Item",
+            description="A mid item",
+            image_url="https://example.com/mid.jpg",
+            prev_item_id=None,
+            next_item_id=None,
+            rating=None,
+            tier="C",
+            tier_set="mid",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        test_db.add(good_item)
+        test_db.add(mid_item)
+        await test_db.commit()
+
+        response = await client.get(
+            f"/api/lists/{test_list.list_id}/items", headers=auth_headers
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+
+        # Verify both tier_sets are present
+        tier_sets = {item["tier_set"] for item in data}
+        assert "good" in tier_sets
+        assert "mid" in tier_sets
+
+    async def test_read_list_items_not_found(
+        self,
+        client: AsyncClient,
+        auth_headers: dict,
+    ):
+        """Test reading items from non-existent list."""
+        fake_id = uuid.uuid4()
+        response = await client.get(f"/api/lists/{fake_id}/items", headers=auth_headers)
+        assert response.status_code == 404
+
+    async def test_read_list_items_wrong_user(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers_user2: dict,
+    ):
+        """Test reading items from another user's list fails."""
+        response = await client.get(
+            f"/api/lists/{test_list.list_id}/items", headers=auth_headers_user2
+        )
+        assert response.status_code == 404
+
+    async def test_read_list_items_unauthenticated(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+    ):
+        """Test reading list items without auth fails."""
+        response = await client.get(f"/api/lists/{test_list.list_id}/items")
+        assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestReadListsWithStats:
+    """Tests for reading lists with tier distribution stats."""
+
+    async def test_read_lists_tier_distribution(
+        self,
+        client: AsyncClient,
+        test_list: ListModel,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test that tier distribution is calculated correctly."""
+        # Create items with various tiers
+        tiers = ["S", "S", "A", "A", "A", "B", "C", "D", "F"]
+        for i, tier in enumerate(tiers):
+            item = ItemModel(
+                item_id=uuid.uuid4(),
+                list_id=test_list.list_id,
+                name=f"Item {i}",
+                description=f"Tier {tier} item",
+                image_url=f"https://example.com/img{i}.jpg",
+                prev_item_id=None,
+                next_item_id=None,
+                rating=None,
+                tier=tier,
+                tier_set="good",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            )
+            test_db.add(item)
+        await test_db.commit()
+
+        response = await client.get("/api/lists/", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+
+        # Find our test list
+        list_data = next(
+            (lst for lst in data if str(lst["list_id"]) == str(test_list.list_id)), None
+        )
+        assert list_data is not None
+
+        # Verify counts
+        assert list_data["item_count"] == 9
+        assert list_data["tier_distribution"]["S"] == 2
+        assert list_data["tier_distribution"]["A"] == 3
+        assert list_data["tier_distribution"]["B"] == 1
+        assert list_data["tier_distribution"]["C"] == 1
+        assert list_data["tier_distribution"]["D"] == 1
+        assert list_data["tier_distribution"]["F"] == 1
+
+    async def test_read_lists_pagination_multiple_lists(
+        self,
+        client: AsyncClient,
+        test_user: User,
+        auth_headers: dict,
+        test_db: AsyncSession,
+    ):
+        """Test pagination with multiple lists."""
+        # Create additional lists
+        for i in range(5):
+            list_obj = ListModel(
+                list_id=uuid.uuid4(),
+                user_id=test_user.user_id,
+                title=f"Pagination Test List {i}",
+                description=f"List {i} for pagination testing",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            )
+            test_db.add(list_obj)
+        await test_db.commit()
+
+        # Test getting first 2 lists
+        response = await client.get("/api/lists/?limit=2", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+
+        # Test skipping first 2 lists
+        response = await client.get("/api/lists/?skip=2&limit=2", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+
+        # Test getting all lists
+        response = await client.get("/api/lists/", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) >= 5  # At least the 5 we created

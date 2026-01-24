@@ -6,6 +6,27 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field, HttpUrl
 
 
+# Tier ranking enum
+class TierRank(str, Enum):
+    """Enum for tier rankings."""
+
+    S = "S"
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    F = "F"
+
+
+# Tier set enum - determines which tier pair an item can be ranked into
+class TierSet(str, Enum):
+    """Enum for tier sets. Each set maps to a pair of tiers."""
+
+    GOOD = "good"  # S or A
+    MID = "mid"  # B or C
+    BAD = "bad"  # D or F
+
+
 # Shared properties
 class ItemBase(BaseModel):
     """Base item schema with shared properties."""
@@ -22,6 +43,7 @@ class ItemCreate(ItemBase):
     name: str
     description: Optional[str] = None
     image_url: Optional[HttpUrl] = None
+    tier_set: TierSet  # Required - determines which tier pair (S/A, B/C, D/F)
 
 
 # Properties to receive via API on update
@@ -31,18 +53,6 @@ class ItemUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = None
     image_url: Optional[HttpUrl] = None
-
-
-# Tier ranking enum
-class TierRank(str, Enum):
-    """Enum for tier rankings."""
-
-    S = "S"
-    A = "A"
-    B = "B"
-    C = "C"
-    D = "D"
-    F = "F"
 
 
 # Properties to return to client
@@ -58,6 +68,7 @@ class Item(ItemBase):
     next_item_id: Optional[uuid.UUID] = None
     rating: Optional[float] = None
     tier: Optional[TierRank] = None
+    tier_set: Optional[TierSet] = None
     created_at: datetime
     updated_at: datetime
 

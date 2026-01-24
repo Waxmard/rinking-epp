@@ -39,6 +39,8 @@ uv run black app/                 # Format code
 uv run isort app/                 # Sort imports
 uv run ruff check app/            # Lint
 uv run mypy app/                  # Type check
+uv run pylint app/                # Static analysis
+uv run bandit -r app/             # Security linting
 
 # Testing
 uv run pytest                     # Run all tests
