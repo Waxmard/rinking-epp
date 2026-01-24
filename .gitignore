@@ -1,2 +1,7 @@
 **/.claude/settings.local.json
 !CLAUDE.md
+
+.coverage
+.coverage.*
+coverage.json
+htmlcov/

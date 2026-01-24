@@ -7,12 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import (
     authenticate_user,
     create_access_token,
+    get_current_admin_user,
     get_current_user,
 )
 from app.core.constants import INCORRECT_LOGIN_ERROR, USER_ALREADY_EXISTS_ERROR
+from app.crud.crud_user import update_user as crud_update_user
 from app.db.database import get_db
 from app.db.models import User as UserModel
-from app.schemas.user import Token, User, UserCreate, UserPublic
+from app.schemas.user import Token, User, UserCreate, UserPublic, UserUpdate
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -71,7 +73,7 @@ async def read_users(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_admin_user),
 ) -> Any:
     """
     Retrieve users. Requires authentication.
@@ -97,3 +99,16 @@ async def read_users_me(current_user: User = Depends(get_current_user)) -> Any:
     Get current user.
     """
     return current_user
+
+
+@router.put("/me", response_model=User)
+async def update_current_user(
+    user_in: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+) -> Any:
+    """
+    Update current user profile.
+    """
+    updated_user = await crud_update_user(db, current_user, user_in)
+    return updated_user

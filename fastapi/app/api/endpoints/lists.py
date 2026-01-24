@@ -3,16 +3,22 @@ from datetime import datetime, timezone
 from typing import Any
 from typing import List as TypeList
 
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.constants import LIST_ALREADY_EXISTS_ERROR, LIST_NOT_FOUND_ERROR
+from app.crud import item as item_crud
+from app.crud import list as list_crud
 from app.db.database import get_db
-from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
+from app.schemas.item import Item
 from app.schemas.list import List, ListSimple, ListUpdate
 from app.schemas.user import User
+from app.services.list_service import (
+    build_list_response,
+    build_list_simple_response,
+    get_items_sorted_by_tier_set,
+)
 from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
@@ -28,34 +34,10 @@ async def read_lists(
     """
     Retrieve lists created by the current user.
     """
-    # Get lists with item count
-    query = (
-        select(ListModel, func.count(ItemModel.item_id).label("item_count"))
-        .outerjoin(ItemModel)
-        .where(ListModel.user_id == current_user.user_id)
-        .group_by(ListModel.list_id)
-        .offset(skip)
-        .limit(limit)
+    lists_with_counts = await list_crud.get_by_user_with_stats(
+        db, current_user.user_id, skip, limit
     )
-
-    result = await db.execute(query)
-    lists_with_counts = result.all()
-
-    # Prepare response
-    response = []
-    for list_obj, item_count in lists_with_counts:
-        list_dict = {
-            "list_id": list_obj.list_id,
-            "user_id": list_obj.user_id,
-            "title": list_obj.title,
-            "description": list_obj.description,
-            "created_at": list_obj.created_at,
-            "updated_at": list_obj.updated_at,
-            "item_count": item_count,
-        }
-        response.append(list_dict)
-
-    return response
+    return [build_list_simple_response(row) for row in lists_with_counts]
 
 
 @router.post("/", response_model=List)
@@ -68,14 +50,9 @@ async def create_list(
     """
     Create new list.
     """
-    # Check if list exists and belongs to current user
-    query = select(ListModel).where(
-        ListModel.title == name, ListModel.user_id == current_user.user_id
-    )
-    result = await db.execute(query)
-    list_obj = result.scalar_one_or_none()
-
-    if list_obj:
+    # Check if list with same name already exists for this user
+    existing = await list_crud.get_by_title_and_user(db, name, current_user.user_id)
+    if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=LIST_ALREADY_EXISTS_ERROR,
@@ -89,19 +66,9 @@ async def create_list(
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
     )
-    db.add(list_obj)
-    await db.commit()
-    await db.refresh(list_obj)
+    list_obj = await list_crud.create(db, list_obj)
 
-    # Return with empty items list
-    return {
-        "list_id": list_obj.list_id,
-        "user_id": list_obj.user_id,
-        "title": list_obj.title,
-        "description": list_obj.description,
-        "created_at": list_obj.created_at,
-        "updated_at": list_obj.updated_at,
-    }
+    return build_list_response(list_obj)
 
 
 @router.get("/{list_id}", response_model=List)
@@ -113,27 +80,36 @@ async def read_list(
     """
     Get a specific list by ID with all its items.
     """
-    # Get the list
-    query = select(ListModel).where(
-        ListModel.list_id == list_id, ListModel.user_id == current_user.user_id
-    )
-    result = await db.execute(query)
-    list_obj = result.scalar_one_or_none()
-
+    list_obj = await list_crud.get_by_id_and_user(db, list_id, current_user.user_id)
     if not list_obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
         )
 
-    # Prepare response
-    return {
-        "list_id": list_obj.list_id,
-        "user_id": list_obj.user_id,
-        "title": list_obj.title,
-        "description": list_obj.description,
-        "created_at": list_obj.created_at,
-        "updated_at": list_obj.updated_at,
-    }
+    return build_list_response(list_obj)
+
+
+@router.get("/{list_id}/items", response_model=TypeList[Item])
+async def read_list_items(
+    list_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Get all items for a list, ordered by tier then by linked list position.
+    """
+    # Verify list exists and belongs to current user
+    list_obj = await list_crud.get_by_id_and_user(db, list_id, current_user.user_id)
+    if not list_obj:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
+        )
+
+    items = await item_crud.get_by_list_id(db, list_id)
+    if not items:
+        return []
+
+    return get_items_sorted_by_tier_set(items)
 
 
 @router.put("/{list_id}", response_model=List)
@@ -146,32 +122,17 @@ async def update_list(
     """
     Update a list.
     """
-    # Get the list
-    query = select(ListModel).where(
-        ListModel.list_id == list_id, ListModel.user_id == current_user.user_id
-    )
-    result = await db.execute(query)
-    list_obj = result.scalar_one_or_none()
-
+    list_obj = await list_crud.get_by_id_and_user(db, list_id, current_user.user_id)
     if not list_obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
         )
 
-    # Update fields
     update_data = list_in.dict(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(list_obj, field, value)
-
-    db.add(list_obj)
-    await db.commit()
-    await db.refresh(list_obj)
+    list_obj = await list_crud.update(db, list_obj, update_data)
 
     # Get items to include in response
-    items_query = select(ItemModel).where(ItemModel.list_id == list_id)
-
-    items_result = await db.execute(items_query)
-    items = items_result.scalars().all()
+    items = await item_crud.get_by_list_id(db, list_id)
 
     # Format items
     items_data = [
@@ -189,16 +150,7 @@ async def update_list(
         for item in items
     ]
 
-    # Prepare response
-    return {
-        "list_id": list_obj.list_id,
-        "user_id": list_obj.user_id,
-        "title": list_obj.title,
-        "description": list_obj.description,
-        "created_at": list_obj.created_at,
-        "updated_at": list_obj.updated_at,
-        "items": items_data,
-    }
+    return build_list_response(list_obj, items_data)
 
 
 @router.delete("/{list_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -210,18 +162,10 @@ async def delete_list(
     """
     Delete a list.
     """
-    # Get the list
-    query = select(ListModel).where(
-        ListModel.list_id == list_id, ListModel.user_id == current_user.user_id
-    )
-    result = await db.execute(query)
-    list_obj = result.scalar_one_or_none()
-
+    list_obj = await list_crud.get_by_id_and_user(db, list_id, current_user.user_id)
     if not list_obj:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
         )
 
-    # Delete the list (items will be cascade deleted due to relationship)
-    await db.delete(list_obj)
-    await db.commit()
+    await list_crud.delete(db, list_obj)

@@ -3,10 +3,10 @@ name: Backend
 on:
   push:
     branches: [main]
-    paths: ['fastapi/**']
+    paths: ["fastapi/**"]
   pull_request:
     branches: [main]
-    paths: ['fastapi/**']
+    paths: ["fastapi/**"]
 
 jobs:
   test:
@@ -23,7 +23,7 @@ jobs:
           cache-dependency-glob: "fastapi/uv.lock"
       - run: uv sync --extra dev --group dev
       - name: Run tests with coverage
-        run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=60
+        run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 
   lint:
     name: Lint

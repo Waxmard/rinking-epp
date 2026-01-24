@@ -139,6 +139,34 @@ def auth_headers_user2(test_user2: User) -> dict:
 
 
 @pytest_asyncio.fixture
+async def admin_user(test_db: AsyncSession) -> User:
+    """Create an admin test user."""
+    from datetime import datetime
+    import uuid
+
+    user = User(
+        user_id=uuid.uuid4(),
+        email="admin@example.com",
+        username="adminuser",
+        password_hash=get_password_hash("adminpassword123"),
+        is_admin=True,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    test_db.add(user)
+    await test_db.commit()
+    await test_db.refresh(user)
+    return user
+
+
+@pytest.fixture
+def admin_auth_headers(admin_user: User) -> dict:
+    """Generate authentication headers for admin user."""
+    access_token = create_access_token(subject=admin_user.user_id)
+    return {"Authorization": f"Bearer {access_token}"}
+
+
+@pytest_asyncio.fixture
 async def test_list(test_db: AsyncSession, test_user: User) -> ListModel:
     """Create a test list."""
     from datetime import datetime
@@ -160,7 +188,7 @@ async def test_list(test_db: AsyncSession, test_user: User) -> ListModel:
 
 @pytest_asyncio.fixture
 async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
-    """Create a test item."""
+    """Create a test item with tier_set and valid linked list structure."""
     from datetime import datetime
     import uuid
 
@@ -173,7 +201,8 @@ async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
         prev_item_id=None,
         next_item_id=None,
         rating=None,
-        tier=None,
+        tier="A",
+        tier_set="good",
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
@@ -187,7 +216,7 @@ async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
 async def multiple_items(
     test_db: AsyncSession, test_list: ListModel
 ) -> list[ItemModel]:
-    """Create multiple test items."""
+    """Create multiple test items with tier_set."""
     from datetime import datetime
     import uuid
 
@@ -202,7 +231,8 @@ async def multiple_items(
             prev_item_id=None,
             next_item_id=None,
             rating=None,
-            tier=None,
+            tier="A" if i < 3 else "S",
+            tier_set="good",
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
@@ -213,3 +243,38 @@ async def multiple_items(
     for item in items:
         await test_db.refresh(item)
     return items
+
+
+@pytest.fixture
+def item_factory(test_list: ListModel):
+    """Factory fixture for creating ItemModel instances with defaults."""
+    from datetime import datetime
+    import uuid as uuid_module
+
+    def _create_item(
+        name: str = "Test Item",
+        tier: str | None = "A",
+        tier_set: str = "good",
+        description: str = "",
+        image_url: str | None = None,
+        prev_item_id=None,
+        next_item_id=None,
+        rating: float | None = None,
+        list_id=None,
+    ) -> ItemModel:
+        return ItemModel(
+            item_id=uuid_module.uuid4(),
+            list_id=list_id or test_list.list_id,
+            name=name,
+            description=description,
+            image_url=image_url,
+            prev_item_id=prev_item_id,
+            next_item_id=next_item_id,
+            rating=rating,
+            tier=tier,
+            tier_set=tier_set,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+
+    return _create_item

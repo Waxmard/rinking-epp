@@ -36,6 +36,7 @@ class User(UserBase):
     user_id: UUID
     created_at: datetime
     updated_at: datetime
+    is_admin: bool
 
     class Config:
         """Pydantic config."""
