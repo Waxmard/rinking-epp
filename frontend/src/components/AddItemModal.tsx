@@ -8,6 +8,7 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  TouchableOpacity,
 } from 'react-native';
 import { Input, Button } from '../design-system/components';
 import {
@@ -17,35 +18,50 @@ import {
   AppBorders,
 } from '../design-system/tokens';
 import { useAuth } from '../providers/AuthContext';
-import { listsService } from '../services/listsService';
+import {
+  itemsService,
+  TierSet,
+  Item,
+  isComparisonSession,
+} from '../services/itemsService';
 import { ApiError } from '../services/api';
 
-export interface CreatedList {
-  listId: string;
-  title: string;
-}
-
-interface CreateListModalProps {
+interface AddItemModalProps {
   visible: boolean;
   onClose: () => void;
-  onSuccess: (list: CreatedList) => void;
+  onSuccess: (item: Item) => void;
+  listTitle: string;
 }
 
-const MAX_TITLE_LENGTH = 100;
+interface TierOption {
+  label: string;
+  value: TierSet;
+}
 
-export const CreateListModal: React.FC<CreateListModalProps> = ({
+const TIER_OPTIONS: TierOption[] = [
+  { label: 'Top tier (S/A)', value: 'good' },
+  { label: 'Middle tier (B/C)', value: 'mid' },
+  { label: 'Bottom tier (D/F)', value: 'bad' },
+];
+
+const MAX_NAME_LENGTH = 100;
+
+export const AddItemModal: React.FC<AddItemModalProps> = ({
   visible,
   onClose,
   onSuccess,
+  listTitle,
 }) => {
   const { token } = useAuth();
-  const [title, setTitle] = useState('');
+  const [name, setName] = useState('');
+  const [tierSet, setTierSet] = useState<TierSet | null>(null);
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const resetForm = () => {
-    setTitle('');
+    setName('');
+    setTierSet(null);
     setDescription('');
     setError(null);
   };
@@ -56,15 +72,20 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
   };
 
   const handleCreate = async () => {
-    const trimmedTitle = title.trim();
+    const trimmedName = name.trim();
 
-    if (!trimmedTitle) {
-      setError('Title is required');
+    if (!trimmedName) {
+      setError('Name is required');
       return;
     }
 
-    if (trimmedTitle.length > MAX_TITLE_LENGTH) {
-      setError(`Title must be ${MAX_TITLE_LENGTH} characters or less`);
+    if (trimmedName.length > MAX_NAME_LENGTH) {
+      setError(`Name must be ${MAX_NAME_LENGTH} characters or less`);
+      return;
+    }
+
+    if (!tierSet) {
+      setError('Please select a tier');
       return;
     }
 
@@ -76,20 +97,31 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
     try {
       setIsLoading(true);
       setError(null);
-      const createdList = await listsService.createList(
-        trimmedTitle,
-        description.trim(),
+      const response = await itemsService.createItem(
+        listTitle,
+        {
+          name: trimmedName,
+          tier_set: tierSet,
+          description: description.trim() || undefined,
+        },
         token
       );
-      resetForm();
-      onSuccess({ listId: createdList.list_id, title: createdList.title });
-      onClose();
+
+      if (isComparisonSession(response)) {
+        // TODO: Handle comparison session flow
+        // For now, close the modal - comparison flow will be added later
+        resetForm();
+        onClose();
+      } else {
+        resetForm();
+        onSuccess(response);
+        onClose();
+      }
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 409) {
-          setError('A list with this title already exists');
+          setError('An item with this name already exists in this list');
         } else if (err.data?.detail) {
-          // Handle FastAPI validation errors (array of objects)
           if (Array.isArray(err.data.detail)) {
             const messages = err.data.detail
               .map((e: { msg: string }) => e.msg)
@@ -98,10 +130,10 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
           } else if (typeof err.data.detail === 'string') {
             setError(err.data.detail);
           } else {
-            setError('Failed to create list. Please try again.');
+            setError('Failed to add item. Please try again.');
           }
         } else {
-          setError('Failed to create list. Please try again.');
+          setError('Failed to add item. Please try again.');
         }
       } else {
         setError('An unexpected error occurred');
@@ -126,19 +158,49 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
           >
             <TouchableWithoutFeedback>
               <View style={styles.modal}>
-                <Text style={styles.title}>Create New List</Text>
+                <Text style={styles.title}>Add Item</Text>
 
                 <Input
-                  label="Title"
-                  placeholder="Enter list title"
-                  value={title}
+                  label="Name"
+                  placeholder="Enter item name"
+                  value={name}
                   onChangeText={(text) => {
-                    setTitle(text);
+                    setName(text);
                     if (error) setError(null);
                   }}
-                  maxLength={MAX_TITLE_LENGTH}
+                  maxLength={MAX_NAME_LENGTH}
                   autoFocus
                 />
+
+                <View style={styles.tierSection}>
+                  <Text style={styles.tierLabel}>Tier</Text>
+                  <View style={styles.tierOptions}>
+                    {TIER_OPTIONS.map((option) => (
+                      <TouchableOpacity
+                        key={option.value}
+                        style={[
+                          styles.tierOption,
+                          tierSet === option.value && styles.tierOptionSelected,
+                        ]}
+                        onPress={() => {
+                          setTierSet(option.value);
+                          if (error) setError(null);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={[
+                            styles.tierOptionText,
+                            tierSet === option.value &&
+                              styles.tierOptionTextSelected,
+                          ]}
+                        >
+                          {option.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
 
                 <Input
                   label="Description (optional)"
@@ -161,10 +223,10 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
                     style={styles.cancelButton}
                   />
                   <Button
-                    title="Create"
+                    title="Add"
                     onPress={handleCreate}
                     loading={isLoading}
-                    disabled={!title.trim()}
+                    disabled={!name.trim() || !tierSet}
                     style={styles.createButton}
                   />
                 </View>
@@ -207,6 +269,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: AppSpacing.lg,
     textAlign: 'center',
+  },
+  tierSection: {
+    marginBottom: AppSpacing.md,
+  },
+  tierLabel: {
+    ...AppTypography.bodySmall,
+    color: AppColors.secondary.emphasis,
+    fontWeight: '500',
+    marginBottom: AppSpacing.sm,
+  },
+  tierOptions: {
+    gap: AppSpacing.xs,
+  },
+  tierOption: {
+    paddingVertical: AppSpacing.sm,
+    paddingHorizontal: AppSpacing.md,
+    borderRadius: AppBorders.radiusSm,
+    borderWidth: 1,
+    borderColor: AppColors.neutral[300],
+    backgroundColor: AppColors.surface,
+  },
+  tierOptionSelected: {
+    borderColor: AppColors.accent.primary,
+    backgroundColor: AppColors.accent.light,
+  },
+  tierOptionText: {
+    ...AppTypography.bodyMedium,
+    color: AppColors.textSecondary,
+    textAlign: 'center',
+  },
+  tierOptionTextSelected: {
+    color: AppColors.accent.primary,
+    fontWeight: '600',
   },
   descriptionInput: {
     minHeight: 80,

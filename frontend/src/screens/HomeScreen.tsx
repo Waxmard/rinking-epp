@@ -24,7 +24,7 @@ import {
   TierDistributionBar,
   TierDistribution,
 } from '../components/TierDistributionBar';
-import { CreateListModal } from '../components/CreateListModal';
+import { CreateListModal, CreatedList } from '../components/CreateListModal';
 import { listsService, ListSimple } from '../services/listsService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -130,8 +130,20 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     setShowCreateModal(true);
   };
 
-  const handleListPress = (listId: string) => {
-    console.log('Navigate to list', listId);
+  const handleListPress = (list: TierList) => {
+    navigation.navigate('ListDetail', {
+      listId: list.id,
+      listTitle: list.title,
+    });
+  };
+
+  const handleListCreated = (list: CreatedList) => {
+    fetchLists();
+    navigation.navigate('ListDetail', {
+      listId: list.listId,
+      listTitle: list.title,
+      promptAddItem: true,
+    });
   };
 
   const renderListCard = ({
@@ -146,7 +158,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
-        onPress={() => handleListPress(item.id)}
+        onPress={() => handleListPress(item)}
         style={[
           styles.cardWrapper,
           isLeftColumn ? styles.cardLeft : styles.cardRight,
@@ -279,7 +291,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <CreateListModal
           visible={showCreateModal}
           onClose={() => setShowCreateModal(false)}
-          onSuccess={fetchLists}
+          onSuccess={handleListCreated}
         />
       </SafeAreaView>
     </View>
