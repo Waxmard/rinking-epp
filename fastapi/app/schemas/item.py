@@ -64,8 +64,7 @@ class Item(ItemBase):
     name: str
     description: Optional[str] = None
     image_url: Optional[HttpUrl] = None
-    prev_item_id: Optional[uuid.UUID] = None
-    next_item_id: Optional[uuid.UUID] = None
+    position: Optional[str] = None
     rating: Optional[float] = None
     tier: Optional[TierRank] = None
     tier_set: Optional[TierSet] = None

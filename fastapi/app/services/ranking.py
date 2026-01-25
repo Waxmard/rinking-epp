@@ -56,7 +56,7 @@ def filter_ranked_items(
     items: List[ItemModel], exclude_id: Optional[uuid.UUID] = None
 ) -> List[ItemModel]:
     """
-    Filter items to only those that have been ranked (have a tier assigned).
+    Filter items to only those that have been ranked (have a position assigned).
 
     Args:
         items: List of items to filter
@@ -66,7 +66,9 @@ def filter_ranked_items(
         List of ranked items, optionally excluding the specified item
     """
     if exclude_id is None:
-        return [item for item in items if item.tier is not None]
+        return [item for item in items if item.position is not None]
     return [
-        item for item in items if item.tier is not None and item.item_id != exclude_id
+        item
+        for item in items
+        if item.position is not None and item.item_id != exclude_id
     ]

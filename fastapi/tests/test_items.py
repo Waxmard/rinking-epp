@@ -738,51 +738,50 @@ class TestComparisonFlowComplete:
 
 
 @pytest.mark.asyncio
-class TestCreateItemWithInvalidLinkedList:
-    """Tests for creating items when existing linked list structure is invalid."""
+class TestCreateItemWithExistingPositionedItems:
+    """Tests for creating items when existing items already have positions."""
 
-    async def test_create_item_with_broken_linked_list(
+    async def test_create_item_with_existing_positioned_item(
         self,
         client: AsyncClient,
         test_list: ListModel,
         auth_headers: dict,
         test_db: AsyncSession,
     ):
-        """Test creating item when existing items have broken linked list."""
-        # Create an item with invalid prev_item_id (broken linked list)
-        broken_item = ItemModel(
+        """Test creating item when existing items have positions triggers comparison."""
+        # Create an item with position (already ranked)
+        existing_item = ItemModel(
             item_id=uuid.uuid4(),
             list_id=test_list.list_id,
-            name="Broken Item",
-            description="Item with broken link",
-            image_url="https://example.com/broken.jpg",
-            prev_item_id=uuid.uuid4(),  # Points to non-existent item
-            next_item_id=None,
+            name="Existing Item",
+            description="Item with position",
+            image_url="https://example.com/existing.jpg",
+            position="a0",
             rating=None,
             tier="A",
             tier_set="good",
             created_at=datetime.now(),
             updated_at=datetime.now(),
         )
-        test_db.add(broken_item)
+        test_db.add(existing_item)
         await test_db.commit()
 
-        # Create new item - should handle invalid linked list gracefully
+        # Create new item - should trigger comparison
         response = await client.post(
             "/api/items/",
             params={"list_title": test_list.title},
             json={
                 "name": "New Item",
-                "description": "New item after broken list",
+                "description": "New item triggers comparison",
                 "image_url": "https://example.com/new.jpg",
                 "tier_set": "good",
             },
             headers=auth_headers,
         )
-        # Should succeed despite broken linked list
+        # Should return comparison session
         assert response.status_code == 200
         data = response.json()
-        assert data["name"] == "New Item"
+        assert "session_id" in data  # Comparison session started
 
 
 @pytest.mark.asyncio
@@ -836,8 +835,7 @@ class TestItemOwnership:
             name="User2 Item",
             description="Item in user2's list",
             image_url="https://example.com/user2.jpg",
-            prev_item_id=None,
-            next_item_id=None,
+            position="a0",
             rating=None,
             tier="A",
             tier_set="good",

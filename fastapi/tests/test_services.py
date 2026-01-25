@@ -31,8 +31,7 @@ def create_test_item(
     tier_set: str = "good",
     list_id: uuid.UUID | None = None,
     item_id: uuid.UUID | None = None,
-    prev_item_id: uuid.UUID | None = None,
-    next_item_id: uuid.UUID | None = None,
+    position: str | None = "a0",
 ) -> ItemModel:
     """Helper function to create ItemModel instances for unit tests."""
     return ItemModel(
@@ -41,8 +40,7 @@ def create_test_item(
         name=name,
         description="",
         image_url=None,
-        prev_item_id=prev_item_id,
-        next_item_id=next_item_id,
+        position=position,
         rating=None,
         tier=tier,
         tier_set=tier_set,
@@ -115,7 +113,7 @@ class TestComparisonService:
         await test_db.commit()
 
         # Create new item to rank
-        new_item = item_factory(name="New Item", tier=None)
+        new_item = item_factory(name="New Item", tier=None, position=None)
         test_db.add(new_item)
         await test_db.commit()
 
@@ -185,12 +183,12 @@ class TestComparisonService:
     ):
         """Test finalizing comparison when new item wins."""
         # Create target item (existing ranked item)
-        target_item = item_factory(name="Target Item")
+        target_item = item_factory(name="Target Item", position="a0")
         test_db.add(target_item)
         await test_db.commit()
 
         # Create new item
-        new_item = item_factory(name="New Item", tier=None)
+        new_item = item_factory(name="New Item", tier=None, position=None)
         test_db.add(new_item)
         await test_db.commit()
 
@@ -204,29 +202,32 @@ class TestComparisonService:
         await test_db.commit()
 
         # Create comparison result (new item wins)
+        # comparison_index=0 since target is the only item at index 0
         comparison = create_test_comparison(
             reference_item=new_item,
             target_item=target_item,
+            comparison_index=0,
             is_winner=True,
             done=True,
         )
 
+        # Pass sorted_items list instead of target_item
+        sorted_items = [target_item]
         await finalize_comparison(
             test_db,
             session,
             comparison,
             new_item,
-            target_item,
+            sorted_items,
             test_list.list_id,
             "good",
         )
         await test_db.commit()
 
-        # Verify pointers are set
+        # Verify position is set (new item wins means it goes after target)
         await test_db.refresh(new_item)
-        await test_db.refresh(target_item)
-        assert new_item.prev_item_id == target_item.item_id
-        assert target_item.next_item_id == new_item.item_id
+        assert new_item.position is not None
+        assert new_item.position > target_item.position
 
     async def test_finalize_comparison_loser(
         self,
@@ -236,12 +237,12 @@ class TestComparisonService:
     ):
         """Test finalizing comparison when new item loses."""
         # Create target item
-        target_item = item_factory(name="Target Item")
+        target_item = item_factory(name="Target Item", position="a0")
         test_db.add(target_item)
         await test_db.commit()
 
         # Create new item
-        new_item = item_factory(name="New Item", tier=None)
+        new_item = item_factory(name="New Item", tier=None, position=None)
         test_db.add(new_item)
         await test_db.commit()
 
@@ -255,46 +256,46 @@ class TestComparisonService:
         await test_db.commit()
 
         # Create comparison result (new item loses)
+        # comparison_index=0 since target is the only item at index 0
         comparison = create_test_comparison(
             reference_item=new_item,
             target_item=target_item,
+            comparison_index=0,
             is_winner=False,
             done=True,
         )
 
+        # Pass sorted_items list instead of target_item
+        sorted_items = [target_item]
         await finalize_comparison(
             test_db,
             session,
             comparison,
             new_item,
-            target_item,
+            sorted_items,
             test_list.list_id,
             "good",
         )
         await test_db.commit()
 
-        # Verify pointers are set
+        # Verify position is set (new item loses means it goes before target)
         await test_db.refresh(new_item)
-        await test_db.refresh(target_item)
-        assert new_item.next_item_id == target_item.item_id
-        assert target_item.prev_item_id == new_item.item_id
+        assert new_item.position is not None
+        assert new_item.position < target_item.position
 
-    async def test_finalize_comparison_invalid_linked_list(
+    async def test_finalize_comparison_marks_session_complete(
         self,
         test_db: AsyncSession,
         test_list: ListModel,
         item_factory: Callable[..., ItemModel],
     ):
-        """Test finalizing comparison when linked list is invalid (ValueError recovery)."""
-        # Create items with broken linked list structure
-        target_item = item_factory(
-            name="Target Item",
-            prev_item_id=uuid.uuid4(),  # Points to non-existent item (broken link)
-        )
+        """Test finalizing comparison marks session as complete."""
+        # Create target item
+        target_item = item_factory(name="Target Item", position="a0")
         test_db.add(target_item)
         await test_db.commit()
 
-        new_item = item_factory(name="New Item", tier=None)
+        new_item = item_factory(name="New Item", tier=None, position=None)
         test_db.add(new_item)
         await test_db.commit()
 
@@ -308,26 +309,29 @@ class TestComparisonService:
         await test_db.commit()
 
         # Create comparison result
+        # comparison_index=0 since target is the only item at index 0
         comparison = create_test_comparison(
             reference_item=new_item,
             target_item=target_item,
+            comparison_index=0,
             is_winner=True,
             done=True,
         )
 
-        # Should not raise ValueError - should handle it gracefully
+        # Pass sorted_items list instead of target_item
+        sorted_items = [target_item]
         await finalize_comparison(
             test_db,
             session,
             comparison,
             new_item,
-            target_item,
+            sorted_items,
             test_list.list_id,
             "good",
         )
         await test_db.commit()
 
-        # Verify session was marked complete despite the invalid linked list
+        # Verify session was marked complete
         await test_db.refresh(session)
         assert session.is_complete is True
 
@@ -358,16 +362,18 @@ class TestRankingService:
         assert result == []
 
     def test_filter_ranked_items_all_ranked(self):
-        """Test filtering when all items are ranked."""
-        items = [create_test_item(name=f"Item {i}") for i in range(3)]
+        """Test filtering when all items are ranked (have position)."""
+        items = [
+            create_test_item(name=f"Item {i}", position=f"a{i}") for i in range(3)
+        ]
         result = filter_ranked_items(items)
         assert len(result) == 3
 
     def test_filter_ranked_items_excludes_unranked(self):
-        """Test that items without tier are excluded."""
+        """Test that items without position are excluded."""
         items = [
-            create_test_item(name="Ranked"),
-            create_test_item(name="Unranked", tier=None),
+            create_test_item(name="Ranked", position="a0"),
+            create_test_item(name="Unranked", position=None),
         ]
         result = filter_ranked_items(items)
         assert len(result) == 1
@@ -377,8 +383,8 @@ class TestRankingService:
         """Test that specific item_id is excluded."""
         exclude_id = uuid.uuid4()
         items = [
-            create_test_item(name="Item 1"),
-            create_test_item(name="Item to exclude", item_id=exclude_id),
+            create_test_item(name="Item 1", position="a0"),
+            create_test_item(name="Item to exclude", item_id=exclude_id, position="a1"),
         ]
         result = filter_ranked_items(items, exclude_id)
         assert len(result) == 1
@@ -387,12 +393,10 @@ class TestRankingService:
     def test_assign_tiers_for_set_good(self):
         """Test tier assignment for 'good' tier_set."""
         list_id = uuid.uuid4()
-        items = [create_test_item(name=f"Item {i}", list_id=list_id) for i in range(4)]
-
-        # Set up linked list (already in order for test simplicity)
-        for i in range(len(items) - 1):
-            items[i].next_item_id = items[i + 1].item_id
-            items[i + 1].prev_item_id = items[i].item_id
+        items = [
+            create_test_item(name=f"Item {i}", list_id=list_id, position=f"a{i}")
+            for i in range(4)
+        ]
 
         assign_tiers_for_set(items, "good")
 
@@ -405,14 +409,10 @@ class TestRankingService:
         list_id = uuid.uuid4()
         items = [
             create_test_item(
-                name=f"Item {i}", tier="C", tier_set="mid", list_id=list_id
+                name=f"Item {i}", tier="C", tier_set="mid", list_id=list_id, position=f"a{i}"
             )
             for i in range(4)
         ]
-
-        for i in range(len(items) - 1):
-            items[i].next_item_id = items[i + 1].item_id
-            items[i + 1].prev_item_id = items[i].item_id
 
         assign_tiers_for_set(items, "mid")
 
@@ -425,14 +425,10 @@ class TestRankingService:
         list_id = uuid.uuid4()
         items = [
             create_test_item(
-                name=f"Item {i}", tier="F", tier_set="bad", list_id=list_id
+                name=f"Item {i}", tier="F", tier_set="bad", list_id=list_id, position=f"a{i}"
             )
             for i in range(2)
         ]
-
-        for i in range(len(items) - 1):
-            items[i].next_item_id = items[i + 1].item_id
-            items[i + 1].prev_item_id = items[i].item_id
 
         assign_tiers_for_set(items, "bad")
 
@@ -460,9 +456,24 @@ class TestRankingService:
 class TestHelperFunctions:
     """Tests for helper utility functions."""
 
-    def test_sort_items_linked_list_style_empty(self):
+    def test_sort_items_by_position_empty(self):
         """Test sorting empty list returns empty list."""
-        from app.utils.helper import sort_items_linked_list_style
+        from app.utils.helper import sort_items_by_position
 
-        result = sort_items_linked_list_style([])
+        result = sort_items_by_position([])
         assert result == []
+
+    def test_sort_items_by_position_ordered(self):
+        """Test sorting items by position."""
+        from app.utils.helper import sort_items_by_position
+
+        item1 = create_test_item(name="Item 1", position="a0")
+        item2 = create_test_item(name="Item 2", position="a1")
+        item3 = create_test_item(name="Item 3", position="a2")
+
+        # Pass in reverse order
+        result = sort_items_by_position([item3, item1, item2])
+
+        assert result[0] is item1
+        assert result[1] is item2
+        assert result[2] is item3

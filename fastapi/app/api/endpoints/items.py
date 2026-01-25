@@ -10,6 +10,7 @@ from app.core.constants import (
     ITEM_NOT_FOUND_ERROR,
     SESSION_NOT_FOUND_ERROR,
 )
+from app.core.fractional_index import generate_key_between
 from app.crud import comparison as comparison_crud
 from app.crud import item as item_crud
 from app.crud import list as list_crud
@@ -31,7 +32,7 @@ from app.services.comparison_service import (
     start_comparison,
 )
 from app.services.ranking import filter_ranked_items, get_initial_tier
-from app.utils.helper import sort_items_linked_list_style
+from app.utils.helper import sort_items_by_position
 from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
@@ -57,15 +58,14 @@ async def create_item(
             detail="List not found or does not belong to current user",
         )
 
-    # Create item
+    # Create item (position will be set during comparison or as initial item)
     item_obj = ItemModel(
         item_id=uuid.uuid4(),
         list_id=list_obj.list_id,
         name=item_in.name,
         description=item_in.description,
         image_url=str(item_in.image_url) if item_in.image_url else None,
-        prev_item_id=None,
-        next_item_id=None,
+        position=None,
         rating=None,
         tier=None,
         tier_set=item_in.tier_set.value,
@@ -78,23 +78,24 @@ async def create_item(
         db, list_obj.list_id, item_in.tier_set.value
     )
 
-    # Filter to only ranked items
+    # Filter to only ranked items (those with position)
     ranked_items = filter_ranked_items(set_items)
 
     # If no ranked items exist in this set, this is the first item
     if not ranked_items:
         item_obj.tier = get_initial_tier(item_in.tier_set.value)
+        item_obj.position = generate_key_between(None, None)  # Initial position
         await item_crud.create(db, item_obj)
         await db.commit()
         await db.refresh(item_obj)
         return item_obj  # type: ignore[return-value]
 
-    # Sort the ranked items by linked list order
-    try:
-        sort_items_linked_list_style(ranked_items)  # type: ignore[arg-type]
-    except ValueError:
-        # Invalid linked list structure, treat as empty
+    # Sort the ranked items by position
+    sorted_ranked = sort_items_by_position(ranked_items)
+    if not sorted_ranked:
+        # No valid ranked items, treat as first item
         item_obj.tier = get_initial_tier(item_in.tier_set.value)
+        item_obj.position = generate_key_between(None, None)
         await item_crud.create(db, item_obj)
         await db.commit()
         await db.refresh(item_obj)
@@ -120,7 +121,7 @@ async def create_item(
     target_item = await item_crud.get_by_id(db, db_session.target_item_id)
 
     # Build comparison for response
-    all_items = sort_items_linked_list_style(ranked_items)  # type: ignore[arg-type]
+    all_items = sort_items_by_position(ranked_items)
     comparison = Comparison(
         reference_item=item_obj,  # type: ignore[arg-type]
         target_item=target_item,  # type: ignore[arg-type]
@@ -194,18 +195,18 @@ async def submit_comparison_result(
 
     # Process the comparison result
     is_winner = result_request.result == "better"
-    comparison = process_comparison_result(
+    comparison, sorted_items = process_comparison_result(
         db_session, is_winner, new_item, target_item, ranked_items
     )
 
     if comparison.done:
-        # Finalize the comparison (update pointers and tiers)
+        # Finalize the comparison (set position and tiers)
         await finalize_comparison(
             db,
             db_session,
             comparison,
             new_item,
-            target_item,
+            sorted_items,
             db_session.list_id,
             ref_tier_set,
         )

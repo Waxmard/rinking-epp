@@ -46,6 +46,21 @@ async def get_by_list_and_tier_set(
     return list(result.scalars().all())
 
 
+async def get_by_list_and_tier_set_sorted(
+    db: AsyncSession, list_id: uuid.UUID, tier_set: str
+) -> List[ItemModel]:
+    """Get all items in a list with a specific tier_set, sorted by position."""
+    result = await db.execute(
+        select(ItemModel)
+        .where(
+            ItemModel.list_id == list_id,
+            ItemModel.tier_set == tier_set,
+        )
+        .order_by(ItemModel.position.nulls_last())
+    )
+    return list(result.scalars().all())
+
+
 async def create(db: AsyncSession, item: ItemModel) -> ItemModel:
     """Create a new item (add to session, commit not performed)."""
     db.add(item)
