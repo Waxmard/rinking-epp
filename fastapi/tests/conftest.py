@@ -188,7 +188,7 @@ async def test_list(test_db: AsyncSession, test_user: User) -> ListModel:
 
 @pytest_asyncio.fixture
 async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
-    """Create a test item with tier_set and valid linked list structure."""
+    """Create a test item with tier_set and valid position."""
     from datetime import datetime
     import uuid
 
@@ -198,8 +198,7 @@ async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
         name="Test Item",
         description="A test item",
         image_url="https://example.com/image.jpg",
-        prev_item_id=None,
-        next_item_id=None,
+        position="a0",
         rating=None,
         tier="A",
         tier_set="good",
@@ -216,11 +215,12 @@ async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
 async def multiple_items(
     test_db: AsyncSession, test_list: ListModel
 ) -> list[ItemModel]:
-    """Create multiple test items with tier_set."""
+    """Create multiple test items with tier_set and positions."""
     from datetime import datetime
     import uuid
 
     items = []
+    positions = ["a0", "a1", "a2", "a3", "a4"]
     for i in range(5):
         item = ItemModel(
             item_id=uuid.uuid4(),
@@ -228,8 +228,7 @@ async def multiple_items(
             name=f"Test Item {i+1}",
             description=f"Test item number {i+1}",
             image_url=f"https://example.com/image{i+1}.jpg",
-            prev_item_id=None,
-            next_item_id=None,
+            position=positions[i],
             rating=None,
             tier="A" if i < 3 else "S",
             tier_set="good",
@@ -257,8 +256,7 @@ def item_factory(test_list: ListModel):
         tier_set: str = "good",
         description: str = "",
         image_url: str | None = None,
-        prev_item_id=None,
-        next_item_id=None,
+        position: str | None = "a0",
         rating: float | None = None,
         list_id=None,
     ) -> ItemModel:
@@ -268,8 +266,7 @@ def item_factory(test_list: ListModel):
             name=name,
             description=description,
             image_url=image_url,
-            prev_item_id=prev_item_id,
-            next_item_id=next_item_id,
+            position=position,
             rating=rating,
             tier=tier,
             tier_set=tier_set,

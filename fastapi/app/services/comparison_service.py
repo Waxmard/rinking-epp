@@ -3,18 +3,18 @@
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.algorithm import find_next_comparison
+from app.core.fractional_index import generate_key_between
 from app.crud import comparison as comparison_crud
-from app.crud import item as item_crud
 from app.db.models import ComparisonSession as ComparisonSessionModel
 from app.db.models import Item as ItemModel
 from app.schemas.item import Comparison, ComparisonSession
 from app.services.ranking import assign_tiers_for_set
-from app.utils.helper import sort_items_linked_list_style
+from app.utils.helper import sort_items_by_position
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ async def start_comparison(
     Returns:
         The created comparison session model
     """
-    all_items = sort_items_linked_list_style(ranked_items)  # type: ignore[arg-type]
+    all_items = sort_items_by_position(ranked_items)
 
     middle = len(all_items) // 2
     target_item = all_items[middle]
@@ -107,7 +107,7 @@ def process_comparison_result(
     new_item: ItemModel,
     target_item: ItemModel,
     ranked_items: List[ItemModel],
-) -> Comparison:
+) -> Tuple[Comparison, List[ItemModel]]:
     """
     Process a comparison result and determine the next step.
 
@@ -119,9 +119,9 @@ def process_comparison_result(
         ranked_items: Already ranked items (excluding new_item)
 
     Returns:
-        Updated Comparison object with next comparison or done=True
+        Tuple of (Updated Comparison object, sorted items list)
     """
-    all_items = sort_items_linked_list_style(ranked_items)  # type: ignore[arg-type]
+    sorted_items = sort_items_by_position(ranked_items)
 
     comparison = Comparison(
         reference_item=new_item,  # type: ignore[arg-type]
@@ -133,7 +133,8 @@ def process_comparison_result(
         done=False,
     )
 
-    return find_next_comparison(all_items, comparison)
+    result = find_next_comparison(sorted_items, comparison)
+    return result, sorted_items
 
 
 async def finalize_comparison(
@@ -141,49 +142,54 @@ async def finalize_comparison(
     db_session: ComparisonSessionModel,
     comparison: Comparison,
     new_item: ItemModel,
-    target_item: ItemModel,
+    sorted_items: List[ItemModel],
     list_id: uuid.UUID,
     tier_set: str,
 ) -> None:
     """
-    Finalize a comparison by updating item pointers and recalculating tiers.
+    Finalize a comparison by setting item position and recalculating tiers.
 
     Args:
         db: Database session
         db_session: The comparison session
         comparison: The final comparison result
         new_item: The new item being ranked
-        target_item: The target item for pointer updates
+        sorted_items: Already sorted ranked items (excluding new_item)
         list_id: ID of the list
         tier_set: The tier set (good, mid, bad)
     """
-    # Set reference item pointers
-    if comparison.is_winner:
-        new_item.prev_item_id = comparison.target_item.item_id
-        new_item.next_item_id = comparison.target_item.next_item_id
-    else:
-        new_item.next_item_id = comparison.target_item.item_id
-        new_item.prev_item_id = comparison.target_item.prev_item_id
+    target_index = comparison.comparison_index
 
+    # Calculate the new position using fractional indexing
+    # Use the comparison index to get adjacent items directly
+    if comparison.is_winner:
+        # New item ranks higher (goes after target in the list)
+        lower_bound = sorted_items[target_index].position if target_index >= 0 else None
+        upper_bound = (
+            sorted_items[target_index + 1].position
+            if target_index + 1 < len(sorted_items)
+            else None
+        )
+    else:
+        # New item ranks lower (goes before target in the list)
+        lower_bound = (
+            sorted_items[target_index - 1].position if target_index > 0 else None
+        )
+        upper_bound = (
+            sorted_items[target_index].position if target_index >= 0 else None
+        )
+
+    new_item.position = generate_key_between(lower_bound, upper_bound)
     new_item.updated_at = datetime.now(timezone.utc)
     db.add(new_item)
     await db.flush()
 
-    # Update target item pointer
-    if comparison.is_winner:
-        target_item.next_item_id = new_item.item_id
-    else:
-        target_item.prev_item_id = new_item.item_id
-    target_item.updated_at = datetime.now(timezone.utc)
-
-    await db.flush()
-
-    # Recalculate tiers for all items in this tier_set
-    all_set_items = await item_crud.get_by_list_and_tier_set(db, list_id, tier_set)
+    # Recalculate tiers for all items in this tier_set (including new item)
+    all_ranked_items = sorted_items + [new_item]
+    all_ranked_items_sorted = sort_items_by_position(all_ranked_items)
 
     try:
-        sorted_items = sort_items_linked_list_style(all_set_items)  # type: ignore[arg-type]
-        assign_tiers_for_set(sorted_items, tier_set)  # type: ignore[arg-type]
+        assign_tiers_for_set(all_ranked_items_sorted, tier_set)
     except ValueError as e:
         logger.warning(
             "Failed to assign tiers for list_id=%s, tier_set=%s: %s",
