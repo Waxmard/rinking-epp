@@ -1,21 +1,6 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-} from 'react-native';
-import { Input, Button } from '../design-system/components';
-import {
-  AppColors,
-  AppSpacing,
-  AppTypography,
-  AppBorders,
-} from '../design-system/tokens';
+import { StyleSheet, Modal } from 'react-native';
+import { Input, BaseModalContent } from '../design-system/components';
 import { useAuth } from '../providers/AuthContext';
 import { listsService } from '../services/listsService';
 import { ApiError } from '../services/api';
@@ -115,61 +100,37 @@ export const CreateListContent: React.FC<CreateListContentProps> = ({
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.overlay}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardView}
-        >
-          <TouchableWithoutFeedback>
-            <View style={styles.modal}>
-              <Text style={styles.title}>Create New List</Text>
+    <BaseModalContent
+      title="Create New List"
+      error={error}
+      isLoading={isLoading}
+      submitText="Create"
+      submitDisabled={!title.trim()}
+      onClose={handleClose}
+      onSubmit={handleCreate}
+    >
+      <Input
+        label="Title"
+        placeholder="Enter list title"
+        value={title}
+        onChangeText={(text) => {
+          setTitle(text);
+          if (error) setError(null);
+        }}
+        maxLength={MAX_TITLE_LENGTH}
+        autoFocus
+      />
 
-              <Input
-                label="Title"
-                placeholder="Enter list title"
-                value={title}
-                onChangeText={(text) => {
-                  setTitle(text);
-                  if (error) setError(null);
-                }}
-                maxLength={MAX_TITLE_LENGTH}
-                autoFocus
-              />
-
-              <Input
-                label="Description (optional)"
-                placeholder="Add a description"
-                value={description}
-                onChangeText={setDescription}
-                multiline
-                numberOfLines={3}
-                inputStyle={styles.descriptionInput}
-              />
-
-              {error && <Text style={styles.error}>{error}</Text>}
-
-              <View style={styles.buttonRow}>
-                <Button
-                  title="Cancel"
-                  variant="text"
-                  onPress={handleClose}
-                  disabled={isLoading}
-                  style={styles.cancelButton}
-                />
-                <Button
-                  title="Create"
-                  onPress={handleCreate}
-                  loading={isLoading}
-                  disabled={!title.trim()}
-                  style={styles.createButton}
-                />
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </View>
-    </TouchableWithoutFeedback>
+      <Input
+        label="Description (optional)"
+        placeholder="Add a description"
+        value={description}
+        onChangeText={setDescription}
+        multiline
+        numberOfLines={3}
+        inputStyle={styles.descriptionInput}
+      />
+    </BaseModalContent>
   );
 };
 
@@ -190,55 +151,8 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
 );
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  keyboardView: {
-    width: '100%',
-    alignItems: 'center',
-    paddingHorizontal: AppSpacing.lg,
-  },
-  modal: {
-    width: '100%',
-    maxWidth: 400,
-    backgroundColor: AppColors.dominant.primary,
-    borderRadius: AppBorders.radiusLg,
-    padding: AppSpacing.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  title: {
-    ...AppTypography.headlineSmall,
-    color: AppColors.secondary.emphasis,
-    fontWeight: '600',
-    marginBottom: AppSpacing.lg,
-    textAlign: 'center',
-  },
   descriptionInput: {
     minHeight: 80,
     textAlignVertical: 'top',
-  },
-  error: {
-    ...AppTypography.bodySmall,
-    color: AppColors.error,
-    marginBottom: AppSpacing.md,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: AppSpacing.sm,
-    marginTop: AppSpacing.sm,
-  },
-  cancelButton: {
-    minWidth: 80,
-  },
-  createButton: {
-    minWidth: 100,
   },
 });

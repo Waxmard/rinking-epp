@@ -65,6 +65,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Helper to persist auth state to storage and update state
+  const saveAuthState = async (newToken: string, newUser: User) => {
+    await AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken);
+    await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(newUser));
+    setUser(newUser);
+    setToken(newToken);
+  };
+
   useEffect(() => {
     checkAuthState();
   }, []);
@@ -119,22 +127,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             displayName: email.split('@')[0],
             photoUrl: undefined,
           };
-          const mockToken = 'mock-auth-token';
-          await AsyncStorage.setItem(AUTH_TOKEN_KEY, mockToken);
-          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(mockUser));
-          setUser(mockUser);
-          setToken(mockToken);
+          await saveAuthState('mock-auth-token', mockUser);
           return true;
         }
 
         // Real authentication
         const result = await authService.login(email, password);
         if (result.success && result.user && result.token) {
-          const localUser = toLocalUser(result.user);
-          await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
-          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
-          setUser(localUser);
-          setToken(result.token);
+          await saveAuthState(result.token, toLocalUser(result.user));
           return true;
         } else {
           setError(result.error || 'Login failed');
@@ -172,11 +172,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           username,
         });
         if (result.success && result.user && result.token) {
-          const localUser = toLocalUser(result.user);
-          await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
-          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
-          setUser(localUser);
-          setToken(result.token);
+          await saveAuthState(result.token, toLocalUser(result.user));
           return true;
         } else {
           setError(result.error || 'Registration failed');
