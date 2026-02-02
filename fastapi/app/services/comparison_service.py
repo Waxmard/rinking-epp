@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.algorithm import find_next_comparison
 from app.core.fractional_index import generate_key_between
 from app.crud import comparison as comparison_crud
+from app.crud import item as item_crud
 from app.db.models import ComparisonSession as ComparisonSessionModel
 from app.db.models import Item as ItemModel
 from app.schemas.item import Comparison, ComparisonSession
@@ -142,7 +143,7 @@ async def finalize_comparison(
     db_session: ComparisonSessionModel,
     comparison: Comparison,
     new_item: ItemModel,
-    sorted_items: List[ItemModel],
+    target_item: ItemModel,
     list_id: uuid.UUID,
     tier_set: str,
 ) -> None:
@@ -154,42 +155,38 @@ async def finalize_comparison(
         db_session: The comparison session
         comparison: The final comparison result
         new_item: The new item being ranked
-        sorted_items: Already sorted ranked items (excluding new_item)
+        target_item: The target item from the final comparison
         list_id: ID of the list
         tier_set: The tier set (good, mid, bad)
     """
-    target_index = comparison.comparison_index
-
-    # Calculate the new position using fractional indexing
-    # Use the comparison index to get adjacent items directly
+    # Query adjacent item instead of using array indexing
+    # Semantics: "better" items have HIGHER positions
     if comparison.is_winner:
-        # New item ranks higher (goes after target in the list)
-        lower_bound = sorted_items[target_index].position if target_index >= 0 else None
-        upper_bound = (
-            sorted_items[target_index + 1].position
-            if target_index + 1 < len(sorted_items)
-            else None
+        # New item is BETTER than target → goes AFTER target (higher position)
+        # Need position between target and the next item
+        lower_bound = target_item.position
+        next_item = await item_crud.get_next_item_by_position(
+            db, list_id, tier_set, target_item.position
         )
+        upper_bound = next_item.position if next_item else None
     else:
-        # New item ranks lower (goes before target in the list)
-        lower_bound = (
-            sorted_items[target_index - 1].position if target_index > 0 else None
+        # New item is WORSE than target → goes BEFORE target (lower position)
+        # Need position between the previous item and target
+        prev_item = await item_crud.get_prev_item_by_position(
+            db, list_id, tier_set, target_item.position
         )
-        upper_bound = (
-            sorted_items[target_index].position if target_index >= 0 else None
-        )
+        lower_bound = prev_item.position if prev_item else None
+        upper_bound = target_item.position
 
     new_item.position = generate_key_between(lower_bound, upper_bound)
     new_item.updated_at = datetime.now(timezone.utc)
     db.add(new_item)
     await db.flush()
 
-    # Recalculate tiers for all items in this tier_set (including new item)
-    all_ranked_items = sorted_items + [new_item]
-    all_ranked_items_sorted = sort_items_by_position(all_ranked_items)
-
+    # Fetch items only for tier calculation (separate concern)
+    all_items = await item_crud.get_by_list_and_tier_set_sorted(db, list_id, tier_set)
     try:
-        assign_tiers_for_set(all_ranked_items_sorted, tier_set)
+        assign_tiers_for_set(all_items, tier_set)
     except ValueError as e:
         logger.warning(
             "Failed to assign tiers for list_id=%s, tier_set=%s: %s",

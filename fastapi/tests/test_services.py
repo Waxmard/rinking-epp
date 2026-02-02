@@ -211,14 +211,12 @@ class TestComparisonService:
             done=True,
         )
 
-        # Pass sorted_items list instead of target_item
-        sorted_items = [target_item]
         await finalize_comparison(
             test_db,
             session,
             comparison,
             new_item,
-            sorted_items,
+            target_item,
             test_list.list_id,
             "good",
         )
@@ -265,14 +263,12 @@ class TestComparisonService:
             done=True,
         )
 
-        # Pass sorted_items list instead of target_item
-        sorted_items = [target_item]
         await finalize_comparison(
             test_db,
             session,
             comparison,
             new_item,
-            sorted_items,
+            target_item,
             test_list.list_id,
             "good",
         )
@@ -318,14 +314,12 @@ class TestComparisonService:
             done=True,
         )
 
-        # Pass sorted_items list instead of target_item
-        sorted_items = [target_item]
         await finalize_comparison(
             test_db,
             session,
             comparison,
             new_item,
-            sorted_items,
+            target_item,
             test_list.list_id,
             "good",
         )
@@ -363,9 +357,7 @@ class TestRankingService:
 
     def test_filter_ranked_items_all_ranked(self):
         """Test filtering when all items are ranked (have position)."""
-        items = [
-            create_test_item(name=f"Item {i}", position=f"a{i}") for i in range(3)
-        ]
+        items = [create_test_item(name=f"Item {i}", position=f"a{i}") for i in range(3)]
         result = filter_ranked_items(items)
         assert len(result) == 3
 
@@ -409,7 +401,11 @@ class TestRankingService:
         list_id = uuid.uuid4()
         items = [
             create_test_item(
-                name=f"Item {i}", tier="C", tier_set="mid", list_id=list_id, position=f"a{i}"
+                name=f"Item {i}",
+                tier="C",
+                tier_set="mid",
+                list_id=list_id,
+                position=f"a{i}",
             )
             for i in range(4)
         ]
@@ -425,7 +421,11 @@ class TestRankingService:
         list_id = uuid.uuid4()
         items = [
             create_test_item(
-                name=f"Item {i}", tier="F", tier_set="bad", list_id=list_id, position=f"a{i}"
+                name=f"Item {i}",
+                tier="F",
+                tier_set="bad",
+                list_id=list_id,
+                position=f"a{i}",
             )
             for i in range(2)
         ]

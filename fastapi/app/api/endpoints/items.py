@@ -206,7 +206,7 @@ async def submit_comparison_result(
             db_session,
             comparison,
             new_item,
-            sorted_items,
+            target_item,
             db_session.list_id,
             ref_tier_set,
         )
