@@ -3,4 +3,5 @@
 
 .coverage
 .coverage.*
+coverage.json
 htmlcov/

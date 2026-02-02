@@ -20,6 +20,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  token: string | null;
   isLoading: boolean;
   error: string | null;
   signIn: (email: string, password: string) => Promise<boolean>;
@@ -60,8 +61,17 @@ const toLocalUser = (apiUser: ApiUser): User => ({
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Helper to persist auth state to storage and update state
+  const saveAuthState = async (newToken: string, newUser: User) => {
+    await AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken);
+    await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(newUser));
+    setUser(newUser);
+    setToken(newToken);
+  };
 
   useEffect(() => {
     checkAuthState();
@@ -69,19 +79,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuthState = async () => {
     try {
-      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      const storedToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
       const userData = await AsyncStorage.getItem(USER_DATA_KEY);
 
-      if (token && userData) {
+      if (storedToken && userData) {
         if (USE_MOCK_AUTH) {
           // Mock mode: trust stored data
           setUser(JSON.parse(userData));
+          setToken(storedToken);
         } else {
           // Real mode: validate token with backend
-          const result = await authService.validateToken(token);
+          const result = await authService.validateToken(storedToken);
           if (result.success && result.user) {
             const localUser = toLocalUser(result.user);
             setUser(localUser);
+            setToken(storedToken);
             await AsyncStorage.setItem(
               USER_DATA_KEY,
               JSON.stringify(localUser)
@@ -115,19 +127,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             displayName: email.split('@')[0],
             photoUrl: undefined,
           };
-          await AsyncStorage.setItem(AUTH_TOKEN_KEY, 'mock-auth-token');
-          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(mockUser));
-          setUser(mockUser);
+          await saveAuthState('mock-auth-token', mockUser);
           return true;
         }
 
         // Real authentication
         const result = await authService.login(email, password);
         if (result.success && result.user && result.token) {
-          const localUser = toLocalUser(result.user);
-          await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
-          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
-          setUser(localUser);
+          await saveAuthState(result.token, toLocalUser(result.user));
           return true;
         } else {
           setError(result.error || 'Login failed');
@@ -165,10 +172,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           username,
         });
         if (result.success && result.user && result.token) {
-          const localUser = toLocalUser(result.user);
-          await AsyncStorage.setItem(AUTH_TOKEN_KEY, result.token);
-          await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(localUser));
-          setUser(localUser);
+          await saveAuthState(result.token, toLocalUser(result.user));
           return true;
         } else {
           setError(result.error || 'Registration failed');
@@ -196,6 +200,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
       await AsyncStorage.removeItem(USER_DATA_KEY);
       setUser(null);
+      setToken(null);
     } catch (error) {
       console.error('Error signing out:', error);
     } finally {
@@ -206,6 +211,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const contextValue = useMemo(
     () => ({
       user,
+      token,
       isLoading,
       error,
       signIn,
@@ -213,7 +219,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       signInWithGoogle,
       signOut,
     }),
-    [user, isLoading, error, signIn, register, signInWithGoogle, signOut]
+    [user, token, isLoading, error, signIn, register, signInWithGoogle, signOut]
   );
 
   return (
