@@ -3,33 +3,25 @@ from typing import List
 from app.db.models import Item as ItemModel
 
 
-def sort_items_linked_list_style(all_items: List[ItemModel]) -> List[ItemModel]:
+def sort_items_by_position(items: List[ItemModel]) -> List[ItemModel]:
     """
-    Sorts items from lowest to highest using next_item_id pointers.
-    The highest ranked item has null next_item_id.
-    The lowest ranked item has null prev_item_id.
+    Sort items by their position field.
+    Items with position are sorted lexicographically.
+    Items without position (unranked) are placed at the end.
+
+    Args:
+        items: List of items to sort
+
+    Returns:
+        List of items sorted by position, with unranked items at the end
     """
-    if not all_items:
+    if not items:
         return []
 
-    # Map from item_id to item
-    id_to_next_item = {item.item_id: item for item in all_items}
+    ranked = [item for item in items if item.position is not None]
+    unranked = [item for item in items if item.position is None]
 
-    head = next((item for item in all_items if item.prev_item_id is None), None)
+    # Sort ranked items lexicographically by position
+    sorted_ranked = sorted(ranked, key=lambda x: x.position)  # type: ignore[arg-type, return-value]
 
-    if not head:
-        raise ValueError("Invalid linked list structure: no head items found.")
-
-    current = head
-    ordered_items = [current]
-
-    while current.next_item_id:
-        next_item = id_to_next_item.get(current.next_item_id)
-        if not next_item:
-            raise ValueError(
-                f"Broken link: item_id {current.item_id} not found in item list."
-            )
-        current = next_item
-        ordered_items.append(current)
-
-    return ordered_items
+    return sorted_ranked + unranked

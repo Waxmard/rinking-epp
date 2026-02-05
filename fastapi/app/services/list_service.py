@@ -3,7 +3,7 @@
 from typing import Any, Dict, List, Optional, Tuple
 
 from app.db.models import Item as ItemModel
-from app.utils.helper import sort_items_linked_list_style
+from app.utils.helper import sort_items_by_position
 
 
 def group_items_by_tier_set(items: List[ItemModel]) -> Dict[Optional[str], List]:
@@ -27,31 +27,27 @@ def group_items_by_tier_set(items: List[ItemModel]) -> Dict[Optional[str], List]
 
 def get_items_sorted_by_tier_set(items: List[ItemModel]) -> List[ItemModel]:
     """
-    Sort items by their tier_set's linked list order.
-    Each tier_set has its own linked list, so we sort each group separately
+    Sort items by their tier_set's position order.
+    Each tier_set has its own position ordering, so we sort each group separately
     and then combine them.
 
     Args:
         items: List of items to sort
 
     Returns:
-        List of items sorted by tier_set linked list order
+        List of items sorted by tier_set position order
     """
     if not items:
         return []
 
-    # Group items by tier_set since each tier_set has its own linked list
+    # Group items by tier_set since each tier_set has its own ordering
     tier_set_groups = group_items_by_tier_set(items)
 
-    # Sort each tier_set's linked list separately, then combine
+    # Sort each tier_set's items by position, then combine
     all_sorted: List = []
     for tier_set, group_items in tier_set_groups.items():
-        try:
-            sorted_group = sort_items_linked_list_style(group_items)
-            all_sorted.extend(sorted_group)
-        except ValueError:
-            # Linked list structure invalid for this group, add unsorted
-            all_sorted.extend(group_items)
+        sorted_group = sort_items_by_position(group_items)
+        all_sorted.extend(sorted_group)
 
     return all_sorted
 
