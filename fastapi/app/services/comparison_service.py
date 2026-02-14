@@ -161,22 +161,29 @@ async def finalize_comparison(
     """
     # Query adjacent item instead of using array indexing
     # Semantics: "better" items have HIGHER positions
+    if target_item.position is None:
+        raise ValueError(
+            f"Target item {target_item.item_id} has no position; cannot finalize comparison"
+        )
+
+    target_position: str = target_item.position
+
     if comparison.is_winner:
         # New item is BETTER than target → goes AFTER target (higher position)
         # Need position between target and the next item
-        lower_bound = target_item.position
+        lower_bound: Optional[str] = target_position
         next_item = await item_crud.get_next_item_by_position(
-            db, list_id, tier_set, target_item.position
+            db, list_id, tier_set, target_position
         )
-        upper_bound = next_item.position if next_item else None
+        upper_bound: Optional[str] = next_item.position if next_item else None
     else:
         # New item is WORSE than target → goes BEFORE target (lower position)
         # Need position between the previous item and target
         prev_item = await item_crud.get_prev_item_by_position(
-            db, list_id, tier_set, target_item.position
+            db, list_id, tier_set, target_position
         )
         lower_bound = prev_item.position if prev_item else None
-        upper_bound = target_item.position
+        upper_bound = target_position
 
     new_item.position = generate_key_between(lower_bound, upper_bound)
     new_item.updated_at = datetime.now(timezone.utc)

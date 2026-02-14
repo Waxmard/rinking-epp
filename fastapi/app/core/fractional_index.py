@@ -124,15 +124,15 @@ def generate_key_between(a: Optional[str], b: Optional[str]) -> str:
         last_suffix_idx = _char_to_index(suffix[-1])
         if last_suffix_idx < BASE - 1:
             mid_idx = (last_suffix_idx + BASE - 1) // 2
-            return a[:common_prefix_len] + a_char + suffix[:-1] + _index_to_char(mid_idx)
+            return (
+                a[:common_prefix_len] + a_char + suffix[:-1] + _index_to_char(mid_idx)
+            )
 
     # Extend with a midpoint character
     return a[:common_prefix_len] + a_char + suffix + ALPHABET[BASE // 2]
 
 
-def generate_n_keys_between(
-    a: Optional[str], b: Optional[str], n: int
-) -> List[str]:
+def generate_n_keys_between(a: Optional[str], b: Optional[str], n: int) -> List[str]:
     """
     Generate n keys that sort between a and b.
 

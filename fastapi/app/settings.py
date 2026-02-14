@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from pydantic import AnyHttpUrl, PostgresDsn, computed_field
+from pydantic import PostgresDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,12 +20,16 @@ class Settings(BaseSettings):
     # CORS - stored as comma-separated string, parsed via computed_field
     CORS_ORIGINS_STR: str = ""
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def CORS_ORIGINS(self) -> List[str]:
         if not self.CORS_ORIGINS_STR:
             return []
-        return [origin.strip() for origin in self.CORS_ORIGINS_STR.split(",") if origin.strip()]
+        return [
+            origin.strip()
+            for origin in self.CORS_ORIGINS_STR.split(",")
+            if origin.strip()
+        ]
 
     # Logging
     LOG_LEVEL: str = "INFO"
