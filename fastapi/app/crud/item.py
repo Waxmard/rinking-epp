@@ -46,6 +46,21 @@ async def get_by_list_and_tier_set(
     return list(result.scalars().all())
 
 
+async def get_by_list_and_tier_set_sorted(
+    db: AsyncSession, list_id: uuid.UUID, tier_set: str
+) -> List[ItemModel]:
+    """Get all items in a list with a specific tier_set, sorted by position."""
+    result = await db.execute(
+        select(ItemModel)
+        .where(
+            ItemModel.list_id == list_id,
+            ItemModel.tier_set == tier_set,
+        )
+        .order_by(ItemModel.position.nulls_last())
+    )
+    return list(result.scalars().all())
+
+
 async def create(db: AsyncSession, item: ItemModel) -> ItemModel:
     """Create a new item (add to session, commit not performed)."""
     db.add(item)
@@ -69,3 +84,45 @@ async def update(
 async def delete(db: AsyncSession, item: ItemModel) -> None:
     """Delete an item."""
     await db.delete(item)
+
+
+async def get_next_item_by_position(
+    db: AsyncSession,
+    list_id: uuid.UUID,
+    tier_set: str,
+    current_position: str,
+) -> Optional[ItemModel]:
+    """Get item with next higher position (lexicographically)."""
+    result = await db.execute(
+        select(ItemModel)
+        .where(
+            ItemModel.list_id == list_id,
+            ItemModel.tier_set == tier_set,
+            ItemModel.position > current_position,
+            ItemModel.position.isnot(None),
+        )
+        .order_by(ItemModel.position.asc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()
+
+
+async def get_prev_item_by_position(
+    db: AsyncSession,
+    list_id: uuid.UUID,
+    tier_set: str,
+    current_position: str,
+) -> Optional[ItemModel]:
+    """Get item with next lower position (lexicographically)."""
+    result = await db.execute(
+        select(ItemModel)
+        .where(
+            ItemModel.list_id == list_id,
+            ItemModel.tier_set == tier_set,
+            ItemModel.position < current_position,
+            ItemModel.position.isnot(None),
+        )
+        .order_by(ItemModel.position.desc())
+        .limit(1)
+    )
+    return result.scalar_one_or_none()

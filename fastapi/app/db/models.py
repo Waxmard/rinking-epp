@@ -77,8 +77,9 @@ class Item(Base):
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    prev_item_id: Mapped[Optional[uuid.UUID]] = mapped_column(nullable=True)
-    next_item_id: Mapped[Optional[uuid.UUID]] = mapped_column(nullable=True)
+    position: Mapped[Optional[str]] = mapped_column(
+        String(50), nullable=True, index=True
+    )
     rating: Mapped[Optional[float]] = mapped_column(nullable=True)
     tier: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)
     tier_set: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
