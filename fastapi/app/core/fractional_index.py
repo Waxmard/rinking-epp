@@ -77,8 +77,10 @@ def generate_key_between(a: Optional[str], b: Optional[str]) -> str:
         first_dec = _decrement_char(b[0])
         if first_dec is not None:
             return first_dec + b[1:]
-        # Can't decrement first char, prepend with midpoint
-        return ALPHABET[BASE // 2] + b
+        # b[0] is the minimum char — recurse on remainder, prepend min
+        if len(b) == 1:
+            raise ValueError(f"cannot generate key before minimum key {b!r}")
+        return ALPHABET[0] + generate_key_between(None, b[1:])
 
     # Case 3: No upper bound - generate key after a
     if b is None:
