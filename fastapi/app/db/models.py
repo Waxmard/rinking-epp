@@ -3,7 +3,7 @@ import uuid
 from typing import List as ListType
 from typing import Optional
 
-from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -77,9 +77,7 @@ class Item(Base):
     name: Mapped[str] = mapped_column(String(100))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    position: Mapped[Optional[str]] = mapped_column(
-        String(50), nullable=True, index=True
-    )
+    position: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     rating: Mapped[Optional[float]] = mapped_column(nullable=True)
     tier: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)
     tier_set: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
@@ -92,6 +90,15 @@ class Item(Base):
 
     # Relationships
     list: Mapped[List] = relationship("List", back_populates="items")
+
+
+Index(
+    "ix_items_list_tier_position",
+    Item.list_id,
+    Item.tier_set,
+    Item.position,
+    postgresql_where=Item.position.isnot(None),
+)
 
 
 class ComparisonSession(Base):
