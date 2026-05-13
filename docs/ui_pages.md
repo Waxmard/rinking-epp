@@ -22,6 +22,8 @@ TierNerd allows users to:
 
 ### 1. Login Screen
 
+![Login Screen](../screenshots/login.png)
+
 The entry point for unauthenticated users.
 
 **Features:**
@@ -45,6 +47,8 @@ The entry point for unauthenticated users.
 - Fade-in animation on load
 
 ### 2. Home Screen
+
+![Home Screen Empty State](../screenshots/home-empty.png)
 
 The main hub after authentication, with clean cards and clear CTAs.
 

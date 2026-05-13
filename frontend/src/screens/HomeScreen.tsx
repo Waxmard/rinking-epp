@@ -1,85 +1,97 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Image,
   Animated,
+  Dimensions,
+  ActivityIndicator,
+  Modal,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../providers/AuthContext';
-import { Card, Button } from '../design-system/components';
+import { Card, FAB } from '../design-system/components';
 import {
   AppColors,
   AppSpacing,
   AppTypography,
   AppBorders,
 } from '../design-system/tokens';
+import {
+  TierDistributionBar,
+  TierDistribution,
+} from '../components/TierDistributionBar';
+import { CreateListContent, CreatedList } from '../components/CreateListModal';
+import { AddItemContent } from '../components/AddItemModal';
+import { listsService, ListSimple } from '../services/listsService';
+import { Item } from '../services/itemsService';
 
-// Temporary inline shadows to fix import issue
-const AppShadows = {
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-};
+type ModalStep = 'create' | 'addItem' | null;
 
-interface RecentList {
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const COLUMN_GAP = AppSpacing.md;
+const HORIZONTAL_PADDING = AppSpacing.lg;
+const CARD_WIDTH = (SCREEN_WIDTH - HORIZONTAL_PADDING * 2 - COLUMN_GAP) / 2;
+
+interface TierList {
   id: string;
   title: string;
   itemCount: number;
   updatedAt: Date;
-}
-
-interface UserStats {
-  totalLists: number;
-  totalItems: number;
-  mostUsedTier: string;
+  tierDistribution: TierDistribution;
 }
 
 interface HomeScreenProps {
   navigation?: any;
 }
 
+// Convert API ListSimple to local TierList format
+const toTierList = (apiList: ListSimple): TierList => ({
+  id: apiList.list_id,
+  title: apiList.title,
+  itemCount: apiList.item_count,
+  updatedAt: new Date(apiList.updated_at),
+  tierDistribution: apiList.tier_distribution,
+});
+
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const [lists, setLists] = useState<TierList[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [modalStep, setModalStep] = useState<ModalStep>(null);
+  const [pendingList, setPendingList] = useState<CreatedList | null>(null);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
-  // Mock data for recent lists (showing up to 3)
-  const [recentLists] = useState<RecentList[]>([
-    {
-      id: '1',
-      title: 'Best Programming Languages',
-      itemCount: 15,
-      updatedAt: new Date(),
-    },
-  ]);
+  const fetchLists = useCallback(async () => {
+    if (!token) return;
 
-  // Mock user stats
-  const [userStats] = useState<UserStats>({
-    totalLists: 1,
-    totalItems: 15,
-    mostUsedTier: 'A',
-  });
+    try {
+      setIsLoading(true);
+      setError(null);
+      const apiLists = await listsService.getLists(token);
+      setLists(apiLists.map(toTierList));
+    } catch (err: any) {
+      console.error('Error fetching lists:', err);
+      setError(err.message || 'Failed to load lists');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token]);
 
   useEffect(() => {
-    // Start animations
+    fetchLists();
+  }, [fetchLists]);
+
+  useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -112,186 +124,226 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const handleCreatePress = () => {
-    console.log('Create new tier list');
+    setModalStep('create');
   };
 
-  const handleListPress = (listId: string) => {
-    console.log('Navigate to list', listId);
+  const handleListPress = (list: TierList) => {
+    navigation.navigate('ListDetail', {
+      listId: list.id,
+      listTitle: list.title,
+    });
+  };
+
+  const handleListLongPress = (list: TierList) => {
+    Alert.alert(
+      'Delete List',
+      'Are you sure you want to delete this list? All items will be permanently deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            if (!token) return;
+            try {
+              await listsService.deleteList(list.id, token);
+              setLists((prev) => prev.filter((l) => l.id !== list.id));
+            } catch (err: any) {
+              console.error('Error deleting list:', err);
+              Alert.alert('Error', err.message || 'Failed to delete list');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleListCreated = (list: CreatedList) => {
+    fetchLists();
+    setPendingList(list);
+    setModalStep('addItem');
+  };
+
+  const handleItemCreated = (_item: Item) => {
+    if (pendingList) {
+      navigation.navigate('ListDetail', {
+        listId: pendingList.listId,
+        listTitle: pendingList.title,
+      });
+      setModalStep(null);
+      setPendingList(null);
+    }
+  };
+
+  const renderListCard = ({
+    item,
+    index,
+  }: {
+    item: TierList;
+    index: number;
+  }) => {
+    const isLeftColumn = index % 2 === 0;
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => handleListPress(item)}
+        onLongPress={() => handleListLongPress(item)}
+        style={[
+          styles.cardWrapper,
+          isLeftColumn ? styles.cardLeft : styles.cardRight,
+        ]}
+      >
+        <Card style={styles.listCard}>
+          <Text style={styles.listTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+          <Text style={styles.itemCount}>{item.itemCount} items</Text>
+          <TierDistributionBar
+            distribution={item.tierDistribution}
+            style={styles.tierBar}
+          />
+          <Text style={styles.updatedAt}>
+            Modified {formatDate(item.updatedAt)}
+          </Text>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <View style={styles.headerRow}>
+        <View style={styles.brandSection}>
+          <Text style={styles.brandText}>TierNerd</Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleProfilePress}
+          style={styles.profileButton}
+          activeOpacity={0.7}
+        >
+          {user?.photoUrl ? (
+            <Image
+              source={{ uri: user.photoUrl }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={styles.profilePlaceholder}>
+              <Ionicons
+                name="person"
+                size={20}
+                color={AppColors.accent.primary}
+              />
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyState}>
+      <Image
+        source={require('../../assets/logo-transparent.png')}
+        style={styles.emptyStateImage}
+      />
+      <Text style={styles.emptyStateTitle}>Welcome to TierNerd!</Text>
+      <Text style={styles.emptyStateText}>
+        Create your first tier list and start ranking your favorite things
+      </Text>
+    </View>
+  );
+
+  const renderLoading = () => (
+    <View style={styles.loadingState}>
+      <ActivityIndicator size="large" color={AppColors.accent.primary} />
+    </View>
+  );
+
+  const renderError = () => (
+    <View style={styles.errorState}>
+      <Ionicons
+        name="alert-circle-outline"
+        size={48}
+        color={AppColors.textSecondary}
+      />
+      <Text style={styles.errorTitle}>Something went wrong</Text>
+      <Text style={styles.errorText}>{error}</Text>
+      <TouchableOpacity style={styles.retryButton} onPress={fetchLists}>
+        <Text style={styles.retryButtonText}>Try Again</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderContent = () => {
+    // Show loading while waiting for token OR while fetching
+    if (!token || isLoading) {
+      return renderLoading();
+    }
+
+    if (error) {
+      return renderError();
+    }
+
+    if (lists.length === 0) {
+      return renderEmptyState();
+    }
+
+    return (
+      <FlatList
+        data={lists}
+        renderItem={renderListCard}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+    );
   };
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <Animated.View
+          style={[
+            styles.animatedContainer,
+            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
+          ]}
         >
-          <Animated.View
-            style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}
-          >
-            {/* Header */}
-            <View style={styles.header}>
-              <View style={styles.headerRow}>
-                <View style={styles.brandSection}>
-                  <Image
-                    source={require('../../assets/logo-transparent.png')}
-                    style={styles.logo}
-                  />
-                  <Text style={styles.brandText}>TierNerd</Text>
-                </View>
+          {renderHeader()}
+          {renderContent()}
+        </Animated.View>
 
-                <TouchableOpacity
-                  onPress={handleProfilePress}
-                  style={styles.profileButton}
-                  activeOpacity={0.7}
-                >
-                  {user?.photoUrl ? (
-                    <Image
-                      source={{ uri: user.photoUrl }}
-                      style={styles.profileImage}
-                    />
-                  ) : (
-                    <View style={styles.profilePlaceholder}>
-                      <Ionicons
-                        name="person"
-                        size={20}
-                        color={AppColors.neutral[600]}
-                      />
-                    </View>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
+        <FAB onPress={handleCreatePress} />
 
-            {/* Hero Section */}
-            <View style={styles.heroSection}>
-              <Button
-                title="Create New Tier List"
-                onPress={handleCreatePress}
-                fullWidth
-                style={styles.createButton}
-                icon={
-                  <Ionicons
-                    name="add-circle-outline"
-                    size={24}
-                    color={AppColors.textOnPrimary}
-                  />
-                }
-              />
-            </View>
-
-            {recentLists.length > 0 ? (
-              <>
-                {/* Quick Stats */}
-                <Card style={styles.statsCard}>
-                  <View style={styles.statsRow}>
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>
-                        {userStats.totalLists}
-                      </Text>
-                      <Text style={styles.statLabel}>Lists</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                      <Text style={styles.statValue}>
-                        {userStats.totalItems}
-                      </Text>
-                      <Text style={styles.statLabel}>Items</Text>
-                    </View>
-                    <View style={styles.statDivider} />
-                    <View style={styles.statItem}>
-                      <View
-                        style={[
-                          styles.tierBadge,
-                          {
-                            backgroundColor:
-                              AppColors.tierColors[
-                                userStats.mostUsedTier as keyof typeof AppColors.tierColors
-                              ],
-                          },
-                        ]}
-                      >
-                        <Text style={styles.tierBadgeText}>
-                          {userStats.mostUsedTier}
-                        </Text>
-                      </View>
-                      <Text style={styles.statLabel}>Top Tier</Text>
-                    </View>
-                  </View>
-                </Card>
-
-                {/* Recent Lists */}
-                <View style={styles.recentSection}>
-                  <Text style={styles.sectionTitle}>Recent Lists</Text>
-                  {recentLists.map((list) => (
-                    <TouchableOpacity
-                      key={list.id}
-                      activeOpacity={0.8}
-                      onPress={() => handleListPress(list.id)}
-                    >
-                      <Card style={styles.listCard}>
-                        <View style={styles.listHeader}>
-                          <View style={styles.listInfo}>
-                            <Text style={styles.listTitle} numberOfLines={1}>
-                              {list.title}
-                            </Text>
-                            <View style={styles.listMeta}>
-                              <Text style={styles.listMetaText}>
-                                {list.itemCount} items • Modified{' '}
-                                {formatDate(list.updatedAt)}
-                              </Text>
-                            </View>
-                          </View>
-                          <Ionicons
-                            name="chevron-forward"
-                            size={20}
-                            color={AppColors.neutral[400]}
-                          />
-                        </View>
-                      </Card>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-
-                {/* Secondary Actions */}
-                <View style={styles.secondaryActions}>
-                  <TouchableOpacity
-                    style={styles.secondaryButton}
-                    activeOpacity={0.8}
-                    onPress={() => navigation.navigate('Lists')}
-                  >
-                    <Ionicons
-                      name="list-outline"
-                      size={20}
-                      color={AppColors.primary}
-                    />
-                    <Text style={styles.secondaryButtonText}>
-                      View All Lists
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              /* Empty State */
-              <View style={styles.emptyState}>
-                <Image
-                  source={require('../../assets/logo-transparent.png')}
-                  style={styles.emptyStateImage}
-                />
-                <Text style={styles.emptyStateTitle}>Welcome to TierNerd!</Text>
-                <Text style={styles.emptyStateText}>
-                  Create your first tier list and start ranking your favorite
-                  things
-                </Text>
-                <Button
-                  title="Create Your First List"
-                  onPress={handleCreatePress}
-                  style={styles.emptyStateButton}
-                />
-              </View>
-            )}
-          </Animated.View>
-        </ScrollView>
+        <Modal
+          visible={modalStep !== null}
+          transparent
+          animationType="fade"
+          onRequestClose={() => {
+            setModalStep(null);
+            setPendingList(null);
+          }}
+        >
+          {modalStep === 'create' && (
+            <CreateListContent
+              onClose={() => setModalStep(null)}
+              onSuccess={handleListCreated}
+            />
+          )}
+          {modalStep === 'addItem' && pendingList && (
+            <AddItemContent
+              listTitle={pendingList.title}
+              onClose={() => {
+                setModalStep(null);
+                setPendingList(null);
+              }}
+              onSuccess={handleItemCreated}
+            />
+          )}
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -305,13 +357,13 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  scrollContent: {
-    paddingHorizontal: AppSpacing.lg,
-    paddingBottom: AppSpacing.xxxl,
+  animatedContainer: {
+    flex: 1,
   },
   header: {
-    marginBottom: AppSpacing.xl,
+    paddingHorizontal: HORIZONTAL_PADDING,
     paddingTop: AppSpacing.md,
+    paddingBottom: AppSpacing.lg,
   },
   headerRow: {
     flexDirection: 'row',
@@ -321,11 +373,6 @@ const styles = StyleSheet.create({
   brandSection: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  logo: {
-    width: 36,
-    height: 36,
-    marginRight: AppSpacing.sm,
   },
   brandText: {
     ...AppTypography.headlineMedium,
@@ -339,8 +386,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: AppColors.surface,
     borderWidth: 1,
-    borderColor: AppColors.neutral[300],
-    ...AppShadows.md,
+    borderColor: AppColors.accent.light,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   profileImage: {
     width: '100%',
@@ -353,120 +404,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  heroSection: {
-    marginBottom: AppSpacing.xl,
+  listContent: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingBottom: AppSpacing.xxxl + 56, // Extra space for FAB
   },
-  createButton: {
-    backgroundColor: AppColors.primary,
-    paddingVertical: AppSpacing.lg,
-    ...AppShadows.lg,
+  row: {
+    justifyContent: 'space-between',
   },
-  statsCard: {
-    backgroundColor: AppColors.dominant.primary,
-    borderRadius: AppBorders.radiusLg,
-    padding: AppSpacing.lg,
-    marginBottom: AppSpacing.xl,
-    ...AppShadows.md,
+  cardWrapper: {
+    width: CARD_WIDTH,
+    marginBottom: COLUMN_GAP,
   },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+  cardLeft: {
+    marginRight: COLUMN_GAP / 2,
   },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    ...AppTypography.headlineMedium,
-    color: AppColors.secondary.emphasis,
-    fontWeight: '700',
-  },
-  statLabel: {
-    ...AppTypography.labelSmall,
-    color: AppColors.textSecondary,
-    marginTop: AppSpacing.xs,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: AppColors.neutral[200],
-  },
-  tierBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: AppSpacing.xxs,
-  },
-  tierBadgeText: {
-    ...AppTypography.labelMedium,
-    color: AppColors.textOnPrimary,
-    fontWeight: 'bold',
-  },
-  recentSection: {
-    marginBottom: AppSpacing.xl,
-  },
-  sectionTitle: {
-    ...AppTypography.titleMedium,
-    color: AppColors.secondary.emphasis,
-    fontWeight: '600',
-    marginBottom: AppSpacing.md,
+  cardRight: {
+    marginLeft: COLUMN_GAP / 2,
   },
   listCard: {
     backgroundColor: AppColors.dominant.primary,
     borderRadius: AppBorders.radiusMd,
     padding: AppSpacing.md,
-    marginBottom: AppSpacing.sm,
-    ...AppShadows.md,
-  },
-  listHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  listInfo: {
-    flex: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
   listTitle: {
     ...AppTypography.bodyLarge,
     color: AppColors.secondary.emphasis,
     fontWeight: '600',
-    marginBottom: AppSpacing.xxs,
+    marginBottom: AppSpacing.xs,
   },
-  listMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  listMetaText: {
+  itemCount: {
     ...AppTypography.bodySmall,
     color: AppColors.textSecondary,
+    marginBottom: AppSpacing.sm,
   },
-  secondaryActions: {
-    marginTop: AppSpacing.lg,
+  tierBar: {
+    marginBottom: AppSpacing.sm,
   },
-  secondaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: AppColors.surface,
-    borderWidth: 1,
-    borderColor: AppColors.primary,
-    borderRadius: AppBorders.radiusMd,
-    paddingVertical: AppSpacing.md,
-    paddingHorizontal: AppSpacing.lg,
-  },
-  secondaryButtonText: {
-    ...AppTypography.labelLarge,
-    color: AppColors.primary,
-    fontWeight: '500',
-    marginLeft: AppSpacing.sm,
+  updatedAt: {
+    ...AppTypography.labelSmall,
+    color: AppColors.neutral[400],
   },
   emptyState: {
+    flex: 1,
     alignItems: 'center',
-    paddingTop: AppSpacing.xxxl,
-    paddingHorizontal: AppSpacing.lg,
+    justifyContent: 'center',
+    paddingHorizontal: HORIZONTAL_PADDING,
   },
   emptyStateImage: {
     width: 120,
@@ -486,7 +473,39 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: AppSpacing.xl,
   },
-  emptyStateButton: {
-    backgroundColor: AppColors.primary,
+  loadingState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: HORIZONTAL_PADDING,
+  },
+  errorTitle: {
+    ...AppTypography.headlineSmall,
+    color: AppColors.secondary.emphasis,
+    fontWeight: '600',
+    marginTop: AppSpacing.md,
+    marginBottom: AppSpacing.xs,
+  },
+  errorText: {
+    ...AppTypography.bodyMedium,
+    color: AppColors.textSecondary,
+    textAlign: 'center',
+    marginBottom: AppSpacing.lg,
+  },
+  retryButton: {
+    backgroundColor: AppColors.accent.primary,
+    paddingHorizontal: AppSpacing.lg,
+    paddingVertical: AppSpacing.sm,
+    borderRadius: AppBorders.radiusSm,
+  },
+  retryButtonText: {
+    ...AppTypography.bodyMedium,
+    color: AppColors.dominant.primary,
+    fontWeight: '600',
   },
 });

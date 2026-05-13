@@ -15,6 +15,14 @@ This app solves the problem of arbitrary ratings by implementing a 1v1 compariso
 - View results as both ordered lists and intuitive tier rankings (S-F)
 - Understand at a glance which items are top-tier (S) vs lower tiers
 
+## Screenshots
+
+| Login | Home |
+|:---:|:---:|
+| ![Login](screenshots/login.png) | ![Home](screenshots/home-empty.png) |
+
+See the [screenshots/](screenshots/) directory for all available screenshots.
+
 ## Technology
 
 - **Frontend:** React Native with Expo (SDK 54)

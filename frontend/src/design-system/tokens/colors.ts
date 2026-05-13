@@ -55,14 +55,14 @@ export const AppColors = {
     900: '#111827',
   },
 
-  // Tier colors - keeping these vibrant for ranking system
+  // Tier colors - monochrome purple gradient (dark = best, light = worst)
   tierColors: {
-    S: '#FFD700', // Gold
-    A: '#4CAF50', // Green
-    B: '#2196F3', // Blue
-    C: '#9C27B0', // Purple
-    D: '#FF9800', // Orange
-    F: '#9E9E9E', // Gray
+    S: '#4C1D95', // Deep purple - elite/premium feel
+    A: '#5B21B6', // Dark purple
+    B: '#7C3AED', // Purple - matches accent.dark
+    C: '#8B5CF6', // Medium purple - matches accent.primary
+    D: '#A78BFA', // Light purple - matches accent.light
+    F: '#C4B5FD', // Lavender - washed out for lowest tier
   },
 
   // Get tier color helper
