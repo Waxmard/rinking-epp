@@ -1,0 +1,32 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.RINKING_EPP_RELEASE_PLEASE_TOKEN }}
+
+      - name: Auto-merge release PR
+        run: |
+          PR_NUMBER=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --label "autorelease: pending" \
+            --json number \
+            --jq '.[0].number')
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr merge --rebase --auto --repo "${{ github.repository }}" "$PR_NUMBER"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.RINKING_EPP_RELEASE_PLEASE_TOKEN }}
