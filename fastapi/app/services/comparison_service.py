@@ -3,7 +3,7 @@
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -108,7 +108,7 @@ def process_comparison_result(
     new_item: ItemModel,
     target_item: ItemModel,
     ranked_items: List[ItemModel],
-) -> Tuple[Comparison, List[ItemModel]]:
+) -> Comparison:
     """
     Process a comparison result and determine the next step.
 
@@ -120,7 +120,7 @@ def process_comparison_result(
         ranked_items: Already ranked items (excluding new_item)
 
     Returns:
-        Tuple of (Updated Comparison object, sorted items list)
+        Updated Comparison object
     """
     sorted_items = sort_items_by_position(ranked_items)
 
@@ -134,8 +134,7 @@ def process_comparison_result(
         done=False,
     )
 
-    result = find_next_comparison(sorted_items, comparison)
-    return result, sorted_items
+    return find_next_comparison(sorted_items, comparison)
 
 
 async def finalize_comparison(
