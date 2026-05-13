@@ -21,14 +21,6 @@ def _index_to_char(i: int) -> str:
     return ALPHABET[i]
 
 
-def _midpoint_char(a: str, b: str) -> str:
-    """Get the character midpoint between two characters."""
-    a_idx = _char_to_index(a)
-    b_idx = _char_to_index(b)
-    mid_idx = (a_idx + b_idx) // 2
-    return _index_to_char(mid_idx)
-
-
 def _increment_char(c: str) -> Optional[str]:
     """Increment a character by one, returning None if at max."""
     idx = _char_to_index(c)
