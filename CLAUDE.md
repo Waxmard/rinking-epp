@@ -10,7 +10,7 @@ TierNerd is a cross-platform mobile app for creating ranked tier lists (S-F) thr
 
 ### Backend (fastapi/)
 
-**Always use `make` commands instead of raw `docker` commands.**
+**Always use `make` commands instead of raw `docker` commands.** Claude may run read-only ones (`make logs`, `make stop`, `make health`); the user runs build/dev/reset commands (`make dev`, `make fresh`, `make restart`, `make reset`, `make clean`).
 
 ```bash
 cd fastapi
@@ -85,13 +85,13 @@ npm run typecheck                 # TypeScript check
 ### Key Patterns
 - **Backend**: Async SQLAlchemy 2.0+, FastAPI dependency injection, JWT auth
 - **Frontend**: Context API for state, token-based design system, TypeScript strict mode
-- **Items**: Linked list structure via `prev_item_id`/`next_item_id` for sorted order
+- **Items**: Ordered via Base-62 fractional index `position` column (`app/core/fractional_index.py`)
 - **Ranking**: Binary search algorithm in `app/core/algorithm.py`
 
 ### Database
 - PostgreSQL with async (asyncpg)
 - UUID primary keys throughout
-- Migrations via Alembic
+- Schema managed via `Base.metadata.create_all` (`app/db/database.py`, `scripts/seed.py`) — no Alembic. Column type/constraint changes require a volume wipe (`make clean` + `make dev`).
 
 ## Development Notes
 
@@ -101,3 +101,4 @@ npm run typecheck                 # TypeScript check
 - API endpoints prefixed with `/api/`
 - Do not run `npm run ios`, `npm run android`, or `npx expo start` - user runs these in a separate terminal
 - Do not run git commit/push - user handles staging, committing, and pushing themselves
+- Do not run `make clean`, `make dev`, `make fresh`, `make restart`, or `make reset` - user runs these themselves

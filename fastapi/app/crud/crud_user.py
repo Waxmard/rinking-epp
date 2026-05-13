@@ -56,7 +56,7 @@ async def update_user(db: AsyncSession, db_obj: User, obj_in: UserUpdate) -> Use
     """
     Update a user.
     """
-    update_data = obj_in.dict(exclude_unset=True)
+    update_data = obj_in.model_dump(exclude_unset=True)
 
     # Handle password update separately
     if "password" in update_data:
