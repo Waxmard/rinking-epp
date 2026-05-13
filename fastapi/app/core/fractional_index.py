@@ -64,7 +64,7 @@ def generate_key_between(a: Optional[str], b: Optional[str]) -> str:
         generate_key_between(None, "a0") -> "Z0"
         generate_key_between("a0", None) -> "a1"
         generate_key_between("a0", "a2") -> "a1"
-        generate_key_between("a0", "a1") -> "a0V"
+        generate_key_between("a0", "a1") -> "a0a0"
     """
     # Case 1: No bounds - return initial key
     if a is None and b is None:
@@ -96,42 +96,31 @@ def generate_key_between(a: Optional[str], b: Optional[str]) -> str:
     if a >= b:
         raise ValueError(f"a must be less than b: {a!r} >= {b!r}")
 
-    # Find the common prefix and first differing position
-    min_len = min(len(a), len(b))
-    common_prefix_len = 0
-    for i in range(min_len):
-        if a[i] != b[i]:
-            break
-        common_prefix_len += 1
+    # Find common prefix
+    p = 0
+    while p < min(len(a), len(b)) and a[p] == b[p]:
+        p += 1
 
-    # Get the differing characters (or virtual characters for shorter strings)
-    a_char = a[common_prefix_len] if common_prefix_len < len(a) else ALPHABET[0]
-    b_char = b[common_prefix_len] if common_prefix_len < len(b) else ALPHABET[0]
+    prefix = a[:p]
+    a_tail = a[p:]
+    b_tail = b[p:]
 
-    a_idx = _char_to_index(a_char)
-    b_idx = _char_to_index(b_char)
+    # If a is a prefix of b, recurse on b's remainder with no lower bound
+    if not a_tail:
+        # b_tail is non-empty since a < b
+        return prefix + generate_key_between(None, b_tail)
 
-    # If there's room between the characters, use the midpoint
+    # Both tails non-empty; first chars differ and a_char < b_char
+    a_char, b_char = a_tail[0], b_tail[0]
+    a_idx, b_idx = _char_to_index(a_char), _char_to_index(b_char)
+
+    # Room between chars — use midpoint
     if b_idx - a_idx > 1:
-        mid_char = _index_to_char((a_idx + b_idx) // 2)
-        return a[:common_prefix_len] + mid_char
+        return prefix + _index_to_char((a_idx + b_idx) // 2)
 
-    # Characters are adjacent or same - need to extend
-    # Use the lower key's character and append a midpoint
-    suffix = a[common_prefix_len + 1 :] if common_prefix_len + 1 < len(a) else ""
-
-    # Find a character we can extend with
-    if suffix:
-        # Try to find midpoint between suffix's last char and max
-        last_suffix_idx = _char_to_index(suffix[-1])
-        if last_suffix_idx < BASE - 1:
-            mid_idx = (last_suffix_idx + BASE - 1) // 2
-            return (
-                a[:common_prefix_len] + a_char + suffix[:-1] + _index_to_char(mid_idx)
-            )
-
-    # Extend with a midpoint character
-    return a[:common_prefix_len] + a_char + suffix + ALPHABET[BASE // 2]
+    # Adjacent chars — keep a_char and extend after a_tail[1:] with no upper bound
+    rest = a_tail[1:] if len(a_tail) > 1 else None
+    return prefix + a_char + generate_key_between(rest, None)
 
 
 def generate_n_keys_between(a: Optional[str], b: Optional[str], n: int) -> List[str]:
