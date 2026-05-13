@@ -98,6 +98,7 @@ Index(
     Item.tier_set,
     Item.position,
     postgresql_where=Item.position.isnot(None),
+    sqlite_where=Item.position.isnot(None),
     unique=True,
 )
 

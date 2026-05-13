@@ -143,7 +143,7 @@ class TestComparisonCRUD:
             name="New Target",
             description="New target item",
             image_url=None,
-            position="a0",
+            position="a1",
             rating=None,
             tier="A",
             tier_set="good",
