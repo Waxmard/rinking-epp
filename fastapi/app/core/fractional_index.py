@@ -4,7 +4,7 @@ Keys consist of digits and letters: 0-9, A-Z, a-z (62 characters total).
 This provides lexicographic ordering where "a0" < "a1" < "b0" etc.
 """
 
-from typing import List, Optional
+from typing import Optional
 
 # Base-62 alphabet: 0-9, A-Z, a-z
 ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -113,36 +113,3 @@ def generate_key_between(a: Optional[str], b: Optional[str]) -> str:
     # Adjacent chars — keep a_char and extend after a_tail[1:] with no upper bound
     rest = a_tail[1:] if len(a_tail) > 1 else None
     return prefix + a_char + generate_key_between(rest, None)
-
-
-def generate_n_keys_between(a: Optional[str], b: Optional[str], n: int) -> List[str]:
-    """
-    Generate n keys that sort between a and b.
-
-    Args:
-        a: The lower bound key (None means before all)
-        b: The upper bound key (None means after all)
-        n: Number of keys to generate
-
-    Returns:
-        List of n string keys in sorted order
-
-    Raises:
-        ValueError: If n < 1 or if a >= b when both are provided
-    """
-    if n < 1:
-        raise ValueError("n must be at least 1")
-
-    if n == 1:
-        return [generate_key_between(a, b)]
-
-    keys: List[str] = []
-    prev = a
-    for i in range(n):
-        # For even distribution, we could be smarter here,
-        # but iterative generation is simpler and works fine
-        key = generate_key_between(prev, b)
-        keys.append(key)
-        prev = key
-
-    return keys

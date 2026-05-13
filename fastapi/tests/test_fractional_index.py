@@ -5,7 +5,6 @@ import pytest
 from app.core.fractional_index import (
     ALPHABET,
     generate_key_between,
-    generate_n_keys_between,
 )
 
 
@@ -152,21 +151,3 @@ class TestInvariants:
         left = generate_key_between(a, mid)
         right = generate_key_between(mid, b)
         assert a < left < mid < right < b
-
-
-class TestNKeys:
-    def test_n_keys_strictly_increasing(self) -> None:
-        keys = generate_n_keys_between("a0", "a9", 5)
-        assert len(keys) == 5
-        assert keys == sorted(keys)
-        assert all(keys[i] < keys[i + 1] for i in range(len(keys) - 1))
-        assert all("a0" < k < "a9" for k in keys)
-
-    def test_n_keys_no_bounds(self) -> None:
-        keys = generate_n_keys_between(None, None, 3)
-        assert len(keys) == 3
-        assert keys == sorted(keys)
-
-    def test_n_must_be_at_least_one(self) -> None:
-        with pytest.raises(ValueError):
-            generate_n_keys_between(None, None, 0)
