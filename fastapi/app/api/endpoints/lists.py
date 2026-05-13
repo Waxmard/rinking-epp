@@ -128,7 +128,7 @@ async def update_list(
             status_code=status.HTTP_404_NOT_FOUND, detail=LIST_NOT_FOUND_ERROR
         )
 
-    update_data = list_in.dict(exclude_unset=True)
+    update_data = list_in.model_dump(exclude_unset=True)
     list_obj = await list_crud.update(db, list_obj, update_data)
 
     # Get items to include in response

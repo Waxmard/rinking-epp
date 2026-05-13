@@ -273,7 +273,7 @@ async def update_item(
             detail=ITEM_NOT_FOUND_ERROR,
         )
 
-    update_data = item_in.dict(exclude_unset=True)
+    update_data = item_in.model_dump(exclude_unset=True)
     await item_crud.update(db, item_obj, update_data)
     await db.commit()
     await db.refresh(item_obj)
