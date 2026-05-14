@@ -11,8 +11,7 @@
     "lint:fix": "eslint src/ --ext .ts,.tsx --fix",
     "format": "prettier --write src/",
     "format:check": "prettier --check src/",
-    "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
