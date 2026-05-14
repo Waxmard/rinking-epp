@@ -1,5 +1,9 @@
 ### Git Hooks
 
-Husky runs `lint-staged` on staged frontend files (`biome check --write` on `*.{ts,tsx,js,jsx,json}`). Config in `frontend/package.json` under `lint-staged`. Hook script in `.husky/pre-commit`.
+[Lefthook](https://lefthook.dev/) manages all pre-commit hooks via `lefthook.yml` at repo root. Hooks run in parallel and only on staged files matching each glob:
 
-Python files use the `pre-commit` framework (`.pre-commit-config.yaml`, ruff hooks) — independent of husky.
+- **biome** — `frontend/src/**/*.{ts,tsx,js,jsx,json}` → `biome check --write`
+- **ruff-lint** — `fastapi/**/*.py` → `ruff check --fix`
+- **ruff-format** — `fastapi/**/*.py` → `ruff format`
+
+Autofixed files are re-staged automatically (`stage_fixed: true`). Hooks install via the root `prepare` script when you run `npm install`.

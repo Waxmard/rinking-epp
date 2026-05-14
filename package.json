@@ -2,9 +2,9 @@
   "name": "rinking-epp",
   "private": true,
   "scripts": {
-    "prepare": "husky"
+    "prepare": "lefthook install"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "lefthook": "^1.13.6"
   }
 }

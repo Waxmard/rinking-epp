@@ -32,7 +32,6 @@ setup:
 	npm install
 	cd frontend && npm install
 	cd fastapi && uv sync --extra dev --group dev
-	cd fastapi && uv run pre-commit install
 
 # ----- Aggregate -----
 

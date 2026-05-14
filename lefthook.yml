@@ -1,0 +1,17 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "frontend/src/**/*.{ts,tsx,js,jsx,json}"
+      run: cd frontend && npx biome check --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+
+    ruff-lint:
+      glob: "fastapi/**/*.py"
+      run: cd fastapi && uv run ruff check --fix {staged_files}
+      stage_fixed: true
+
+    ruff-format:
+      glob: "fastapi/**/*.py"
+      run: cd fastapi && uv run ruff format {staged_files}
+      stage_fixed: true

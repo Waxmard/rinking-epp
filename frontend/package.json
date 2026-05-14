@@ -44,13 +44,7 @@
     "@babel/core": "^7.28.6",
     "@biomejs/biome": "2.4.14",
     "@types/react": "^19.2.10",
-    "lint-staged": "^17.0.4",
     "typescript": "~5.9.2"
   },
-  "private": true,
-  "lint-staged": {
-    "src/**/*.{ts,tsx,js,jsx,json}": [
-      "biome check --write --no-errors-on-unmatched"
-    ]
-  }
+  "private": true
 }
