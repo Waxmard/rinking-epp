@@ -25,6 +25,35 @@ help:
 	@echo "  build-local    - Build for current platform only (fast)"
 	@echo "  build-multi    - Build for multiple platforms (amd64 + arm64)"
 	@echo "  push           - Push multi-platform image to registry"
+	@echo ""
+	@echo "Code Quality:"
+	@echo "  lint           - Ruff check + format check"
+	@echo "  fix            - Ruff check --fix + format"
+	@echo "  format         - Ruff format"
+	@echo "  typecheck      - mypy"
+	@echo "  test           - pytest with coverage (fail under 90%)"
+	@echo "  ci             - lint + typecheck + test"
+
+# Code Quality
+.PHONY: lint fix format typecheck test ci
+lint:
+	uv run ruff check app/
+	uv run ruff format --check app/
+
+fix:
+	uv run ruff check app/ --fix
+	uv run ruff format app/
+
+format:
+	uv run ruff format app/
+
+typecheck:
+	uv run mypy app/
+
+test:
+	uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+
+ci: lint typecheck test
 
 # Build for current platform only (faster for local development)
 .PHONY: build-local

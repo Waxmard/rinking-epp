@@ -17,15 +17,26 @@ TierNerd is a cross-platform mobile app for creating ranked tier lists (S-F) thr
 ## First-Time Setup
 
 ```bash
-npm install        # at repo root — installs husky, activates git hooks
-cd frontend && npm install
-cd ../fastapi && uv sync --group dev
-pre-commit install # activates Python hooks
+make setup    # installs root deps, frontend deps, backend deps + pre-commit hooks
 ```
 
-Skipping root `npm install` means frontend pre-commit hooks won't run.
+Or step-by-step: `npm install` (root, activates husky) → `cd frontend && npm install` → `cd ../fastapi && uv sync --extra dev --group dev` → `uv run pre-commit install`.
 
 ## Development Commands
+
+### Root (cross-project)
+
+```bash
+make help          # list all targets
+make lint          # backend + frontend lint
+make fix           # autofix both
+make typecheck     # mypy + tsc
+make test          # backend pytest w/ coverage
+make ci            # lint + typecheck + test
+make backend-<X>   # delegates to fastapi/Makefile target X (e.g. backend-logs, backend-health, backend-lint)
+```
+
+Backend quality targets (lint/fix/format/typecheck/test/ci) live in `fastapi/Makefile` and are reachable from root via the `backend-` prefix or directly when in `fastapi/`.
 
 ### Backend (fastapi/)
 
