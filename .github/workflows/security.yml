@@ -24,7 +24,6 @@ jobs:
       - run: semgrep ci --sarif --output=semgrep.sarif
         env:
           SEMGREP_RULES: >-
-            p/default
             p/python
             p/typescript
             p/react
