@@ -8,7 +8,10 @@ source_roots = ["."]
 forbid_circular_dependencies = true
 exact = true
 
-# Layers: api → services → core/crud → db/utils/schemas/settings
+# Layers: main → api → services → crud → db
+# api may also call crud directly (endpoint handlers use crud_* helpers).
+# core is a pure leaf reachable from api/services/crud.
+# schemas/settings/utils are cross-cutting.
 
 [[modules]]
 path = "app.main"

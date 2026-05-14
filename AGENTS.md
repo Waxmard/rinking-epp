@@ -133,7 +133,7 @@ Autofixed files are re-staged automatically (`stage_fixed: true`). Hooks install
 - `schemas/` — Pydantic request/response models
 - `settings.py` — Configuration via pydantic-settings
 
-Module boundaries enforced by [tach](https://docs.gauge.sh/) (`fastapi/tach.toml`). Layering: `main → api → services → crud → db`, with `core` as a pure leaf (constants, security, algorithm, fractional_index) reachable from `api`/`services`/`crud`, and `schemas`/`settings`/`utils` as cross-cutting. Run `make backend-boundaries` (or `uv run tach check` in `fastapi/`) to verify.
+Module boundaries enforced by [tach](https://docs.gauge.sh/) (`fastapi/tach.toml`). Layering: `main → api → services → crud → db`. `api` may also call `crud` directly (endpoint handlers use `crud_*` helpers); this is intentional, not a violation. `core` is a pure leaf (constants, security, algorithm, fractional_index) reachable from `api`/`services`/`crud`. `schemas`/`settings`/`utils` are cross-cutting. Run `make backend-boundaries` (or `uv run tach check` in `fastapi/`) to verify.
 
 ### Frontend Structure (`frontend/src/`)
 
