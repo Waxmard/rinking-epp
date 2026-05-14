@@ -1,14 +1,14 @@
-import React from 'react';
+import type React from 'react';
 import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  ViewStyle,
-  TextStyle,
   ActivityIndicator,
+  StyleSheet,
+  Text,
+  type TextStyle,
+  TouchableOpacity,
   View,
+  type ViewStyle,
 } from 'react-native';
-import { AppColors, AppSpacing, AppTypography, AppBorders } from '../tokens';
+import { AppBorders, AppColors, AppSpacing, AppTypography } from '../tokens';
 
 interface ButtonProps {
   title: string;

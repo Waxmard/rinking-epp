@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { StyleSheet, Modal } from 'react-native';
-import { Input, BaseModalContent } from '../design-system/components';
+import type React from 'react';
+import { useState } from 'react';
+import { Modal, StyleSheet } from 'react-native';
+import { BaseModalContent, Input } from '../design-system/components';
 import { useAuth } from '../providers/AuthContext';
-import { listsService } from '../services/listsService';
 import { ApiError } from '../services/api';
+import { listsService } from '../services/listsService';
 
 export interface CreatedList {
   listId: string;
@@ -80,7 +81,8 @@ export const CreateListContent: React.FC<CreateListContentProps> = ({
           // Handle FastAPI validation errors (array of objects)
           if (Array.isArray(err.data.detail)) {
             const messages = err.data.detail
-              .map((e: { msg: string }) => e.msg)
+              .map((e) => e.msg ?? '')
+              .filter(Boolean)
               .join(', ');
             setError(messages || 'Validation error');
           } else if (typeof err.data.detail === 'string') {

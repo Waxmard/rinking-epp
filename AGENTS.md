@@ -13,7 +13,7 @@ Monorepo with React Native/Expo frontend and FastAPI backend.
 ## Repo Layout
 
 - `fastapi/` — Python backend (uv, pyproject.toml, Dockerfile, Makefile)
-- `frontend/` — React Native/Expo app (package.json, eslint, prettier)
+- `frontend/` — React Native/Expo app (package.json, biome)
 - `docs/src/` — documentation templates and partials (rendered by `scripts/build_docs.py`)
 - `scripts/` — repo-wide tooling (e.g. `build_docs.py`)
 - `/package.json` — root dev-tooling only (husky). Not a JS project.
@@ -97,17 +97,19 @@ npm run ios                       # Run on iOS simulator
 npm run android                   # Run on Android emulator
 npm run web                       # Run web version
 
-# Code quality
-npm run lint                      # Run ESLint
-npm run lint:fix                  # Fix ESLint errors
-npm run format                    # Format with Prettier
+# Code quality (Biome — single tool for lint + format)
+npm run lint                      # Lint with Biome
+npm run lint:fix                  # Fix lint errors
+npm run format                    # Format with Biome
 npm run format:check              # Check formatting
+npm run check                     # Lint + format + import sort (combined)
+npm run check:fix                 # Apply all safe fixes
 npm run typecheck                 # TypeScript check
 ```
 
 ### Git Hooks
 
-Husky runs `lint-staged` on staged frontend files (`eslint --fix` + `prettier --write` on `*.{ts,tsx}`; prettier on `*.{js,jsx,json}`). Config in `frontend/package.json` under `lint-staged`. Hook script in `.husky/pre-commit`.
+Husky runs `lint-staged` on staged frontend files (`biome check --write` on `*.{ts,tsx,js,jsx,json}`). Config in `frontend/package.json` under `lint-staged`. Hook script in `.husky/pre-commit`.
 
 Python files use the `pre-commit` framework (`.pre-commit-config.yaml`, ruff hooks) — independent of husky.
 

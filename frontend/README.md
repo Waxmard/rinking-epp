@@ -56,11 +56,13 @@ npm run ios                       # Run on iOS simulator
 npm run android                   # Run on Android emulator
 npm run web                       # Run web version
 
-# Code quality
-npm run lint                      # Run ESLint
-npm run lint:fix                  # Fix ESLint errors
-npm run format                    # Format with Prettier
+# Code quality (Biome — single tool for lint + format)
+npm run lint                      # Lint with Biome
+npm run lint:fix                  # Fix lint errors
+npm run format                    # Format with Biome
 npm run format:check              # Check formatting
+npm run check                     # Lint + format + import sort (combined)
+npm run check:fix                 # Apply all safe fixes
 npm run typecheck                 # TypeScript check
 ```
 

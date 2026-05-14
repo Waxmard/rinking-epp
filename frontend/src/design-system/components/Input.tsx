@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import {
-  View,
-  TextInput,
-  Text,
   StyleSheet,
-  ViewStyle,
-  TextInputProps,
+  Text,
+  TextInput,
+  type TextInputProps,
   TouchableOpacity,
+  View,
+  type ViewStyle,
 } from 'react-native';
-import { AppColors, AppSpacing, AppTypography, AppBorders } from '../tokens';
+import { AppBorders, AppColors, AppSpacing, AppTypography } from '../tokens';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -34,14 +35,12 @@ export const Input: React.FC<InputProps> = ({
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const handleFocus = (e: any) => {
-    console.log('Input focused'); // Debug log
+  const handleFocus: NonNullable<TextInputProps['onFocus']> = (e) => {
     setIsFocused(true);
     onFocus?.(e);
   };
 
-  const handleBlur = (e: any) => {
-    console.log('Input blurred'); // Debug log
+  const handleBlur: NonNullable<TextInputProps['onBlur']> = (e) => {
     setIsFocused(false);
     onBlur?.(e);
   };

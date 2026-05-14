@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
-import { Input, BaseModalContent } from '../design-system/components';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BaseModalContent, Input } from '../design-system/components';
 import {
+  AppBorders,
   AppColors,
   AppSpacing,
   AppTypography,
-  AppBorders,
 } from '../design-system/tokens';
 import { useAuth } from '../providers/AuthContext';
-import {
-  itemsService,
-  TierSet,
-  Item,
-  isComparisonSession,
-} from '../services/itemsService';
 import { ApiError } from '../services/api';
+import {
+  type Item,
+  isComparisonSession,
+  itemsService,
+  type TierSet,
+} from '../services/itemsService';
 
 interface AddItemContentProps {
   onClose: () => void;
@@ -115,11 +116,15 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
         resetForm();
         onSuccess(updatedItem);
       } else {
+        if (!tierSet) {
+          setError('Please select a tier');
+          return;
+        }
         const response = await itemsService.createItem(
           listTitle,
           {
             name: trimmedName,
-            tier_set: tierSet!,
+            tier_set: tierSet,
             description: description.trim() || undefined,
           },
           token
@@ -142,7 +147,8 @@ export const AddItemContent: React.FC<AddItemContentProps> = ({
         } else if (err.data?.detail) {
           if (Array.isArray(err.data.detail)) {
             const messages = err.data.detail
-              .map((e: { msg: string }) => e.msg)
+              .map((e) => e.msg ?? '')
+              .filter(Boolean)
               .join(', ');
             setError(messages || 'Validation error');
           } else if (typeof err.data.detail === 'string') {

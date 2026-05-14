@@ -1,16 +1,16 @@
-import React from 'react';
+import type React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Text,
   TouchableWithoutFeedback,
-  Keyboard,
-  ViewStyle,
+  View,
+  type ViewStyle,
 } from 'react-native';
+import { AppBorders, AppColors, AppSpacing, AppTypography } from '../tokens';
 import { Button } from './Button';
-import { AppColors, AppSpacing, AppTypography, AppBorders } from '../tokens';
 
 interface BaseModalContentProps {
   title: string;

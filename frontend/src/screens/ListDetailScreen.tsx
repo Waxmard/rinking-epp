@@ -1,50 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
-  Image,
   Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { AddItemModal } from '../components/AddItemModal';
 import { FAB } from '../design-system/components';
 import {
+  AppBorders,
   AppColors,
   AppSpacing,
   AppTypography,
-  AppBorders,
 } from '../design-system/tokens';
-import { AddItemModal } from '../components/AddItemModal';
-import { Item } from '../services/itemsService';
-import { listsService } from '../services/listsService';
+import type { RootStackScreenProps } from '../navigation/types';
 import { useAuth } from '../providers/AuthContext';
+import type { Item } from '../services/itemsService';
+import { listsService } from '../services/listsService';
 
 const TIER_ORDER = ['S', 'A', 'B', 'C', 'D', 'F'] as const;
 
 const groupItemsByTier = (items: Item[]): Record<string, Item[]> => {
   const grouped: Record<string, Item[]> = {};
-  TIER_ORDER.forEach((tier) => (grouped[tier] = []));
-  items.forEach((item) => {
+  for (const tier of TIER_ORDER) {
+    grouped[tier] = [];
+  }
+  for (const item of items) {
     if (item.tier && grouped[item.tier]) {
       grouped[item.tier].push(item);
     }
-  });
+  }
   return grouped;
 };
 
-interface ListDetailScreenProps {
-  route: {
-    params: {
-      listId: string;
-      listTitle: string;
-      promptAddItem?: boolean;
-    };
-  };
-  navigation: any;
-}
+type ListDetailScreenProps = RootStackScreenProps<'ListDetail'>;
 
 export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
   route,
@@ -92,9 +87,12 @@ export const ListDetailScreen: React.FC<ListDetailScreenProps> = ({
             try {
               await listsService.deleteList(listId, token);
               navigation.goBack();
-            } catch (err: any) {
+            } catch (err: unknown) {
               console.error('Error deleting list:', err);
-              Alert.alert('Error', err.message || 'Failed to delete list');
+              Alert.alert(
+                'Error',
+                err instanceof Error ? err.message : 'Failed to delete list'
+              );
             }
           },
         },

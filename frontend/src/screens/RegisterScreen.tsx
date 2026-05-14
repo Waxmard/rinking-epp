@@ -1,30 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  ActivityIndicator,
   Animated,
   Image,
-  TouchableOpacity,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../providers/AuthContext';
 import { Button, Input } from '../design-system/components';
 import {
+  AppBorders,
   AppColors,
   AppSpacing,
   AppTypography,
-  AppBorders,
 } from '../design-system/tokens';
+import type { RootStackScreenProps } from '../navigation/types';
+import { useAuth } from '../providers/AuthContext';
 
-interface RegisterScreenProps {
-  navigation?: any;
-}
+type RegisterScreenProps = RootStackScreenProps<'Register'>;
 
 export const RegisterScreen: React.FC<RegisterScreenProps> = ({
   navigation,
@@ -52,7 +52,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
       duration: 1000,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim]);
 
   const handleGoogleSignUp = async () => {
     console.log('Google sign up initiated');

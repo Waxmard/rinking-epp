@@ -1,6 +1,6 @@
+import type { TierDistribution } from '../components/TierDistributionBar';
 import { api } from './api';
-import { Item } from './itemsService';
-import { TierDistribution } from '../components/TierDistributionBar';
+import type { Item } from './itemsService';
 
 export interface ListSimple {
   list_id: string;

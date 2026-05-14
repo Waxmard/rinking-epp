@@ -7,10 +7,12 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "eslint src/ --ext .ts,.tsx",
-    "lint:fix": "eslint src/ --ext .ts,.tsx --fix",
-    "format": "prettier --write src/",
-    "format:check": "prettier --check src/",
+    "lint": "biome lint src/",
+    "lint:fix": "biome lint --write src/",
+    "format": "biome format --write src/",
+    "format:check": "biome format src/",
+    "check": "biome check src/",
+    "check:fix": "biome check --write src/",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -40,25 +42,15 @@
   },
   "devDependencies": {
     "@babel/core": "^7.28.6",
+    "@biomejs/biome": "2.4.14",
     "@types/react": "^19.2.10",
-    "@typescript-eslint/eslint-plugin": "^8.52.0",
-    "@typescript-eslint/parser": "^8.52.0",
-    "eslint": "^9.39.2",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
     "lint-staged": "^17.0.4",
-    "prettier": "^3.8.1",
     "typescript": "~5.9.2"
   },
   "private": true,
   "lint-staged": {
-    "src/**/*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "src/**/*.{js,jsx,json}": [
-      "prettier --write"
+    "src/**/*.{ts,tsx,js,jsx,json}": [
+      "biome check --write --no-errors-on-unmatched"
     ]
   }
 }
