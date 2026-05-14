@@ -18,10 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
-      - run: semgrep ci --sarif --output=semgrep.sarif
+      - run: semgrep ci --no-error --sarif --output=semgrep.sarif
         env:
           SEMGREP_RULES: >-
             p/default
@@ -41,7 +40,6 @@ jobs:
   trivy-fs:
     name: Trivy Filesystem
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - name: Run Trivy filesystem scan
@@ -62,7 +60,6 @@ jobs:
   trivy-image:
     name: Trivy Backend Image
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - name: Build backend image
