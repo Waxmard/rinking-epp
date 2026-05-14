@@ -20,7 +20,8 @@ jobs:
       image: semgrep/semgrep
     steps:
       - uses: actions/checkout@v6
-      - run: semgrep ci --no-error --sarif --output=semgrep.sarif
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - run: semgrep ci --sarif --output=semgrep.sarif
         env:
           SEMGREP_RULES: >-
             p/default
