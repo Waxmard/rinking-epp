@@ -1,0 +1,63 @@
+exclude = [
+    "tests",
+    "scripts",
+    "alembic",
+    ".venv",
+    "**/__pycache__",
+]
+source_roots = ["."]
+forbid_circular_dependencies = true
+exact = true
+
+# Layers: api → services → core/crud → db/utils/schemas/settings
+
+[[modules]]
+path = "app.main"
+depends_on = ["app.api", "app.db", "app.settings"]
+
+[[modules]]
+path = "app.api"
+depends_on = [
+    "app.core",
+    "app.crud",
+    "app.db",
+    "app.schemas",
+    "app.services",
+    "app.settings",
+    "app.utils",
+]
+
+[[modules]]
+path = "app.services"
+depends_on = [
+    "app.core",
+    "app.crud",
+    "app.db",
+    "app.schemas",
+    "app.settings",
+    "app.utils",
+]
+
+[[modules]]
+path = "app.core"
+depends_on = ["app.schemas"]
+
+[[modules]]
+path = "app.crud"
+depends_on = ["app.core", "app.db", "app.schemas"]
+
+[[modules]]
+path = "app.utils"
+depends_on = ["app.db"]
+
+[[modules]]
+path = "app.db"
+depends_on = ["app.settings"]
+
+[[modules]]
+path = "app.schemas"
+depends_on = []
+
+[[modules]]
+path = "app.settings"
+depends_on = []

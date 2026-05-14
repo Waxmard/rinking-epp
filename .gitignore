@@ -5,3 +5,5 @@
 .coverage.*
 coverage.json
 htmlcov/
+
+*.dot

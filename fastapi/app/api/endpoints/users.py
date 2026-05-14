@@ -6,17 +6,17 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import (
-    authenticate_user,
-    create_access_token,
-    get_current_admin_user,
-    get_current_user,
-)
 from app.core.constants import INCORRECT_LOGIN_ERROR, USER_ALREADY_EXISTS_ERROR
 from app.crud.crud_user import update_user as crud_update_user
 from app.db.database import get_db
 from app.db.models import User as UserModel
 from app.schemas.user import Token, User, UserCreate, UserPublic, UserUpdate
+from app.services.auth import (
+    authenticate_user,
+    create_access_token,
+    get_current_admin_user,
+    get_current_user,
+)
 
 router = APIRouter()
 

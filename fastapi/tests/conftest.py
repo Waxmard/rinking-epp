@@ -2,7 +2,7 @@
 
 import asyncio
 import os
-from typing import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Generator
 
 # Set test environment variables before importing app
 os.environ["SECRET_KEY"] = "test-secret-key-for-testing-only"
@@ -11,19 +11,20 @@ os.environ["APP_ENV"] = "test"
 
 import pytest  # noqa: E402
 import pytest_asyncio  # noqa: E402
-from httpx import AsyncClient, ASGITransport  # noqa: E402
+from httpx import ASGITransport, AsyncClient  # noqa: E402
 from sqlalchemy.ext.asyncio import (  # noqa: E402
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 
-from app.core.auth import create_access_token  # noqa: E402
-from app.db.database import get_db  # noqa: E402
-from app.db.models import Base, User, List as ListModel, Item as ItemModel  # noqa: E402
-from app.main import app  # noqa: E402
 from app.core.security import get_password_hash  # noqa: E402
-
+from app.db.database import get_db  # noqa: E402
+from app.db.models import Base, User  # noqa: E402
+from app.db.models import Item as ItemModel
+from app.db.models import List as ListModel
+from app.main import app  # noqa: E402
+from app.services.auth import create_access_token  # noqa: E402
 
 # Test database URL - using SQLite for tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -87,8 +88,8 @@ async def client(test_db: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 @pytest_asyncio.fixture
 async def test_user(test_db: AsyncSession) -> User:
     """Create a test user."""
-    from datetime import datetime
     import uuid
+    from datetime import datetime
 
     user = User(
         user_id=uuid.uuid4(),
@@ -107,8 +108,8 @@ async def test_user(test_db: AsyncSession) -> User:
 @pytest_asyncio.fixture
 async def test_user2(test_db: AsyncSession) -> User:
     """Create a second test user."""
-    from datetime import datetime
     import uuid
+    from datetime import datetime
 
     user = User(
         user_id=uuid.uuid4(),
@@ -141,8 +142,8 @@ def auth_headers_user2(test_user2: User) -> dict:
 @pytest_asyncio.fixture
 async def admin_user(test_db: AsyncSession) -> User:
     """Create an admin test user."""
-    from datetime import datetime
     import uuid
+    from datetime import datetime
 
     user = User(
         user_id=uuid.uuid4(),
@@ -169,8 +170,8 @@ def admin_auth_headers(admin_user: User) -> dict:
 @pytest_asyncio.fixture
 async def test_list(test_db: AsyncSession, test_user: User) -> ListModel:
     """Create a test list."""
-    from datetime import datetime
     import uuid
+    from datetime import datetime
 
     list_obj = ListModel(
         list_id=uuid.uuid4(),
@@ -189,8 +190,8 @@ async def test_list(test_db: AsyncSession, test_user: User) -> ListModel:
 @pytest_asyncio.fixture
 async def test_item(test_db: AsyncSession, test_list: ListModel) -> ItemModel:
     """Create a test item with tier_set and valid position."""
-    from datetime import datetime
     import uuid
+    from datetime import datetime
 
     item = ItemModel(
         item_id=uuid.uuid4(),
@@ -216,8 +217,8 @@ async def multiple_items(
     test_db: AsyncSession, test_list: ListModel
 ) -> list[ItemModel]:
     """Create multiple test items with tier_set and positions."""
-    from datetime import datetime
     import uuid
+    from datetime import datetime
 
     items = []
     positions = ["a0", "a1", "a2", "a3", "a4"]
@@ -225,9 +226,9 @@ async def multiple_items(
         item = ItemModel(
             item_id=uuid.uuid4(),
             list_id=test_list.list_id,
-            name=f"Test Item {i+1}",
-            description=f"Test item number {i+1}",
-            image_url=f"https://example.com/image{i+1}.jpg",
+            name=f"Test Item {i + 1}",
+            description=f"Test item number {i + 1}",
+            image_url=f"https://example.com/image{i + 1}.jpg",
             position=positions[i],
             rating=None,
             tier="A" if i < 3 else "S",
@@ -247,8 +248,8 @@ async def multiple_items(
 @pytest.fixture
 def item_factory(test_list: ListModel):
     """Factory fixture for creating ItemModel instances with defaults."""
-    from datetime import datetime
     import uuid as uuid_module
+    from datetime import datetime
 
     def _create_item(
         name: str = "Test Item",

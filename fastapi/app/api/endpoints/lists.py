@@ -5,7 +5,6 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import get_current_user
 from app.core.constants import LIST_ALREADY_EXISTS_ERROR, LIST_NOT_FOUND_ERROR
 from app.crud import item as item_crud
 from app.crud import list as list_crud
@@ -14,6 +13,7 @@ from app.db.models import List as ListModel
 from app.schemas.item import Item
 from app.schemas.list import List, ListSimple, ListUpdate
 from app.schemas.user import User
+from app.services.auth import get_current_user
 from app.services.list_service import (
     build_list_response,
     build_list_simple_response,

@@ -78,6 +78,7 @@ ignore_missing_imports = true
 dev = [
     "pre-commit>=4.3.0",
     "pytest-cov>=7.0.0",
+    "tach>=0.34.1",
 ]
 
 [tool.coverage.run]

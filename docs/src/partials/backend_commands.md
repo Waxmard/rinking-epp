@@ -27,6 +27,7 @@ uv run ruff check app/            # Lint (rules: E, F, I, B, UP, SIM)
 uv run ruff check app/ --fix      # Lint + autofix
 uv run ruff format app/           # Format
 uv run mypy app/                  # Type check
+uv run tach check                 # Enforce module boundaries (see tach.toml)
 
 # Testing
 uv run pytest                                       # Run all tests

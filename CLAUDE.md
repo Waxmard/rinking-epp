@@ -45,7 +45,7 @@ make lint          # backend + frontend lint
 make fix           # autofix both
 make typecheck     # mypy + tsc
 make test          # backend pytest w/ coverage
-make ci            # lint + typecheck + test + docs-check
+make ci            # lint + typecheck + boundaries + test + docs-check
 make docs-build    # render docs/src → README.md, CLAUDE.md, AGENTS.md, sub-READMEs
 make docs-check    # fail if generated docs are stale
 make backend-<X>   # delegates to fastapi/Makefile target X (e.g. backend-logs, backend-health, backend-lint)
@@ -82,6 +82,7 @@ uv run ruff check app/            # Lint (rules: E, F, I, B, UP, SIM)
 uv run ruff check app/ --fix      # Lint + autofix
 uv run ruff format app/           # Format
 uv run mypy app/                  # Type check
+uv run tach check                 # Enforce module boundaries (see tach.toml)
 
 # Testing
 uv run pytest                                       # Run all tests
@@ -116,6 +117,7 @@ npm run typecheck                 # TypeScript check
 - **biome** — `frontend/src/**/*.{ts,tsx,js,jsx,json}` → `biome check --write`
 - **ruff-lint** — `fastapi/**/*.py` → `ruff check --fix`
 - **ruff-format** — `fastapi/**/*.py` → `ruff format`
+- **tach** — `fastapi/app/**/*.py` or `fastapi/tach.toml` → `tach check` (module-boundary enforcement)
 
 Autofixed files are re-staged automatically (`stage_fixed: true`). Hooks install via the root `prepare` script when you run `npm install`.
 
@@ -124,11 +126,14 @@ Autofixed files are re-staged automatically (`stage_fixed: true`). Hooks install
 ### Backend Structure (`fastapi/app/`)
 
 - `api/endpoints/` — Route handlers (users, lists, items)
-- `core/` — Auth (JWT), security (argon2), constants, ranking algorithm
+- `services/` — Business logic (auth/JWT, comparison, list, ranking)
+- `core/` — Pure utilities (security/argon2, constants, ranking algorithm, fractional index)
 - `crud/` — Database operations
 - `db/` — SQLAlchemy models and async database setup
 - `schemas/` — Pydantic request/response models
 - `settings.py` — Configuration via pydantic-settings
+
+Module boundaries enforced by [tach](https://docs.gauge.sh/) (`fastapi/tach.toml`). Layering: `main → api → services → core/crud → db/utils/schemas/settings`. Run `make backend-boundaries` (or `uv run tach check` in `fastapi/`) to verify.
 
 ### Frontend Structure (`frontend/src/`)
 

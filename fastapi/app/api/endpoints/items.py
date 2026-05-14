@@ -5,7 +5,6 @@ from typing import Union
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import get_current_user
 from app.core.constants import (
     COMPARISON_SESSION_NOT_FOUND_ERROR,
     ITEM_NOT_FOUND_ERROR,
@@ -26,6 +25,7 @@ from app.schemas.item import (
     ItemUpdate,
 )
 from app.schemas.user import User
+from app.services.auth import get_current_user
 from app.services.comparison_service import (
     build_comparison_session_response,
     finalize_comparison,

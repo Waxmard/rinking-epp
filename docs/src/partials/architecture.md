@@ -3,11 +3,14 @@
 ### Backend Structure (`fastapi/app/`)
 
 - `api/endpoints/` — Route handlers (users, lists, items)
-- `core/` — Auth (JWT), security (argon2), constants, ranking algorithm
+- `services/` — Business logic (auth/JWT, comparison, list, ranking)
+- `core/` — Pure utilities (security/argon2, constants, ranking algorithm, fractional index)
 - `crud/` — Database operations
 - `db/` — SQLAlchemy models and async database setup
 - `schemas/` — Pydantic request/response models
 - `settings.py` — Configuration via pydantic-settings
+
+Module boundaries enforced by [tach](https://docs.gauge.sh/) (`fastapi/tach.toml`). Layering: `main → api → services → core/crud → db/utils/schemas/settings`. Run `make backend-boundaries` (or `uv run tach check` in `fastapi/`) to verify.
 
 ### Frontend Structure (`frontend/src/`)
 

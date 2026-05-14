@@ -31,11 +31,12 @@ help:
 	@echo "  fix            - Ruff check --fix + format"
 	@echo "  format         - Ruff format"
 	@echo "  typecheck      - mypy"
+	@echo "  boundaries     - tach module-boundary check"
 	@echo "  test           - pytest with coverage (fail under 90%)"
-	@echo "  ci             - lint + typecheck + test"
+	@echo "  ci             - lint + typecheck + boundaries + test"
 
 # Code Quality
-.PHONY: lint fix format typecheck test ci
+.PHONY: lint fix format typecheck boundaries test ci
 lint:
 	uv run ruff check app/
 	uv run ruff format --check app/
@@ -50,10 +51,13 @@ format:
 typecheck:
 	uv run mypy app/
 
+boundaries:
+	uv run tach check
+
 test:
 	uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 
-ci: lint typecheck test
+ci: lint typecheck boundaries test
 
 # Build for current platform only (faster for local development)
 .PHONY: build-local
