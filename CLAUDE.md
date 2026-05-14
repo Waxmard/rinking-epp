@@ -6,6 +6,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TierNerd is a cross-platform mobile app for creating ranked tier lists (S-F) through 1v1 comparisons. Monorepo with React Native/Expo frontend and FastAPI backend.
 
+## Repo Layout
+
+- `fastapi/` — Python backend (uv, pyproject.toml, Dockerfile, Makefile)
+- `frontend/` — React Native/Expo app (package.json, eslint, prettier)
+- `/package.json` — root dev-tooling only (husky). Not a JS project.
+- `.husky/` — git hooks (pre-commit → `cd frontend && npx lint-staged`)
+- `.pre-commit-config.yaml` — Python hooks (ruff, black) for `fastapi/`
+
+## First-Time Setup
+
+```bash
+npm install        # at repo root — installs husky, activates git hooks
+cd frontend && npm install
+cd ../fastapi && uv sync --group dev
+pre-commit install # activates Python hooks
+```
+
+Skipping root `npm install` means frontend pre-commit hooks won't run.
+
 ## Development Commands
 
 ### Backend (fastapi/)
@@ -65,6 +84,12 @@ npm run format                    # Format with Prettier
 npm run format:check              # Check formatting
 npm run typecheck                 # TypeScript check
 ```
+
+### Git Hooks (root)
+
+Husky runs `lint-staged` on staged frontend files (`eslint --fix` + `prettier --write` on `*.{ts,tsx}`; prettier on `*.{js,jsx,json}`). Config in `frontend/package.json` under `lint-staged`. Hook script in `.husky/pre-commit`.
+
+Python files use `pre-commit` framework (`.pre-commit-config.yaml`) — independent of husky.
 
 ## Architecture
 
