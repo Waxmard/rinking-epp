@@ -1,5 +1,4 @@
 from datetime import UTC, datetime, timedelta
-from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
@@ -39,7 +38,7 @@ async def authenticate_user(
 
 
 def create_access_token(
-    subject: str | Any, expires_delta: timedelta | None = None
+    subject: UUID | str, expires_delta: timedelta | None = None
 ) -> str:
     """Create a JWT access token."""
     if expires_delta:
