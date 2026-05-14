@@ -1,6 +1,5 @@
 import datetime
 import uuid
-from typing import List as ListType
 from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Index, String, Text, func
@@ -35,7 +34,7 @@ class User(Base):
     )
 
     # Relationships
-    lists: Mapped[ListType["List"]] = relationship(
+    lists: Mapped[list["List"]] = relationship(
         "List", back_populates="user", cascade="all, delete-orphan"
     )
 
@@ -60,7 +59,7 @@ class List(Base):
 
     # Relationships
     user: Mapped[User] = relationship("User", back_populates="lists")
-    items: Mapped[ListType["Item"]] = relationship(
+    items: Mapped[list["Item"]] = relationship(
         "Item", back_populates="list", cascade="all, delete-orphan"
     )
 

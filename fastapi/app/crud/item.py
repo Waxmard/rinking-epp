@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +27,7 @@ async def get_by_id_with_ownership(
     return result.scalar_one_or_none()
 
 
-async def get_by_list_id(db: AsyncSession, list_id: uuid.UUID) -> List[ItemModel]:
+async def get_by_list_id(db: AsyncSession, list_id: uuid.UUID) -> list[ItemModel]:
     """Get all items for a list."""
     result = await db.execute(select(ItemModel).where(ItemModel.list_id == list_id))
     return list(result.scalars().all())
@@ -35,7 +35,7 @@ async def get_by_list_id(db: AsyncSession, list_id: uuid.UUID) -> List[ItemModel
 
 async def get_by_list_and_tier_set(
     db: AsyncSession, list_id: uuid.UUID, tier_set: str
-) -> List[ItemModel]:
+) -> list[ItemModel]:
     """Get all items in a list with a specific tier_set."""
     result = await db.execute(
         select(ItemModel).where(
@@ -48,7 +48,7 @@ async def get_by_list_and_tier_set(
 
 async def get_by_list_and_tier_set_sorted(
     db: AsyncSession, list_id: uuid.UUID, tier_set: str
-) -> List[ItemModel]:
+) -> list[ItemModel]:
     """Get all items in a list with a specific tier_set, sorted by position."""
     result = await db.execute(
         select(ItemModel)
@@ -69,7 +69,7 @@ async def create(db: AsyncSession, item: ItemModel) -> ItemModel:
 
 
 async def update(
-    db: AsyncSession, item: ItemModel, update_data: Dict[str, Any]
+    db: AsyncSession, item: ItemModel, update_data: dict[str, Any]
 ) -> ItemModel:
     """Update an item with the given data."""
     for field, value in update_data.items():

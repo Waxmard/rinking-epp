@@ -1,7 +1,7 @@
 """Ranking and tier assignment business logic."""
 
 import uuid
-from typing import List, Optional
+from typing import Optional
 
 from app.db.models import Item as ItemModel
 
@@ -25,7 +25,7 @@ def get_initial_tier(tier_set: str) -> str:
     return INITIAL_TIER_MAP.get(tier_set, "C")
 
 
-def assign_tiers_for_set(sorted_items: List[ItemModel], tier_set: str) -> None:
+def assign_tiers_for_set(sorted_items: list[ItemModel], tier_set: str) -> None:
     """
     Assign tiers to items in a sorted list based on their position.
     Top 50% gets the higher tier, bottom 50% gets the lower tier.
@@ -53,8 +53,8 @@ def assign_tiers_for_set(sorted_items: List[ItemModel], tier_set: str) -> None:
 
 
 def filter_ranked_items(
-    items: List[ItemModel], exclude_id: Optional[uuid.UUID] = None
-) -> List[ItemModel]:
+    items: list[ItemModel], exclude_id: Optional[uuid.UUID] = None
+) -> list[ItemModel]:
     """
     Filter items to only those that have been ranked (have a position assigned).
 

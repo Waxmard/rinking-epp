@@ -3,7 +3,7 @@
 import logging
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,7 +25,7 @@ async def start_comparison(
     new_item: ItemModel,
     list_id: uuid.UUID,
     tier_set: str,
-    ranked_items: List[ItemModel],
+    ranked_items: list[ItemModel],
 ) -> ComparisonSessionModel:
     """
     Start a new comparison session for ranking an item.
@@ -107,7 +107,7 @@ def process_comparison_result(
     is_winner: bool,
     new_item: ItemModel,
     target_item: ItemModel,
-    ranked_items: List[ItemModel],
+    ranked_items: list[ItemModel],
 ) -> Comparison:
     """
     Process a comparison result and determine the next step.
@@ -162,7 +162,8 @@ async def finalize_comparison(
     # Semantics: "better" items have HIGHER positions
     if target_item.position is None:
         raise ValueError(
-            f"Target item {target_item.item_id} has no position; cannot finalize comparison"
+            f"Target item {target_item.item_id} has no position; "
+            "cannot finalize comparison"
         )
 
     target_position: str = target_item.position

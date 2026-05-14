@@ -39,8 +39,7 @@ jobs:
           cache-dependency-glob: "fastapi/uv.lock"
       - run: uv sync --extra dev
       - run: uv run ruff check app/
-      - run: uv run black --check app/
-      - run: uv run isort --check app/
+      - run: uv run ruff format --check app/
 
   typecheck:
     name: Type Check

@@ -54,12 +54,10 @@ uv sync                           # Install dependencies
 uv sync --group dev               # Install with dev dependencies
 
 # Code quality
-uv run black app/                 # Format code
-uv run isort app/                 # Sort imports
-uv run ruff check app/            # Lint
+uv run ruff check app/            # Lint (rules: E, F, I, B, UP, SIM)
+uv run ruff check app/ --fix      # Lint + autofix
+uv run ruff format app/           # Format (replaces black)
 uv run mypy app/                  # Type check
-uv run pylint app/                # Static analysis
-uv run bandit -r app/             # Security linting
 
 # Testing
 uv run pytest                     # Run all tests

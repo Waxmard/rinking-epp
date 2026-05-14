@@ -1,6 +1,8 @@
 from datetime import timedelta
-from typing import Any, List
+from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,8 +17,6 @@ from app.crud.crud_user import update_user as crud_update_user
 from app.db.database import get_db
 from app.db.models import User as UserModel
 from app.schemas.user import Token, User, UserCreate, UserPublic, UserUpdate
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 
@@ -68,7 +68,7 @@ async def login_for_access_token(
     }
 
 
-@router.get("/", response_model=List[UserPublic])
+@router.get("/", response_model=list[UserPublic])
 async def read_users(
     skip: int = 0,
     limit: int = 100,

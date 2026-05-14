@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Union
 
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
@@ -33,7 +34,6 @@ from app.services.comparison_service import (
 )
 from app.services.ranking import filter_ranked_items, get_initial_tier
 from app.utils.helper import sort_items_by_position
-from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 
@@ -154,7 +154,7 @@ async def submit_comparison_result(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=COMPARISON_SESSION_NOT_FOUND_ERROR,
-        )
+        ) from None
 
     # Load active session from database
     db_session = await comparison_crud.get_active(db, session_uuid)
@@ -319,7 +319,7 @@ async def get_comparison_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=SESSION_NOT_FOUND_ERROR,
-        )
+        ) from None
 
     # Load session from database
     db_session = await comparison_crud.get_by_id(db, session_uuid)

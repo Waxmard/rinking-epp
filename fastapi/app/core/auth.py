@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, Union
 from uuid import UUID
 
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,8 +14,6 @@ from app.db.database import get_db
 from app.db.models import User as UserModel
 from app.schemas.user import TokenPayload, User
 from app.settings import settings
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 
@@ -73,7 +73,7 @@ async def get_current_user(
             raise credentials_exception
         token_data = TokenPayload(sub=user_id)
     except JWTError:
-        raise credentials_exception
+        raise credentials_exception from None
 
     from app.crud.crud_user import get_user_by_id
 
