@@ -2,7 +2,6 @@ import sys
 import uuid
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -94,7 +93,7 @@ async def create_user(
 
 
 async def create_user_list(
-    db: AsyncSession, user: User, title: str, description: Optional[str] = None
+    db: AsyncSession, user: User, title: str, description: str | None = None
 ) -> List:
     """
     Create a new list for a specific user, linking it directly to the user object.
@@ -124,9 +123,9 @@ async def add_item_to_user_list(
     db: AsyncSession,
     list_obj: List,
     name: str,
-    description: Optional[str] = None,
-    image_url: Optional[str] = None,
-    rating: Optional[float] = None,
+    description: str | None = None,
+    image_url: str | None = None,
+    rating: float | None = None,
 ) -> Item:
     """
     Add an item to a specific user's list, linking it directly to the list object.
@@ -156,7 +155,7 @@ async def add_item_to_user_list(
     return item
 
 
-async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
+async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     """
     Get a user by username.
 
@@ -203,7 +202,7 @@ async def get_user_lists_with_items(
 
 async def get_list_with_items(
     db: AsyncSession, list_id: int
-) -> tuple[Optional[List], list[Item]]:
+) -> tuple[List | None, list[Item]]:
     """
     Get a specific list along with all its items.
 
@@ -220,7 +219,7 @@ async def get_list_with_items(
         .where(List.list_id == list_id)
     )
 
-    list_obj: Optional[List] = None
+    list_obj: List | None = None
     items: list[Item] = []
     for row_list, item in result:
         if list_obj is None:

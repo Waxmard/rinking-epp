@@ -2,7 +2,6 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional
 
 import pytest
 
@@ -10,7 +9,7 @@ from app.core.algorithm import find_next_comparison
 from app.schemas.item import Comparison, Item
 
 
-def create_test_item(name: str, item_id: Optional[int] = None) -> Item:
+def create_test_item(name: str, item_id: int | None = None) -> Item:
     """Create a test item with all required fields."""
     resolved_id = uuid.uuid4() if item_id is None else uuid.UUID(int=item_id)
 

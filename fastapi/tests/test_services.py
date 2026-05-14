@@ -1,8 +1,8 @@
 """Tests for service layer functions."""
 
 import uuid
+from collections.abc import Callable
 from datetime import datetime
-from typing import Callable
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession

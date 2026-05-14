@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Item as ItemModel, List as ListModel
 
 
-async def get_by_id(db: AsyncSession, item_id: uuid.UUID) -> Optional[ItemModel]:
+async def get_by_id(db: AsyncSession, item_id: uuid.UUID) -> ItemModel | None:
     """Get an item by ID."""
     result = await db.execute(select(ItemModel).where(ItemModel.item_id == item_id))
     return result.scalar_one_or_none()
@@ -15,7 +15,7 @@ async def get_by_id(db: AsyncSession, item_id: uuid.UUID) -> Optional[ItemModel]
 
 async def get_by_id_with_ownership(
     db: AsyncSession, item_id: uuid.UUID, user_id: uuid.UUID
-) -> Optional[ItemModel]:
+) -> ItemModel | None:
     """Get an item by ID, verifying the user owns the list it belongs to."""
     query = (
         select(ItemModel)
@@ -89,7 +89,7 @@ async def get_next_item_by_position(
     list_id: uuid.UUID,
     tier_set: str,
     current_position: str,
-) -> Optional[ItemModel]:
+) -> ItemModel | None:
     """Get item with next higher position (lexicographically)."""
     result = await db.execute(
         select(ItemModel)
@@ -110,7 +110,7 @@ async def get_prev_item_by_position(
     list_id: uuid.UUID,
     tier_set: str,
     current_position: str,
-) -> Optional[ItemModel]:
+) -> ItemModel | None:
     """Get item with next lower position (lexicographically)."""
     result = await db.execute(
         select(ItemModel)

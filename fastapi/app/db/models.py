@@ -1,6 +1,5 @@
 import datetime
 import uuid
-from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, Index, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -21,7 +20,7 @@ class User(Base):
         primary_key=True, index=True, default=uuid.uuid4
     )
     email: Mapped[str] = mapped_column(String(100), unique=True, index=True)
-    username: Mapped[Optional[str]] = mapped_column(
+    username: Mapped[str | None] = mapped_column(
         String(50), unique=True, index=True, nullable=True
     )
     password_hash: Mapped[str] = mapped_column(String(255))
@@ -49,7 +48,7 @@ class List(Base):
     )
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.user_id"))
     title: Mapped[str] = mapped_column(String(100))
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -74,12 +73,12 @@ class Item(Base):
     )
     list_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("lists.list_id"))
     name: Mapped[str] = mapped_column(String(100))
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    image_url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    position: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    rating: Mapped[Optional[float]] = mapped_column(nullable=True)
-    tier: Mapped[Optional[str]] = mapped_column(String(1), nullable=True)
-    tier_set: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    position: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    rating: Mapped[float | None] = mapped_column(nullable=True)
+    tier: Mapped[str | None] = mapped_column(String(1), nullable=True)
+    tier_set: Mapped[str | None] = mapped_column(String(10), nullable=True)
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -132,6 +131,6 @@ class ComparisonSession(Base):
     new_item: Mapped[Item] = relationship(
         "Item", foreign_keys=[new_item_id], lazy="joined"
     )
-    target_item: Mapped[Optional[Item]] = relationship(
+    target_item: Mapped[Item | None] = relationship(
         "Item", foreign_keys=[target_item_id], lazy="joined"
     )

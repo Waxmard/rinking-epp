@@ -1,6 +1,5 @@
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +9,7 @@ from app.db.models import User
 from app.schemas.user import UserCreate, UserUpdate
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """
     Get a user by email.
     """
@@ -18,7 +17,7 @@ async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
     return result.scalar_one_or_none()
 
 
-async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User]:
+async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     """
     Get a user by username.
     """
@@ -26,7 +25,7 @@ async def get_user_by_username(db: AsyncSession, username: str) -> Optional[User
     return result.scalar_one_or_none()
 
 
-async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> Optional[User]:
+async def get_user_by_id(db: AsyncSession, user_id: uuid.UUID) -> User | None:
     """
     Get a user by ID.
     """
@@ -43,8 +42,8 @@ async def create_user(db: AsyncSession, obj_in: UserCreate) -> User:
         email=obj_in.email,
         username=obj_in.username,
         password_hash=get_password_hash(obj_in.password),
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
     db.add(db_obj)
     await db.commit()

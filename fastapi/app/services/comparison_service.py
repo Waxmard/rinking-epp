@@ -2,8 +2,7 @@
 
 import logging
 import uuid
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,8 +62,8 @@ async def start_comparison(
 def build_comparison_session_response(
     db_session: ComparisonSessionModel,
     new_item: ItemModel,
-    target_item: Optional[ItemModel],
-    comparison: Optional[Comparison] = None,
+    target_item: ItemModel | None,
+    comparison: Comparison | None = None,
 ) -> ComparisonSession:
     """
     Build a ComparisonSession response from database models.
@@ -169,11 +168,11 @@ async def finalize_comparison(
     if comparison.is_winner:
         # New item is BETTER than target → goes AFTER target (higher position)
         # Need position between target and the next item
-        lower_bound: Optional[str] = target_position
+        lower_bound: str | None = target_position
         next_item = await item_crud.get_next_item_by_position(
             db, list_id, tier_set, target_position
         )
-        upper_bound: Optional[str] = next_item.position if next_item else None
+        upper_bound: str | None = next_item.position if next_item else None
     else:
         # New item is WORSE than target → goes BEFORE target (lower position)
         # Need position between the previous item and target
@@ -184,7 +183,7 @@ async def finalize_comparison(
         upper_bound = target_position
 
     new_item.position = generate_key_between(lower_bound, upper_bound)
-    new_item.updated_at = datetime.now(timezone.utc)
+    new_item.updated_at = datetime.now(UTC)
     db.add(new_item)
     await db.flush()
 

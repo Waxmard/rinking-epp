@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional, Union
+from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
@@ -20,7 +20,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 
 async def authenticate_user(
     db: AsyncSession, username_or_email: str, password: str
-) -> Optional[UserModel]:
+) -> UserModel | None:
     """Authenticate a user with email or username."""
     # Check if it looks like an email
     if "@" in username_or_email and "." in username_or_email:
@@ -39,13 +39,13 @@ async def authenticate_user(
 
 
 def create_access_token(
-    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
+    subject: str | Any, expires_delta: timedelta | None = None
 ) -> str:
     """Create a JWT access token."""
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
     to_encode = {"exp": expire, "sub": str(subject)}
@@ -68,7 +68,7 @@ async def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        user_id: Optional[str] = payload.get("sub")
+        user_id: str | None = payload.get("sub")
         if user_id is None:
             raise credentials_exception
         token_data = TokenPayload(sub=user_id)

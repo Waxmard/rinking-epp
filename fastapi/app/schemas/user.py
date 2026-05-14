@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
@@ -10,7 +9,7 @@ class UserBase(BaseModel):
     """Base user schema with shared properties."""
 
     email: EmailStr
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    username: str | None = Field(None, min_length=3, max_length=50)
 
 
 # Properties to receive via API on creation
@@ -24,9 +23,9 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """Schema for user update."""
 
-    email: Optional[EmailStr] = None
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
-    password: Optional[str] = Field(None, min_length=8)
+    email: EmailStr | None = None
+    username: str | None = Field(None, min_length=3, max_length=50)
+    password: str | None = Field(None, min_length=8)
 
 
 # Properties to return to client
@@ -50,7 +49,7 @@ class UserPublic(BaseModel):
 
     user_id: UUID
     email: EmailStr
-    username: Optional[str] = None
+    username: str | None = None
     created_at: datetime
 
     class Config:
@@ -77,4 +76,4 @@ class Token(BaseModel):
 class TokenPayload(BaseModel):
     """Schema for token payload."""
 
-    sub: Optional[str] = None
+    sub: str | None = None

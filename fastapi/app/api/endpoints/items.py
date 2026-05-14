@@ -1,6 +1,5 @@
 import uuid
-from datetime import datetime, timezone
-from typing import Union
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,13 +35,13 @@ from app.utils.helper import sort_items_by_position
 router = APIRouter()
 
 
-@router.post("/", response_model=Union[Item, ComparisonSession])
+@router.post("/", response_model=Item | ComparisonSession)
 async def create_item(
     list_title: str,
     item_in: ItemCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Union[Item, ComparisonSession]:
+) -> Item | ComparisonSession:
     """
     Create a new item within a list.
     """
@@ -67,8 +66,8 @@ async def create_item(
         rating=None,
         tier=None,
         tier_set=item_in.tier_set.value,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
     # Get all items in the list with the same tier_set
@@ -135,13 +134,13 @@ async def create_item(
     )
 
 
-@router.post("/comparison/result", response_model=Union[ComparisonSession, None])
+@router.post("/comparison/result", response_model=ComparisonSession | None)
 async def submit_comparison_result(
     session_id: str,
     result_request: ComparisonResultRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Union[ComparisonSession, None]:
+) -> ComparisonSession | None:
     """
     Submit a comparison result and get the next comparison.
     """

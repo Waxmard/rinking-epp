@@ -1,5 +1,7 @@
 """Tests for user endpoints and CRUD operations."""
 
+from datetime import UTC
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
@@ -307,14 +309,14 @@ class TestReadCurrentUser:
 
     async def test_read_current_user_token_missing_subject(self, client: AsyncClient):
         """Test reading current user with token missing 'sub' claim."""
-        from datetime import datetime, timedelta, timezone
+        from datetime import datetime, timedelta
 
         from jose import jwt
 
         from app.settings import settings
 
         # Create a token without the 'sub' claim
-        expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+        expire = datetime.now(UTC) + timedelta(minutes=30)
         to_encode = {"exp": expire}  # Missing 'sub' claim
         malformed_token = jwt.encode(
             to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM

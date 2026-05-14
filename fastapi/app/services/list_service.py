@@ -1,6 +1,6 @@
 """List-related business logic."""
 
-from typing import Any, Optional
+from typing import Any
 
 from app.db.models import Item as ItemModel
 from app.utils.helper import sort_items_by_position
@@ -8,7 +8,7 @@ from app.utils.helper import sort_items_by_position
 
 def group_items_by_tier_set(
     items: list[ItemModel],
-) -> dict[Optional[str], list[ItemModel]]:
+) -> dict[str | None, list[ItemModel]]:
     """
     Group items by their tier_set value.
 
@@ -18,7 +18,7 @@ def group_items_by_tier_set(
     Returns:
         Dictionary mapping tier_set to list of items
     """
-    groups: dict[Optional[str], list[ItemModel]] = {}
+    groups: dict[str | None, list[ItemModel]] = {}
     for item in items:
         tier_set = item.tier_set
         if tier_set not in groups:
@@ -55,7 +55,7 @@ def get_items_sorted_by_tier_set(items: list[ItemModel]) -> list[ItemModel]:
 
 
 def build_list_response(
-    list_obj: Any, items: Optional[list[Any]] = None
+    list_obj: Any, items: list[Any] | None = None
 ) -> dict[str, Any]:
     """
     Build a standard list response dictionary.

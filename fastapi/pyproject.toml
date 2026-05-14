@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "ranking-app"
 version = "0.1.0"
 description = "A ranking app backend that uses binary comparisons to eliminate rating bias"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 authors = [
     {name = "Your Name", email = "your.email@example.com"},
 ]
@@ -18,9 +18,10 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "sqlalchemy>=2.0.0",
     "python-jose[cryptography]>=3.3.0",
+    "cryptography>=46.0.5",
     "passlib[argon2]>=1.7.4",
     "argon2-cffi>=23.1.0",
-    "python-multipart>=0.0.6",
+    "python-multipart>=0.0.27",
     "psycopg[binary,pool]>=3.1.12",
     "asyncpg>=0.28.0",
     "email-validator>=2.3.0",
@@ -44,7 +45,7 @@ dev = [
 
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "PL", "S"]
@@ -81,7 +82,7 @@ extend-immutable-calls = [
 ]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.11"
 strict = true
 ignore_missing_imports = true
 # FastAPI / SQLAlchemy decorators are dynamically typed; strict's

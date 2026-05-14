@@ -4,8 +4,6 @@ Keys consist of digits and letters: 0-9, A-Z, a-z (62 characters total).
 This provides lexicographic ordering where "a0" < "a1" < "b0" etc.
 """
 
-from typing import Optional
-
 # Base-62 alphabet: 0-9, A-Z, a-z
 ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 BASE = len(ALPHABET)  # 62
@@ -21,7 +19,7 @@ def _index_to_char(i: int) -> str:
     return ALPHABET[i]
 
 
-def _increment_char(c: str) -> Optional[str]:
+def _increment_char(c: str) -> str | None:
     """Increment a character by one, returning None if at max."""
     idx = _char_to_index(c)
     if idx >= BASE - 1:
@@ -29,7 +27,7 @@ def _increment_char(c: str) -> Optional[str]:
     return _index_to_char(idx + 1)
 
 
-def _decrement_char(c: str) -> Optional[str]:
+def _decrement_char(c: str) -> str | None:
     """Decrement a character by one, returning None if at min."""
     idx = _char_to_index(c)
     if idx <= 0:
@@ -37,7 +35,7 @@ def _decrement_char(c: str) -> Optional[str]:
     return _index_to_char(idx - 1)
 
 
-def generate_key_between(a: Optional[str], b: Optional[str]) -> str:
+def generate_key_between(a: str | None, b: str | None) -> str:
     """
     Generate a key that sorts between a and b.
 

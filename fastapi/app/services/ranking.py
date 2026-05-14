@@ -1,7 +1,6 @@
 """Ranking and tier assignment business logic."""
 
 import uuid
-from typing import Optional
 
 from app.db.models import Item as ItemModel
 
@@ -53,7 +52,7 @@ def assign_tiers_for_set(sorted_items: list[ItemModel], tier_set: str) -> None:
 
 
 def filter_ranked_items(
-    items: list[ItemModel], exclude_id: Optional[uuid.UUID] = None
+    items: list[ItemModel], exclude_id: uuid.UUID | None = None
 ) -> list[ItemModel]:
     """
     Filter items to only those that have been ranked (have a position assigned).

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -21,7 +20,7 @@ class ListBase(BaseModel):
     """Base list schema with shared properties."""
 
     title: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = None
+    description: str | None = None
 
 
 # Properties to receive via API on creation
@@ -35,8 +34,8 @@ class ListCreate(ListBase):
 class ListUpdate(BaseModel):
     """Schema for list update."""
 
-    title: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = None
+    title: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = None
 
 
 # Properties to return to client
@@ -46,7 +45,7 @@ class List(ListBase):
     list_id: UUID
     user_id: UUID
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -63,7 +62,7 @@ class ListSimple(ListBase):
     list_id: UUID
     user_id: UUID
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     created_at: datetime
     updated_at: datetime
     item_count: int = 0
