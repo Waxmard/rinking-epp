@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.api.api import api_router
-from app.db.database import create_tables
+from app.db.database import create_tables, engine
 from app.settings import settings
 
 app = FastAPI(
@@ -40,8 +40,6 @@ async def root() -> dict[str, str]:
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     """Health check endpoint for container monitoring."""
-    from app.db.database import engine
-
     try:
         # Check database connectivity
         async with engine.connect() as conn:

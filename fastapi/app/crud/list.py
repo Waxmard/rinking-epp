@@ -4,8 +4,7 @@ from typing import Any, Optional
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Item as ItemModel
-from app.db.models import List as ListModel
+from app.db.models import Item as ItemModel, List as ListModel
 
 
 async def get_by_id(db: AsyncSession, list_id: uuid.UUID) -> Optional[ListModel]:

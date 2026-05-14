@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import INVALID_CREDENTIALS_ERROR
 from app.core.security import verify_password
-from app.crud.crud_user import get_user_by_email, get_user_by_username
+from app.crud.crud_user import get_user_by_email, get_user_by_id, get_user_by_username
 from app.db.database import get_db
 from app.db.models import User as UserModel
 from app.schemas.user import TokenPayload
@@ -74,8 +74,6 @@ async def get_current_user(
         token_data = TokenPayload(sub=user_id)
     except JWTError:
         raise credentials_exception from None
-
-    from app.crud.crud_user import get_user_by_id
 
     user = await get_user_by_id(db, UUID(token_data.sub))
     if user is None:

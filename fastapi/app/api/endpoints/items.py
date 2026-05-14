@@ -11,9 +11,7 @@ from app.core.constants import (
     SESSION_NOT_FOUND_ERROR,
 )
 from app.core.fractional_index import generate_key_between
-from app.crud import comparison as comparison_crud
-from app.crud import item as item_crud
-from app.crud import list as list_crud
+from app.crud import comparison as comparison_crud, item as item_crud, list as list_crud
 from app.db.database import get_db
 from app.db.models import Item as ItemModel
 from app.schemas.item import (

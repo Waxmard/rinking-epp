@@ -20,9 +20,7 @@ from sqlalchemy.ext.asyncio import (
 
 from app.core.security import get_password_hash
 from app.db.database import get_db
-from app.db.models import Base, User
-from app.db.models import Item as ItemModel
-from app.db.models import List as ListModel
+from app.db.models import Base, Item as ItemModel, List as ListModel, User
 from app.main import app
 from app.services.auth import create_access_token
 

@@ -9,10 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.algorithm import find_next_comparison
 from app.core.fractional_index import generate_key_between
-from app.crud import comparison as comparison_crud
-from app.crud import item as item_crud
-from app.db.models import ComparisonSession as ComparisonSessionModel
-from app.db.models import Item as ItemModel
+from app.crud import comparison as comparison_crud, item as item_crud
+from app.db.models import ComparisonSession as ComparisonSessionModel, Item as ItemModel
 from app.schemas.item import Comparison, ComparisonSession
 from app.services.ranking import assign_tiers_for_set
 from app.utils.helper import sort_items_by_position

@@ -8,9 +8,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Item as ItemModel
-from app.db.models import List as ListModel
-from app.db.models import User
+from app.db.models import Item as ItemModel, List as ListModel, User
 
 
 @pytest.mark.asyncio

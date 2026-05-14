@@ -49,14 +49,16 @@ target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "PL", "S"]
-# PLR* are subjective refactor suggestions; PLC0415 trips on legit lazy/circular
-# imports. Keep PLE (errors) + PLW (warnings) which catch real bugs.
+# PLR* are subjective refactor suggestions. Keep PLE (errors) + PLW (warnings)
+# which catch real bugs.
 ignore = [
     "PLR0911",  # too-many-return-statements
     "PLR0913",  # too-many-arguments (noisy with FastAPI Depends + CRUD)
     "PLR2004",  # magic-value-comparison (too noisy in tests, HTTP codes)
-    "PLC0415",  # import-outside-top-level
 ]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [
@@ -72,7 +74,12 @@ extend-immutable-calls = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S105", "S106"]  # asserts + hardcoded test passwords
+"tests/**" = [
+    "S101",     # asserts allowed in tests
+    "S105",     # hardcoded test passwords
+    "S106",     # hardcoded test passwords (kwarg)
+    "PLC0415",  # scoped imports common in test fixtures
+]
 
 [tool.mypy]
 python_version = "3.9"

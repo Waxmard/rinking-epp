@@ -6,8 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import LIST_ALREADY_EXISTS_ERROR, LIST_NOT_FOUND_ERROR
-from app.crud import item as item_crud
-from app.crud import list as list_crud
+from app.crud import item as item_crud, list as list_crud
 from app.db.database import get_db
 from app.db.models import List as ListModel
 from app.schemas.item import Item

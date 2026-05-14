@@ -1,5 +1,7 @@
+import sys
 import uuid
 from collections.abc import AsyncGenerator
+from pathlib import Path
 from typing import Optional
 
 from sqlalchemy import select
@@ -54,13 +56,11 @@ async def create_tables() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Auto-seed dev users in development
+    # Auto-seed dev users in development. `scripts/` lives outside the `app`
+    # package and is dev-only, so the import stays lazy + scoped here.
     if settings.APP_ENV == "development":
-        import sys
-        from pathlib import Path
-
         sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-        from scripts.seed import seed_users
+        from scripts.seed import seed_users  # noqa: PLC0415
 
         async with SessionLocal() as session:
             await seed_users(session)

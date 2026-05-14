@@ -9,11 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import (
     ComparisonSession as ComparisonSessionModel,
-)
-from app.db.models import (
     Item as ItemModel,
-)
-from app.db.models import (
     List as ListModel,
 )
 from app.schemas.item import Comparison
