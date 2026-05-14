@@ -55,3 +55,18 @@ jobs:
           cache-dependency-glob: "fastapi/uv.lock"
       - run: uv sync --extra dev
       - run: uv run mypy app/
+
+  boundaries:
+    name: Module Boundaries
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: fastapi
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "fastapi/uv.lock"
+      - run: uv sync --extra dev
+      - run: uv run tach check
