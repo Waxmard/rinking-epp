@@ -13,6 +13,7 @@
     "format:check": "biome format src/",
     "check": "biome check src/",
     "check:fix": "biome check --write src/",
+    "check:staged": "biome check --write --no-errors-on-unmatched",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
