@@ -46,10 +46,10 @@ ci:        backend-ci frontend-lint frontend-typecheck docs-check
 
 .PHONY: docs-build docs-check
 docs-build:
-	python3 scripts/build_docs.py --write
+	mise exec -- python3 scripts/build_docs.py --write
 
 docs-check:
-	python3 scripts/build_docs.py --check
+	mise exec -- python3 scripts/build_docs.py --check
 
 # ----- Backend: delegate any backend-* to fastapi/Makefile -----
 
