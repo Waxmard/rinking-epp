@@ -8,7 +8,9 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import User, List as ListModel, Item as ItemModel
+from app.db.models import Item as ItemModel
+from app.db.models import List as ListModel
+from app.db.models import User
 
 
 @pytest.mark.asyncio
@@ -281,7 +283,7 @@ class TestUpdateList:
         self, client: AsyncClient, test_list: ListModel, auth_headers: dict
     ):
         """Test partial list update (only title)."""
-        _original_description = test_list.description  # noqa: F841
+        _original_description = test_list.description
         response = await client.put(
             f"/api/lists/{test_list.list_id}",
             json={

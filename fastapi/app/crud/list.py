@@ -42,7 +42,7 @@ async def get_by_title_and_user(
 
 async def get_by_user_with_stats(
     db: AsyncSession, user_id: uuid.UUID, skip: int = 0, limit: int = 100
-) -> list[tuple]:
+) -> list[tuple[Any, ...]]:
     """Get all lists for a user with item counts and tier distribution."""
     query = (
         select(

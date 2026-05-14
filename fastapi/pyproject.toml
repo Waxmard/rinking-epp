@@ -48,7 +48,15 @@ line-length = 88
 target-version = "py39"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "SIM"]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "PL", "S"]
+# PLR* are subjective refactor suggestions; PLC0415 trips on legit lazy/circular
+# imports. Keep PLE (errors) + PLW (warnings) which catch real bugs.
+ignore = [
+    "PLR0911",  # too-many-return-statements
+    "PLR0913",  # too-many-arguments (noisy with FastAPI Depends + CRUD)
+    "PLR2004",  # magic-value-comparison (too noisy in tests, HTTP codes)
+    "PLC0415",  # import-outside-top-level
+]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [
@@ -64,15 +72,15 @@ extend-immutable-calls = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101"]
+"tests/**" = ["S101", "S105", "S106"]  # asserts + hardcoded test passwords
 
 [tool.mypy]
 python_version = "3.9"
-warn_return_any = false
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+strict = true
 ignore_missing_imports = true
+# FastAPI / SQLAlchemy decorators are dynamically typed; strict's
+# disallow_untyped_decorators is too noisy here.
+disallow_untyped_decorators = false
 
 [dependency-groups]
 dev = [

@@ -73,9 +73,8 @@ async def update(
 ) -> ItemModel:
     """Update an item with the given data."""
     for field, value in update_data.items():
-        if field == "image_url" and value is not None:
-            value = str(value)
-        setattr(item, field, value)
+        new_value = str(value) if field == "image_url" and value is not None else value
+        setattr(item, field, new_value)
     db.add(item)
     await db.flush()
     return item

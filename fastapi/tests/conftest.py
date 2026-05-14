@@ -9,22 +9,22 @@ os.environ["SECRET_KEY"] = "test-secret-key-for-testing-only"
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 os.environ["APP_ENV"] = "test"
 
-import pytest  # noqa: E402
-import pytest_asyncio  # noqa: E402
-from httpx import ASGITransport, AsyncClient  # noqa: E402
-from sqlalchemy.ext.asyncio import (  # noqa: E402
+import pytest
+import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
 
-from app.core.security import get_password_hash  # noqa: E402
-from app.db.database import get_db  # noqa: E402
-from app.db.models import Base, User  # noqa: E402
+from app.core.security import get_password_hash
+from app.db.database import get_db
+from app.db.models import Base, User
 from app.db.models import Item as ItemModel
 from app.db.models import List as ListModel
-from app.main import app  # noqa: E402
-from app.services.auth import create_access_token  # noqa: E402
+from app.main import app
+from app.services.auth import create_access_token
 
 # Test database URL - using SQLite for tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"

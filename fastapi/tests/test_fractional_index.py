@@ -53,7 +53,7 @@ class TestPrependZeroFallback:
             generate_key_between(None, "0")
 
     def test_repeated_front_insertion_stays_ordered(self) -> None:
-        """Simulate front insertions within alphabet headroom; each new key < previous."""
+        """Front insertions within alphabet headroom; each new key < previous."""
         prev = generate_key_between(None, None)  # "a0"
         for _ in range(30):
             key = generate_key_between(None, prev)

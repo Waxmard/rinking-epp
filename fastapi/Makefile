@@ -32,21 +32,21 @@ help:
 	@echo "  format         - Ruff format"
 	@echo "  typecheck      - mypy"
 	@echo "  boundaries     - tach module-boundary check"
-	@echo "  test           - pytest with coverage (fail under 90%)"
+	@echo "  test           - pytest with coverage (fail under 95%)"
 	@echo "  ci             - lint + typecheck + boundaries + test"
 
 # Code Quality
 .PHONY: lint fix format typecheck boundaries test ci
 lint:
-	uv run ruff check app/
-	uv run ruff format --check app/
+	uv run ruff check app/ tests/
+	uv run ruff format --check app/ tests/
 
 fix:
-	uv run ruff check app/ --fix
-	uv run ruff format app/
+	uv run ruff check app/ tests/ --fix
+	uv run ruff format app/ tests/
 
 format:
-	uv run ruff format app/
+	uv run ruff format app/ tests/
 
 typecheck:
 	uv run mypy app/
@@ -55,7 +55,7 @@ boundaries:
 	uv run tach check
 
 test:
-	uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+	uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=95
 
 ci: lint typecheck boundaries test
 

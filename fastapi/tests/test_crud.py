@@ -12,8 +12,14 @@ from app.crud import item as item_crud
 from app.crud import list as list_crud
 from app.db.models import (
     ComparisonSession as ComparisonSessionModel,
+)
+from app.db.models import (
     Item as ItemModel,
+)
+from app.db.models import (
     List as ListModel,
+)
+from app.db.models import (
     User,
 )
 

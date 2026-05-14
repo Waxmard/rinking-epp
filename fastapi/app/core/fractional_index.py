@@ -64,7 +64,7 @@ def generate_key_between(a: Optional[str], b: Optional[str]) -> str:
 
     # Case 2: No lower bound - generate key before b
     if a is None:
-        assert b is not None
+        assert b is not None  # noqa: S101  # type narrowing (a/b both None handled above)
         # Try to decrement the first character
         first_dec = _decrement_char(b[0])
         if first_dec is not None:
@@ -76,7 +76,7 @@ def generate_key_between(a: Optional[str], b: Optional[str]) -> str:
 
     # Case 3: No upper bound - generate key after a
     if b is None:
-        assert a is not None
+        assert a is not None  # noqa: S101  # type narrowing (a/b both None handled above)
         # Try to increment the last character
         last_inc = _increment_char(a[-1])
         if last_inc is not None:

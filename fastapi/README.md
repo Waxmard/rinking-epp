@@ -62,7 +62,7 @@ uv sync                           # Install dependencies
 uv sync --group dev               # Install with dev dependencies
 
 # Code quality
-uv run ruff check app/            # Lint (rules: E, F, I, B, UP, SIM)
+uv run ruff check app/ tests/     # Lint (rules: E, F, I, B, UP, SIM, RUF, PL, S)
 uv run ruff check app/ --fix      # Lint + autofix
 uv run ruff format app/           # Format
 uv run mypy app/                  # Type check
