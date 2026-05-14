@@ -74,7 +74,7 @@ async def read_users(
     skip: int = 0,
     limit: int = 100,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_admin_user),
+    current_user: UserModel = Depends(get_current_admin_user),
 ) -> Any:
     """
     Retrieve users. Requires authentication.
@@ -95,7 +95,7 @@ async def read_users(
 
 
 @router.get("/me", response_model=User)
-async def read_users_me(current_user: User = Depends(get_current_user)) -> Any:
+async def read_users_me(current_user: UserModel = Depends(get_current_user)) -> Any:
     """
     Get current user.
     """
