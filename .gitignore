@@ -7,3 +7,5 @@ coverage.json
 htmlcov/
 
 *.dot
+
+.husky/
