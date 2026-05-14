@@ -1,7 +1,6 @@
 exclude = [
     "tests",
     "scripts",
-    "alembic",
     ".venv",
     "**/__pycache__",
 ]
