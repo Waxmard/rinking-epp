@@ -1,9 +1,7 @@
-from typing import List
-
 from app.db.models import Item as ItemModel
 
 
-def sort_items_by_position(items: List[ItemModel]) -> List[ItemModel]:
+def sort_items_by_position(items: list[ItemModel]) -> list[ItemModel]:
     """
     Sort items by their position field.
     Items with position are sorted lexicographically.

@@ -1,10 +1,8 @@
+<!-- Generated from docs/src. Run `make docs-build` to update. Do not edit directly. -->
+
 # TierNerd
 
-A cross-platform mobile application that lets users create custom lists and rank items through an unbiased comparison system, presenting results in intuitive S-F tier rankings.
-
-## Overview
-
-This app solves the problem of arbitrary ratings by implementing a 1v1 comparison algorithm. Rather than asking users to assign subjective numerical scores to items, the app presents pairs of items and asks which is better. Through a series of binary choices, each item finds its proper place in the list and receives a numeric rating which is then converted to an intuitive tier ranking (S, A, B, C, D, F).
+TierNerd is a cross-platform mobile app for creating ranked tier lists (S–F) through 1v1 comparisons. Rather than asking users to assign subjective numerical scores, the app presents pairs of items and asks which is better. Through a series of binary choices, each item finds its proper place and receives a numeric rating that is then mapped to an intuitive tier (S, A, B, C, D, F).
 
 ## Key Features
 
@@ -12,7 +10,7 @@ This app solves the problem of arbitrary ratings by implementing a 1v1 compariso
 - Add items with descriptions and images
 - Rank items through simple better/worse comparisons
 - Eliminate arbitrary rating bias
-- View results as both ordered lists and intuitive tier rankings (S-F)
+- View results as both ordered lists and intuitive tier rankings (S–F)
 - Understand at a glance which items are top-tier (S) vs lower tiers
 
 ## Screenshots
@@ -27,11 +25,13 @@ See the [screenshots/](screenshots/) directory for all available screenshots.
 
 - **Frontend:** React Native with Expo (SDK 54)
 - **Backend:** Python with FastAPI
-- **Database:** PostgreSQL
+- **Database:** PostgreSQL (async via asyncpg)
+- **Auth:** JWT with argon2 password hashing
 
 ## Getting Started
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install --legacy-peer-deps
@@ -41,6 +41,7 @@ npm run ios                       # iOS Simulator
 ```
 
 ### Backend
+
 ```bash
 cd fastapi
 make dev                          # Start with Docker (auto-seeds dev user)
@@ -64,3 +65,14 @@ While the underlying algorithm assigns numeric values, users interact with this 
 ## Project Status
 
 Currently in initial development phase.
+
+## Documentation Automation
+
+`README.md`, `CLAUDE.md`, `AGENTS.md`, `fastapi/README.md`, and `frontend/README.md` are **generated** from templates in `docs/src/` by `scripts/build_docs.py`. Do not edit the generated files directly — edit the template or partial and re-render.
+
+```bash
+make docs-build    # render templates → generated files
+make docs-check    # CI check: fail if generated docs are stale
+```
+
+Partials live in `docs/src/partials/` and are included with double-brace `include:partials/<name>.md` directives. `CLAUDE.md` and `AGENTS.md` share a single template (`docs/src/CLAUDE.md`) and are rendered to both paths.

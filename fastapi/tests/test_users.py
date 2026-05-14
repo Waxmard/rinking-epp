@@ -1,13 +1,15 @@
 """Tests for user endpoints and CRUD operations."""
 
+from datetime import UTC
+
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import User
 from app.core.security import verify_password
 from app.crud import crud_user
+from app.db.models import User
 from app.schemas.user import UserCreate, UserUpdate
 
 
@@ -166,9 +168,10 @@ class TestUserLogin:
     async def test_login_username_fallback_to_email(
         self, client: AsyncClient, test_db: AsyncSession
     ):
-        """Test login with value that looks like username but falls back to email lookup."""
-        from datetime import datetime
+        """Test login where username lookup misses and email lookup succeeds."""
         import uuid
+        from datetime import datetime
+
         from app.core.security import get_password_hash
 
         # Create a user with a username that doesn't match their email
@@ -188,7 +191,8 @@ class TestUserLogin:
         response = await client.post(
             "/api/users/token",
             data={
-                "username": "fallback_test",  # Looks like username, but is actually the email
+                # Looks like a username, but is actually the email value
+                "username": "fallback_test",
                 "password": "fallbackpassword123",
             },
         )
@@ -305,12 +309,14 @@ class TestReadCurrentUser:
 
     async def test_read_current_user_token_missing_subject(self, client: AsyncClient):
         """Test reading current user with token missing 'sub' claim."""
-        from datetime import datetime, timedelta, timezone
+        from datetime import datetime, timedelta
+
         from jose import jwt
+
         from app.settings import settings
 
         # Create a token without the 'sub' claim
-        expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+        expire = datetime.now(UTC) + timedelta(minutes=30)
         to_encode = {"exp": expire}  # Missing 'sub' claim
         malformed_token = jwt.encode(
             to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM
@@ -325,10 +331,11 @@ class TestReadCurrentUser:
         self, client: AsyncClient, test_db: AsyncSession
     ):
         """Test accessing endpoint after user is deleted."""
-        from datetime import datetime
         import uuid
-        from app.core.auth import create_access_token
+        from datetime import datetime
+
         from app.core.security import get_password_hash
+        from app.services.auth import create_access_token
 
         # Create a temporary user
         temp_user = User(

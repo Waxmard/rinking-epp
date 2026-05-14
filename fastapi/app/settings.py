@@ -1,5 +1,3 @@
-from typing import List, Union
-
 from pydantic import PostgresDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -15,14 +13,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days
 
     # Database - allow string for test mode (SQLite)
-    DATABASE_URL: Union[PostgresDsn, str]
+    DATABASE_URL: PostgresDsn | str
 
     # CORS - stored as comma-separated string, parsed via computed_field
     CORS_ORIGINS_STR: str = ""
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def CORS_ORIGINS(self) -> List[str]:
+    def CORS_ORIGINS(self) -> list[str]:
         if not self.CORS_ORIGINS_STR:
             return []
         return [

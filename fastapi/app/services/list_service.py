@@ -1,12 +1,14 @@
 """List-related business logic."""
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from app.db.models import Item as ItemModel
 from app.utils.helper import sort_items_by_position
 
 
-def group_items_by_tier_set(items: List[ItemModel]) -> Dict[Optional[str], List]:
+def group_items_by_tier_set(
+    items: list[ItemModel],
+) -> dict[str | None, list[ItemModel]]:
     """
     Group items by their tier_set value.
 
@@ -16,7 +18,7 @@ def group_items_by_tier_set(items: List[ItemModel]) -> Dict[Optional[str], List]
     Returns:
         Dictionary mapping tier_set to list of items
     """
-    groups: Dict[Optional[str], List] = {}
+    groups: dict[str | None, list[ItemModel]] = {}
     for item in items:
         tier_set = item.tier_set
         if tier_set not in groups:
@@ -25,7 +27,7 @@ def group_items_by_tier_set(items: List[ItemModel]) -> Dict[Optional[str], List]
     return groups
 
 
-def get_items_sorted_by_tier_set(items: List[ItemModel]) -> List[ItemModel]:
+def get_items_sorted_by_tier_set(items: list[ItemModel]) -> list[ItemModel]:
     """
     Sort items by their tier_set's position order.
     Each tier_set has its own position ordering, so we sort each group separately
@@ -44,15 +46,17 @@ def get_items_sorted_by_tier_set(items: List[ItemModel]) -> List[ItemModel]:
     tier_set_groups = group_items_by_tier_set(items)
 
     # Sort each tier_set's items by position, then combine
-    all_sorted: List = []
-    for tier_set, group_items in tier_set_groups.items():
+    all_sorted: list[ItemModel] = []
+    for _tier_set, group_items in tier_set_groups.items():
         sorted_group = sort_items_by_position(group_items)
         all_sorted.extend(sorted_group)
 
     return all_sorted
 
 
-def build_list_response(list_obj: Any, items: Optional[List] = None) -> Dict:
+def build_list_response(
+    list_obj: Any, items: list[Any] | None = None
+) -> dict[str, Any]:
     """
     Build a standard list response dictionary.
 
@@ -63,25 +67,26 @@ def build_list_response(list_obj: Any, items: Optional[List] = None) -> Dict:
     Returns:
         Dictionary with list data
     """
-    response = {
-        "list_id": list_obj.list_id,  # type: ignore
-        "user_id": list_obj.user_id,  # type: ignore
-        "title": list_obj.title,  # type: ignore
-        "description": list_obj.description,  # type: ignore
-        "created_at": list_obj.created_at,  # type: ignore
-        "updated_at": list_obj.updated_at,  # type: ignore
+    response: dict[str, Any] = {
+        "list_id": list_obj.list_id,
+        "user_id": list_obj.user_id,
+        "title": list_obj.title,
+        "description": list_obj.description,
+        "created_at": list_obj.created_at,
+        "updated_at": list_obj.updated_at,
     }
     if items is not None:
         response["items"] = items
     return response
 
 
-def build_list_simple_response(row: Tuple) -> Dict:
+def build_list_simple_response(row: tuple[Any, ...]) -> dict[str, Any]:
     """
     Build a ListSimple response from a database row with stats.
 
     Args:
-        row: Tuple of (ListModel, item_count, tier_s, tier_a, tier_b, tier_c, tier_d, tier_f)
+        row: Tuple of (ListModel, item_count, tier_s, tier_a, tier_b, tier_c,
+            tier_d, tier_f)
 
     Returns:
         Dictionary with list data and statistics

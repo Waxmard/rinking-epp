@@ -1,19 +1,16 @@
 import uuid
-from datetime import datetime, timezone
-from typing import Union
+from datetime import UTC, datetime
 
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import get_current_user
 from app.core.constants import (
     COMPARISON_SESSION_NOT_FOUND_ERROR,
     ITEM_NOT_FOUND_ERROR,
     SESSION_NOT_FOUND_ERROR,
 )
 from app.core.fractional_index import generate_key_between
-from app.crud import comparison as comparison_crud
-from app.crud import item as item_crud
-from app.crud import list as list_crud
+from app.crud import comparison as comparison_crud, item as item_crud, list as list_crud
 from app.db.database import get_db
 from app.db.models import Item as ItemModel
 from app.schemas.item import (
@@ -25,6 +22,7 @@ from app.schemas.item import (
     ItemUpdate,
 )
 from app.schemas.user import User
+from app.services.auth import get_current_user
 from app.services.comparison_service import (
     build_comparison_session_response,
     finalize_comparison,
@@ -33,18 +31,17 @@ from app.services.comparison_service import (
 )
 from app.services.ranking import filter_ranked_items, get_initial_tier
 from app.utils.helper import sort_items_by_position
-from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 
 
-@router.post("/", response_model=Union[Item, ComparisonSession])
+@router.post("/", response_model=Item | ComparisonSession)
 async def create_item(
     list_title: str,
     item_in: ItemCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Union[Item, ComparisonSession]:
+) -> Item | ComparisonSession:
     """
     Create a new item within a list.
     """
@@ -69,8 +66,8 @@ async def create_item(
         rating=None,
         tier=None,
         tier_set=item_in.tier_set.value,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
 
     # Get all items in the list with the same tier_set
@@ -137,13 +134,13 @@ async def create_item(
     )
 
 
-@router.post("/comparison/result", response_model=Union[ComparisonSession, None])
+@router.post("/comparison/result", response_model=ComparisonSession | None)
 async def submit_comparison_result(
     session_id: str,
     result_request: ComparisonResultRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> Union[ComparisonSession, None]:
+) -> ComparisonSession | None:
     """
     Submit a comparison result and get the next comparison.
     """
@@ -154,7 +151,7 @@ async def submit_comparison_result(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=COMPARISON_SESSION_NOT_FOUND_ERROR,
-        )
+        ) from None
 
     # Load active session from database
     db_session = await comparison_crud.get_active(db, session_uuid)
@@ -319,7 +316,7 @@ async def get_comparison_status(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=SESSION_NOT_FOUND_ERROR,
-        )
+        ) from None
 
     # Load session from database
     db_session = await comparison_crud.get_by_id(db, session_uuid)

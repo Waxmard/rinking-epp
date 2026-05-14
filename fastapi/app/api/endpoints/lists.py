@@ -1,30 +1,28 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
-from typing import List as TypeList
 
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.auth import get_current_user
 from app.core.constants import LIST_ALREADY_EXISTS_ERROR, LIST_NOT_FOUND_ERROR
-from app.crud import item as item_crud
-from app.crud import list as list_crud
+from app.crud import item as item_crud, list as list_crud
 from app.db.database import get_db
 from app.db.models import List as ListModel
 from app.schemas.item import Item
 from app.schemas.list import List, ListSimple, ListUpdate
 from app.schemas.user import User
+from app.services.auth import get_current_user
 from app.services.list_service import (
     build_list_response,
     build_list_simple_response,
     get_items_sorted_by_tier_set,
 )
-from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 
 
-@router.get("/", response_model=TypeList[ListSimple])
+@router.get("/", response_model=list[ListSimple])
 async def read_lists(
     skip: int = 0,
     limit: int = 100,
@@ -63,8 +61,8 @@ async def create_list(
         title=name,
         user_id=current_user.user_id,
         description=description,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(UTC),
+        updated_at=datetime.now(UTC),
     )
     list_obj = await list_crud.create(db, list_obj)
 
@@ -89,7 +87,7 @@ async def read_list(
     return build_list_response(list_obj)
 
 
-@router.get("/{list_id}/items", response_model=TypeList[Item])
+@router.get("/{list_id}/items", response_model=list[Item])
 async def read_list_items(
     list_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),

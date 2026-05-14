@@ -1,6 +1,6 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { StyleSheet, TouchableOpacity, type ViewStyle } from 'react-native';
 import { AppColors, AppSpacing } from '../tokens';
 
 interface FABProps {

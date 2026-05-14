@@ -1,26 +1,25 @@
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional, Union
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import INVALID_CREDENTIALS_ERROR
 from app.core.security import verify_password
-from app.crud.crud_user import get_user_by_email, get_user_by_username
+from app.crud.crud_user import get_user_by_email, get_user_by_id, get_user_by_username
 from app.db.database import get_db
 from app.db.models import User as UserModel
-from app.schemas.user import TokenPayload, User
+from app.schemas.user import TokenPayload
 from app.settings import settings
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/users/token")
 
 
 async def authenticate_user(
     db: AsyncSession, username_or_email: str, password: str
-) -> Optional[UserModel]:
+) -> UserModel | None:
     """Authenticate a user with email or username."""
     # Check if it looks like an email
     if "@" in username_or_email and "." in username_or_email:
@@ -39,13 +38,13 @@ async def authenticate_user(
 
 
 def create_access_token(
-    subject: Union[str, Any], expires_delta: Optional[timedelta] = None
+    subject: UUID | str, expires_delta: timedelta | None = None
 ) -> str:
     """Create a JWT access token."""
     if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
+        expire = datetime.now(UTC) + expires_delta
     else:
-        expire = datetime.now(timezone.utc) + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
     to_encode = {"exp": expire, "sub": str(subject)}
@@ -57,7 +56,7 @@ def create_access_token(
 
 async def get_current_user(
     db: AsyncSession = Depends(get_db), token: str = Depends(oauth2_scheme)
-) -> Union[User, UserModel]:
+) -> UserModel:
     """Get the current authenticated user."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -68,14 +67,12 @@ async def get_current_user(
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
-        user_id: Optional[str] = payload.get("sub")
+        user_id: str | None = payload.get("sub")
         if user_id is None:
             raise credentials_exception
         token_data = TokenPayload(sub=user_id)
     except JWTError:
-        raise credentials_exception
-
-    from app.crud.crud_user import get_user_by_id
+        raise credentials_exception from None
 
     user = await get_user_by_id(db, UUID(token_data.sub))
     if user is None:

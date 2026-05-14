@@ -5,3 +5,7 @@
 .coverage.*
 coverage.json
 htmlcov/
+
+*.dot
+
+.husky/

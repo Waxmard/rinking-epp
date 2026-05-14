@@ -1,0 +1,27 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      root: frontend/
+      glob: "src/**/*.{ts,tsx,js,jsx,json}"
+      run: npm run check:staged -- {staged_files}
+      stage_fixed: true
+
+    ruff-lint:
+      root: fastapi/
+      glob: "**/*.py"
+      run: uv run ruff check --fix {staged_files}
+      stage_fixed: true
+
+    ruff-format:
+      root: fastapi/
+      glob: "**/*.py"
+      run: uv run ruff format {staged_files}
+      stage_fixed: true
+
+    tach:
+      root: fastapi/
+      glob:
+        - "app/**/*.py"
+        - "tach.toml"
+      run: uv run tach check

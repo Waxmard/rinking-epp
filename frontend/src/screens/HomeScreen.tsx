@@ -1,35 +1,40 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Image,
+  ActivityIndicator,
+  Alert,
   Animated,
   Dimensions,
-  ActivityIndicator,
+  FlatList,
+  Image,
   Modal,
-  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../providers/AuthContext';
+import { AddItemContent } from '../components/AddItemModal';
+import {
+  type CreatedList,
+  CreateListContent,
+} from '../components/CreateListModal';
+import {
+  type TierDistribution,
+  TierDistributionBar,
+} from '../components/TierDistributionBar';
 import { Card, FAB } from '../design-system/components';
 import {
+  AppBorders,
   AppColors,
   AppSpacing,
   AppTypography,
-  AppBorders,
 } from '../design-system/tokens';
-import {
-  TierDistributionBar,
-  TierDistribution,
-} from '../components/TierDistributionBar';
-import { CreateListContent, CreatedList } from '../components/CreateListModal';
-import { AddItemContent } from '../components/AddItemModal';
-import { listsService, ListSimple } from '../services/listsService';
-import { Item } from '../services/itemsService';
+import type { RootStackScreenProps } from '../navigation/types';
+import { useAuth } from '../providers/AuthContext';
+import type { Item } from '../services/itemsService';
+import { type ListSimple, listsService } from '../services/listsService';
 
 type ModalStep = 'create' | 'addItem' | null;
 
@@ -46,9 +51,7 @@ interface TierList {
   tierDistribution: TierDistribution;
 }
 
-interface HomeScreenProps {
-  navigation?: any;
-}
+type HomeScreenProps = RootStackScreenProps<'Main'>;
 
 // Convert API ListSimple to local TierList format
 const toTierList = (apiList: ListSimple): TierList => ({
@@ -79,9 +82,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       setError(null);
       const apiLists = await listsService.getLists(token);
       setLists(apiLists.map(toTierList));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching lists:', err);
-      setError(err.message || 'Failed to load lists');
+      setError(err instanceof Error ? err.message : 'Failed to load lists');
     } finally {
       setIsLoading(false);
     }
@@ -105,7 +108,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+    // fadeAnim/scaleAnim are stable refs from useRef; no need to depend.
+  }, [fadeAnim, scaleAnim]);
 
   const formatDate = (date: Date): string => {
     const now = new Date();
@@ -148,9 +152,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
             try {
               await listsService.deleteList(list.id, token);
               setLists((prev) => prev.filter((l) => l.id !== list.id));
-            } catch (err: any) {
+            } catch (err: unknown) {
               console.error('Error deleting list:', err);
-              Alert.alert('Error', err.message || 'Failed to delete list');
+              Alert.alert(
+                'Error',
+                err instanceof Error ? err.message : 'Failed to delete list'
+              );
             }
           },
         },

@@ -8,7 +8,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import List as ListModel, Item as ItemModel
+from app.db.models import Item as ItemModel, List as ListModel
 
 
 @pytest.mark.asyncio
@@ -713,7 +713,7 @@ class TestComparisonFlowComplete:
         client: AsyncClient,
         auth_headers: dict,
     ):
-        """Test submitting comparison with valid UUID format but non-existent session."""
+        """Test submit with valid UUID format but non-existent session."""
         fake_session_id = str(uuid.uuid4())
         response = await client.post(
             "/api/items/comparison/result",

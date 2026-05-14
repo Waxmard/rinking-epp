@@ -1,19 +1,18 @@
-import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import type React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
 import { AppColors, AppSpacing, AppTypography } from '../design-system/tokens';
+import type { RootStackScreenProps } from '../navigation/types';
 
-interface ListsScreenProps {
-  navigation?: any;
-}
+type ListsScreenProps = RootStackScreenProps<'Lists'>;
 
 export const ListsScreen: React.FC<ListsScreenProps> = ({ navigation }) => {
   return (
@@ -24,7 +23,7 @@ export const ListsScreen: React.FC<ListsScreenProps> = ({ navigation }) => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => navigation?.goBack()}
+            onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
             <Ionicons

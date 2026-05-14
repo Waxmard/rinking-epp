@@ -1,10 +1,15 @@
 import { API_BASE_URL } from '../config/api';
 
+export interface ApiErrorData {
+  detail?: string | { msg?: string }[];
+  [key: string]: unknown;
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
     public statusText: string,
-    public data?: any
+    public data?: ApiErrorData
   ) {
     super(`${status} ${statusText}`);
     this.name = 'ApiError';
@@ -26,7 +31,7 @@ async function request<T>(
   };
 
   if (token) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+    (headers as Record<string, string>).Authorization = `Bearer ${token}`;
   }
 
   // Set Content-Type if not already set and body exists
@@ -43,11 +48,11 @@ async function request<T>(
   });
 
   if (!response.ok) {
-    let errorData;
+    let errorData: ApiErrorData | undefined;
     try {
       errorData = await response.json();
     } catch {
-      errorData = null;
+      errorData = undefined;
     }
     throw new ApiError(response.status, response.statusText, errorData);
   }
@@ -65,7 +70,7 @@ export const api = {
   get: <T>(endpoint: string, token?: string) =>
     request<T>(endpoint, { method: 'GET', token }),
 
-  post: <T>(endpoint: string, body?: any, token?: string) => {
+  post: <T>(endpoint: string, body?: unknown, token?: string) => {
     const isFormData = body instanceof URLSearchParams;
     return request<T>(endpoint, {
       method: 'POST',
@@ -77,7 +82,7 @@ export const api = {
     });
   },
 
-  put: <T>(endpoint: string, body?: any, token?: string) =>
+  put: <T>(endpoint: string, body?: unknown, token?: string) =>
     request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(body),

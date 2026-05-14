@@ -1,15 +1,16 @@
-import React, {
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type React from 'react';
+import {
   createContext,
+  type ReactNode,
+  useCallback,
   useContext,
-  useState,
   useEffect,
   useMemo,
-  useCallback,
-  ReactNode,
+  useState,
 } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { USE_MOCK_AUTH } from '../config/api';
-import { authService, User as ApiUser } from '../services/authService';
+import { type User as ApiUser, authService } from '../services/authService';
 
 interface User {
   id: string;
@@ -66,18 +67,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
 
   // Helper to persist auth state to storage and update state
-  const saveAuthState = async (newToken: string, newUser: User) => {
+  const saveAuthState = useCallback(async (newToken: string, newUser: User) => {
     await AsyncStorage.setItem(AUTH_TOKEN_KEY, newToken);
     await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(newUser));
     setUser(newUser);
     setToken(newToken);
-  };
-
-  useEffect(() => {
-    checkAuthState();
   }, []);
 
-  const checkAuthState = async () => {
+  const checkAuthState = useCallback(async () => {
     try {
       const storedToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
       const userData = await AsyncStorage.getItem(USER_DATA_KEY);
@@ -110,7 +107,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkAuthState();
+  }, [checkAuthState]);
 
   const signIn = useCallback(
     async (email: string, password: string): Promise<boolean> => {
@@ -140,14 +141,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setError(result.error || 'Login failed');
           return false;
         }
-      } catch (error: any) {
-        setError(error.message || 'Authentication failed');
+      } catch (error: unknown) {
+        setError(
+          error instanceof Error ? error.message : 'Authentication failed'
+        );
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    []
+    [saveAuthState]
   );
 
   const register = useCallback(
@@ -178,14 +181,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setError(result.error || 'Registration failed');
           return false;
         }
-      } catch (error: any) {
-        setError(error.message || 'Registration failed');
+      } catch (error: unknown) {
+        setError(
+          error instanceof Error ? error.message : 'Registration failed'
+        );
         return false;
       } finally {
         setIsLoading(false);
       }
     },
-    [signIn]
+    [signIn, saveAuthState]
   );
 
   const signInWithGoogle = useCallback(async (): Promise<boolean> => {

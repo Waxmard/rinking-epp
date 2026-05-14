@@ -1,10 +1,10 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from app.api.api import api_router
-from app.db.database import create_tables
+from app.db.database import create_tables, engine
 from app.settings import settings
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Ranking App API",
@@ -40,8 +40,6 @@ async def root() -> dict[str, str]:
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     """Health check endpoint for container monitoring."""
-    from app.db.database import engine
-
     try:
         # Check database connectivity
         async with engine.connect() as conn:
@@ -66,4 +64,5 @@ async def health_check() -> dict[str, str]:
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    # Bind 0.0.0.0 so the container is reachable from the host; dev-only entrypoint.
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)  # noqa: S104

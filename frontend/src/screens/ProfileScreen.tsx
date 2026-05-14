@@ -1,23 +1,25 @@
-import React, { useEffect, useRef } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { useEffect, useRef } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
   Animated,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../providers/AuthContext';
 import { Card } from '../design-system/components';
 import {
+  AppBorders,
   AppColors,
   AppSpacing,
   AppTypography,
-  AppBorders,
 } from '../design-system/tokens';
+import type { RootStackScreenProps } from '../navigation/types';
+import { useAuth } from '../providers/AuthContext';
 
 // Temporary inline shadows to fix import issue
 const AppShadows = {
@@ -30,9 +32,7 @@ const AppShadows = {
   },
 };
 
-interface ProfileScreenProps {
-  navigation?: any;
-}
+type ProfileScreenProps = RootStackScreenProps<'Profile'>;
 
 export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const { user, signOut } = useAuth();
@@ -41,13 +41,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Start fade in animation
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim]);
 
   const handleSignOut = async () => {
     console.log('Signing out...');
@@ -133,7 +132,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
                   >
                     <View style={styles.settingsItemContent}>
                       <Ionicons
-                        name={item.icon as any}
+                        name={item.icon as keyof typeof Ionicons.glyphMap}
                         size={22}
                         color={AppColors.secondary.primary}
                         style={styles.settingsIcon}

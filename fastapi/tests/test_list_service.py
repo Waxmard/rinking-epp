@@ -3,7 +3,6 @@
 import uuid
 from datetime import datetime
 
-
 from app.db.models import Item as ItemModel
 from app.services.list_service import (
     build_list_response,
@@ -213,7 +212,7 @@ class TestBuildListSimpleResponse:
             created_at = datetime.now()
             updated_at = datetime.now()
 
-        # Row format: (ListModel, item_count, tier_s, tier_a, tier_b, tier_c, tier_d, tier_f)
+        # Row: (ListModel, item_count, tier_s, tier_a, tier_b, tier_c, tier_d, tier_f)
         row = (MockList(), 10, 2, 3, 2, 1, 1, 1)
         result = build_list_simple_response(row)
 

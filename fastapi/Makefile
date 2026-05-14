@@ -25,6 +25,39 @@ help:
 	@echo "  build-local    - Build for current platform only (fast)"
 	@echo "  build-multi    - Build for multiple platforms (amd64 + arm64)"
 	@echo "  push           - Push multi-platform image to registry"
+	@echo ""
+	@echo "Code Quality:"
+	@echo "  lint           - Ruff check + format check"
+	@echo "  fix            - Ruff check --fix + format"
+	@echo "  format         - Ruff format"
+	@echo "  typecheck      - mypy"
+	@echo "  boundaries     - tach module-boundary check"
+	@echo "  test           - pytest with coverage (fail under 95%)"
+	@echo "  ci             - lint + typecheck + boundaries + test"
+
+# Code Quality
+.PHONY: lint fix format typecheck boundaries test ci
+lint:
+	uv run ruff check app/ tests/
+	uv run ruff format --check app/ tests/
+
+fix:
+	uv run ruff check app/ tests/ --fix
+	uv run ruff format app/ tests/
+
+format:
+	uv run ruff format app/ tests/
+
+typecheck:
+	uv run mypy app/
+
+boundaries:
+	uv run tach check
+
+test:
+	uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=95
+
+ci: lint typecheck boundaries test
 
 # Build for current platform only (faster for local development)
 .PHONY: build-local

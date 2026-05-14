@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime
-from enum import Enum
-from typing import Literal, Optional
+from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, Field, HttpUrl
 
 
 # Tier ranking enum
-class TierRank(str, Enum):
+class TierRank(StrEnum):
     """Enum for tier rankings."""
 
     S = "S"
@@ -19,7 +19,7 @@ class TierRank(str, Enum):
 
 
 # Tier set enum - determines which tier pair an item can be ranked into
-class TierSet(str, Enum):
+class TierSet(StrEnum):
     """Enum for tier sets. Each set maps to a pair of tiers."""
 
     GOOD = "good"  # S or A
@@ -32,8 +32,8 @@ class ItemBase(BaseModel):
     """Base item schema with shared properties."""
 
     name: str = Field(..., min_length=1, max_length=100)
-    description: Optional[str] = None
-    image_url: Optional[HttpUrl] = None
+    description: str | None = None
+    image_url: HttpUrl | None = None
 
 
 # Properties to receive via API on creation
@@ -41,8 +41,8 @@ class ItemCreate(ItemBase):
     """Schema for item creation."""
 
     name: str
-    description: Optional[str] = None
-    image_url: Optional[HttpUrl] = None
+    description: str | None = None
+    image_url: HttpUrl | None = None
     tier_set: TierSet  # Required - determines which tier pair (S/A, B/C, D/F)
 
 
@@ -50,9 +50,9 @@ class ItemCreate(ItemBase):
 class ItemUpdate(BaseModel):
     """Schema for item update."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = None
-    image_url: Optional[HttpUrl] = None
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = None
+    image_url: HttpUrl | None = None
 
 
 # Properties to return to client
@@ -62,12 +62,12 @@ class Item(ItemBase):
     item_id: uuid.UUID
     list_id: uuid.UUID
     name: str
-    description: Optional[str] = None
-    image_url: Optional[HttpUrl] = None
-    position: Optional[str] = None
-    rating: Optional[float] = None
-    tier: Optional[TierRank] = None
-    tier_set: Optional[TierSet] = None
+    description: str | None = None
+    image_url: HttpUrl | None = None
+    position: str | None = None
+    rating: float | None = None
+    tier: TierRank | None = None
+    tier_set: TierSet | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -86,7 +86,7 @@ class Comparison(BaseModel):
     comparison_index: int
     min_index: int
     max_index: int
-    is_winner: Optional[bool] = None
+    is_winner: bool | None = None
     done: bool = False
 
     class Config:
@@ -105,7 +105,7 @@ class ComparisonSession(BaseModel):
     session_id: str
     list_id: uuid.UUID
     item_id: uuid.UUID
-    current_comparison: Optional[Comparison] = None
+    current_comparison: Comparison | None = None
     is_complete: bool = False
     created_at: datetime
     updated_at: datetime

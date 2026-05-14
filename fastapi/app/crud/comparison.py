@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,7 +8,7 @@ from app.db.models import ComparisonSession as ComparisonSessionModel
 
 async def get_by_id(
     db: AsyncSession, session_id: uuid.UUID
-) -> Optional[ComparisonSessionModel]:
+) -> ComparisonSessionModel | None:
     """Get a comparison session by ID."""
     result = await db.execute(
         select(ComparisonSessionModel).where(
@@ -21,7 +20,7 @@ async def get_by_id(
 
 async def get_active(
     db: AsyncSession, session_id: uuid.UUID
-) -> Optional[ComparisonSessionModel]:
+) -> ComparisonSessionModel | None:
     """Get an active (not complete) comparison session by ID."""
     result = await db.execute(
         select(ComparisonSessionModel).where(
