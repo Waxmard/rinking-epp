@@ -13,7 +13,11 @@ help:
 	@echo "  fix              - Lint + autofix backend + frontend"
 	@echo "  typecheck        - Typecheck backend + frontend"
 	@echo "  test             - Run backend tests with coverage"
-	@echo "  ci               - lint + typecheck + test"
+	@echo "  ci               - lint + typecheck + test + docs-check"
+	@echo ""
+	@echo "Docs (rendered from docs/src):"
+	@echo "  docs-build       - Render docs/src → README.md, CLAUDE.md, AGENTS.md, sub-READMEs"
+	@echo "  docs-check       - Fail if generated docs are stale"
 	@echo ""
 	@echo "Backend (delegates to fastapi/Makefile):"
 	@echo "  backend-<target> - any fastapi/Makefile target (e.g. backend-lint, backend-logs)"
@@ -37,7 +41,16 @@ lint:      backend-lint frontend-lint
 fix:       backend-fix frontend-fix
 typecheck: backend-typecheck frontend-typecheck
 test:      backend-test
-ci:        backend-ci frontend-lint frontend-typecheck
+ci:        backend-ci frontend-lint frontend-typecheck docs-check
+
+# ----- Docs (generated from docs/src) -----
+
+.PHONY: docs-build docs-check
+docs-build:
+	python3 scripts/build_docs.py --write
+
+docs-check:
+	python3 scripts/build_docs.py --check
 
 # ----- Backend: delegate any backend-* to fastapi/Makefile -----
 

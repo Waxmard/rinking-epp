@@ -1,3 +1,5 @@
+<!-- Generated from docs/src. Run `make docs-build` to update. Do not edit directly. -->
+
 # TierNerd Backend
 
 FastAPI backend for the TierNerd ranking app.
@@ -12,7 +14,7 @@ make dev
 make dev DETACHED=1
 ```
 
-The API is now running at http://localhost:8000
+The API is now running at <http://localhost:8000>.
 
 ## Dev Credentials
 
@@ -24,133 +26,80 @@ The dev user is auto-created on startup:
 
 ## API Documentation
 
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
+- **Swagger UI**: <http://localhost:8000/docs>
+- **ReDoc**: <http://localhost:8000/redoc>
 
-## Make Commands
-
-Run `make help` for all available commands.
-
-## Development
-
-### API Structure
+## API Structure
 
 The API is structured around the following resources:
-- `/api/users`: User management and authentication
-- `/api/lists`: List creation and management
-- `/api/items`: Item management and ranking
+
+- `/api/users` — User management and authentication
+- `/api/lists` — List creation and management
+- `/api/items` — Item management and ranking
+
+### Backend (fastapi/)
+
+**Always use `make` commands instead of raw `docker` commands.** Agents may run read-only ones (`make logs`, `make stop`, `make health`); the user runs build/dev/reset commands (`make dev`, `make fresh`, `make restart`, `make reset`, `make clean`).
+
+```bash
+cd fastapi
+
+# Docker (use these, not raw docker commands)
+make dev                          # Build and run containers (auto-seeds dev user)
+make dev DETACHED=1               # Run in background
+make restart                      # Rebuild and restart
+make fresh                        # Rebuild, restart, and show logs
+make logs                         # View container logs
+make stop                         # Stop containers
+make health                       # Check health endpoint
+
+# Database
+make reset                        # Clear database and re-seed
+make clean                        # Stop, remove volumes, clean up (use after schema changes)
+
+# Package management (use uv, not pip)
+uv sync                           # Install dependencies
+uv sync --group dev               # Install with dev dependencies
+
+# Code quality
+uv run ruff check app/            # Lint (rules: E, F, I, B, UP, SIM)
+uv run ruff check app/ --fix      # Lint + autofix
+uv run ruff format app/           # Format
+uv run mypy app/                  # Type check
+
+# Testing
+uv run pytest                                       # Run all tests
+uv run pytest tests/test_items.py                   # Run single test file
+uv run pytest -k "test_name"                        # Run specific test
+uv run pytest --cov=app --cov-report=term-missing   # Run with coverage
+```
 
 ## Testing
 
-### Test Suite Overview
-
-The backend includes comprehensive unit tests for all API endpoints achieving full coverage of endpoint functionality.
-
-### Test Infrastructure
-
-- **Framework**: pytest with pytest-asyncio for async support
+- **Framework**: `pytest` with `pytest-asyncio` for async support
 - **Test Database**: SQLite in-memory for fast, isolated tests
-- **HTTP Client**: httpx AsyncClient for endpoint testing
+- **HTTP Client**: `httpx.AsyncClient` for endpoint testing
 - **Test Files**:
-  - `tests/conftest.py` - Test configuration and fixtures
-  - `tests/test_users.py` - User endpoint tests
-  - `tests/test_lists.py` - List endpoint tests
-  - `tests/test_items.py` - Item endpoint tests
-  - `tests/app/utils/test_algorithm.py` - Algorithm tests
-
-### Running Tests
+  - `tests/conftest.py` — Test configuration and fixtures
+  - `tests/test_users.py` — User endpoint tests
+  - `tests/test_lists.py` — List endpoint tests
+  - `tests/test_items.py` — Item endpoint tests
+  - `tests/app/utils/test_algorithm.py` — Algorithm tests
 
 ```bash
-# Install dev dependencies (includes testing packages)
-uv sync --group dev
-
-# Run all endpoint tests
-uv run pytest tests/test_users.py tests/test_lists.py tests/test_items.py -v
-
-# Run all tests
-uv run pytest -v
-
-# Run specific test file
-uv run pytest tests/test_users.py -v
-
-# Run specific test class
-uv run pytest tests/test_users.py::TestUserCreation -v
-
-# Run specific test
-uv run pytest tests/test_users.py::TestUserCreation::test_create_user_success -v
-
-# Run with coverage report
-uv run pytest --cov=app --cov-report=html
+uv sync --group dev                                 # Install dev deps
+uv run pytest                                       # All tests
+uv run pytest tests/test_users.py -v                # Single file
+uv run pytest tests/test_users.py::TestUserCreation # Single class
+uv run pytest --cov=app --cov-report=html           # Coverage report
 ```
 
-### Test Coverage
+### Coverage Areas
 
-#### Users Endpoints
-- ✅ User registration (success, duplicates, validation errors)
-- ✅ Login with email and username
-- ✅ Authentication token generation
-- ✅ Reading user lists (authenticated/unauthenticated)
-- ✅ Current user retrieval
-- ✅ Invalid token handling
-
-#### Lists Endpoints
-- ✅ Reading user's lists with item counts
-- ✅ Creating lists (success, duplicates, validation)
-- ✅ Reading specific lists
-- ✅ Updating lists (full and partial updates)
-- ✅ Deleting lists
-- ✅ Authorization checks (wrong user access)
-- ✅ Pagination support
-
-#### Items Endpoints
-- ✅ Creating items (first item, subsequent items with comparison)
-- ✅ Comparison workflow (better/worse results)
-- ✅ Comparison session management
-- ✅ Reading specific items
-- ✅ Updating items (full and partial updates)
-- ✅ Deleting items
-- ✅ Authorization checks
-
-#### Algorithm
-- ✅ Binary search ranking algorithm
-- ✅ Winner/loser comparison logic
-- ✅ Range narrowing behavior
-- ✅ Edge cases
-
-### Test Fixtures
-
-The test suite includes reusable fixtures for:
-- Test database sessions (SQLite in-memory)
-- Authenticated HTTP clients
-- Test users with authentication tokens
-- Test lists and items
-- Multiple users for authorization testing
-
-### Code Quality Tools
-
-```bash
-# Format code
-uv run black app/
-
-# Sort imports
-uv run isort app/
-
-# Lint code
-uv run ruff check app/
-
-# Type check
-uv run mypy app/
-```
-
-### Ranking Algorithm
-
-The ranking algorithm is implemented in `app/core/algorithm.py` and uses binary search to efficiently determine item positions through pairwise comparisons.
-
-### Database
-```bash
-make reset       # Clear database and re-seed
-make clean       # Remove containers, volumes, and images
-```
+- **Users**: registration, login (email + username), tokens, current user, invalid tokens
+- **Lists**: CRUD, pagination, authorization (cross-user access denied)
+- **Items**: CRUD, comparison workflow (better/worse), session management, authorization
+- **Algorithm**: binary search ranking, winner/loser logic, range narrowing, edge cases
 
 ## Project Structure
 
@@ -166,8 +115,23 @@ app/
 
 ## Tech Stack
 
-- **FastAPI** - Web framework
-- **PostgreSQL** - Database (via asyncpg)
-- **SQLAlchemy 2.0** - Async ORM
-- **JWT** - Authentication
-- **Docker** - Containerization
+- **FastAPI** — Web framework
+- **PostgreSQL** — Database (via asyncpg)
+- **SQLAlchemy 2.0** — Async ORM
+- **JWT** — Authentication
+- **Docker** — Containerization
+
+## Ranking Algorithm
+
+The ranking algorithm is implemented in `app/core/algorithm.py` and uses binary search to efficiently determine item positions through pairwise comparisons.
+
+## Documentation Automation
+
+`README.md`, `CLAUDE.md`, `AGENTS.md`, `fastapi/README.md`, and `frontend/README.md` are **generated** from templates in `docs/src/` by `scripts/build_docs.py`. Do not edit the generated files directly — edit the template or partial and re-render.
+
+```bash
+make docs-build    # render templates → generated files
+make docs-check    # CI check: fail if generated docs are stale
+```
+
+Partials live in `docs/src/partials/` and are included with double-brace `include:partials/<name>.md` directives. `CLAUDE.md` and `AGENTS.md` share a single template (`docs/src/CLAUDE.md`) and are rendered to both paths.
