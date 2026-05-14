@@ -10,7 +10,7 @@
 - `schemas/` — Pydantic request/response models
 - `settings.py` — Configuration via pydantic-settings
 
-Module boundaries enforced by [tach](https://docs.gauge.sh/) (`fastapi/tach.toml`). Layering: `main → api → services → core/crud → db/utils/schemas/settings`. Run `make backend-boundaries` (or `uv run tach check` in `fastapi/`) to verify.
+Module boundaries enforced by [tach](https://docs.gauge.sh/) (`fastapi/tach.toml`). Layering: `main → api → services → crud → db`, with `core` as a pure leaf (constants, security, algorithm, fractional_index) reachable from `api`/`services`/`crud`, and `schemas`/`settings`/`utils` as cross-cutting. Run `make backend-boundaries` (or `uv run tach check` in `fastapi/`) to verify.
 
 ### Frontend Structure (`frontend/src/`)
 
