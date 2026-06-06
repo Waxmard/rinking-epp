@@ -19,7 +19,7 @@ jobs:
     container:
       image: semgrep/semgrep:1.163.0
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: semgrep ci --sarif --output=semgrep.sarif
         env:
@@ -31,7 +31,7 @@ jobs:
             p/secrets
             p/owasp-top-ten
             p/dockerfile
-      - uses: github/codeql-action/upload-sarif@v4
+      - uses: github/codeql-action/upload-sarif@v4.36.0
         if: always()
         with:
           sarif_file: semgrep.sarif
@@ -41,7 +41,7 @@ jobs:
     name: Trivy Filesystem
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -51,7 +51,7 @@ jobs:
           output: trivy-fs.sarif
           severity: CRITICAL,HIGH,MEDIUM
           ignore-unfixed: true
-      - uses: github/codeql-action/upload-sarif@v4
+      - uses: github/codeql-action/upload-sarif@v4.36.0
         if: always()
         with:
           sarif_file: trivy-fs.sarif
@@ -61,7 +61,7 @@ jobs:
     name: Trivy Backend Image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - name: Build backend image
         run: docker build -t tiernerd-backend:ci ./fastapi
       - name: Run Trivy image scan
@@ -73,7 +73,7 @@ jobs:
           output: trivy-image.sarif
           severity: CRITICAL,HIGH,MEDIUM
           ignore-unfixed: true
-      - uses: github/codeql-action/upload-sarif@v4
+      - uses: github/codeql-action/upload-sarif@v4.36.0
         if: always()
         with:
           sarif_file: trivy-image.sarif
