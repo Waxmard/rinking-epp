@@ -19,7 +19,7 @@ jobs:
     container:
       image: semgrep/semgrep:1.163.0
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
       - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: semgrep ci --sarif --output=semgrep.sarif
         env:
@@ -41,7 +41,7 @@ jobs:
     name: Trivy Filesystem
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
       - name: Run Trivy filesystem scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -61,7 +61,7 @@ jobs:
     name: Trivy Backend Image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.3
       - name: Build backend image
         run: docker build -t tiernerd-backend:ci ./fastapi
       - name: Run Trivy image scan
